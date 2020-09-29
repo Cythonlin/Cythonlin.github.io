@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>http://localhost:4000</id>
+    <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T16:55:35.297Z</updated>
+    <updated>2020-09-29T16:57:00.326Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="http://localhost:4000"/>
-    <link rel="self" href="http://localhost:4000/atom.xml"/>
-    <logo>http://localhost:4000/images/avatar.png</logo>
-    <icon>http://localhost:4000/favicon.ico</icon>
+    <link rel="alternate" href="https://cythonlin.github.io"/>
+    <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
+    <logo>https://cythonlin.github.io/images/avatar.png</logo>
+    <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
     <entry>
         <title type="html"><![CDATA[GO => 交换元素的四种方式]]></title>
-        <id>http://localhost:4000/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
-        <link href="http://localhost:4000/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
+        <id>https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
+        <link href="https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
         </link>
         <updated>2020-09-29T04:22:34.000Z</updated>
         <content type="html"><![CDATA[<h1 id="python-and-go">Python and Go</h1>
@@ -45,8 +45,8 @@ fmt.Println(b)
     </entry>
     <entry>
         <title type="html"><![CDATA[RS => 推荐系统（三）离线召回与排序 ]]></title>
-        <id>http://localhost:4000/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/</id>
-        <link href="http://localhost:4000/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/">
+        <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/">
         </link>
         <updated>2020-09-29T04:21:44.000Z</updated>
         <content type="html"><![CDATA[<h1 id="召回设计">召回设计</h1>
@@ -586,8 +586,8 @@ embedding</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => HBase]]></title>
-        <id>http://localhost:4000/post/py-greater-hbase/</id>
-        <link href="http://localhost:4000/post/py-greater-hbase/">
+        <id>https://cythonlin.github.io/post/py-greater-hbase/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-hbase/">
         </link>
         <updated>2020-09-29T04:21:09.000Z</updated>
         <content type="html"><![CDATA[<h1 id="报错">报错</h1>
@@ -617,8 +617,8 @@ cd $HBASE_HOME/bin<br>
     </entry>
     <entry>
         <title type="html"><![CDATA[RS => 推荐系统（二）离线画像构建 ]]></title>
-        <id>http://localhost:4000/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/</id>
-        <link href="http://localhost:4000/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/">
+        <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/">
         </link>
         <updated>2020-09-29T04:20:35.000Z</updated>
         <content type="html"><![CDATA[<h1 id="文章离线画像构建">文章离线画像构建</h1>
@@ -1728,8 +1728,8 @@ scheduler.add_job(update_user_profile, trigger='interval', hours=2)</code></pre>
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => Spark mapPartition]]></title>
-        <id>http://localhost:4000/post/py-greater-spark-mappartition/</id>
-        <link href="http://localhost:4000/post/py-greater-spark-mappartition/">
+        <id>https://cythonlin.github.io/post/py-greater-spark-mappartition/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-spark-mappartition/">
         </link>
         <updated>2020-09-29T04:20:11.000Z</updated>
         <content type="html"><![CDATA[<h1 id="正解">正解</h1>
@@ -1818,8 +1818,8 @@ print(list(c))</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[RS => 推荐系统（一）环境配置+数据收集]]></title>
-        <id>http://localhost:4000/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/</id>
-        <link href="http://localhost:4000/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/">
+        <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/">
         </link>
         <updated>2020-09-29T04:17:17.000Z</updated>
         <content type="html"><![CDATA[<h1 id="python环境">Python环境</h1>
@@ -2098,8 +2098,8 @@ update		# 重启配置文件修改过的程序
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => PySpark-Spark SQL]]></title>
-        <id>http://localhost:4000/post/py-greater-pyspark-spark-sql/</id>
-        <link href="http://localhost:4000/post/py-greater-pyspark-spark-sql/">
+        <id>https://cythonlin.github.io/post/py-greater-pyspark-spark-sql/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-pyspark-spark-sql/">
         </link>
         <updated>2020-09-29T04:16:24.000Z</updated>
         <content type="html"><![CDATA[<h1 id="spark-sql">Spark SQL</h1>
@@ -2312,8 +2312,8 @@ properties={&quot;driver&quot;: &quot;com.mysql.jdbc.Driver&quot;}<br>
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => PySpark-Spark Core（RDD）]]></title>
-        <id>http://localhost:4000/post/py-greater-pyspark-spark-corerdd/</id>
-        <link href="http://localhost:4000/post/py-greater-pyspark-spark-corerdd/">
+        <id>https://cythonlin.github.io/post/py-greater-pyspark-spark-corerdd/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-pyspark-spark-corerdd/">
         </link>
         <updated>2020-09-29T04:15:57.000Z</updated>
         <content type="html"><![CDATA[<h1 id="前言">前言</h1>
@@ -2580,8 +2580,8 @@ storage内存   = (总内存 - 300M) * 50%</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => Ubuntu-Hadoop-YARN-HDFS-Hive-Spark安装配置]]></title>
-        <id>http://localhost:4000/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/</id>
-        <link href="http://localhost:4000/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/">
+        <id>https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/">
         </link>
         <updated>2020-09-29T04:15:19.000Z</updated>
         <content type="html"><![CDATA[<h1 id="环境条件">环境条件</h1>
@@ -3032,8 +3032,8 @@ pyspark --master spark://lin:7077</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[AI => Seq2Seq+Attention+Transformer(简)]]></title>
-        <id>http://localhost:4000/post/ai-greater-seq2seqattentiontransformerjian/</id>
-        <link href="http://localhost:4000/post/ai-greater-seq2seqattentiontransformerjian/">
+        <id>https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/">
         </link>
         <updated>2020-09-29T04:13:05.000Z</updated>
         <content type="html"><![CDATA[<h1 id="数据预处理tf20-keras-preprocessing">数据预处理（TF20-Keras-Preprocessing）</h1>
