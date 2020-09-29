@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python-logging模块日志原理解析及使用 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="logging模块
+
+logging 模块是一个较庞大的模块。具有较完备的日志体系。
+主要分为：主体 Logger - 处理器 - 格式器
+
+
+logging 为 python 内置模块，无需安装。
+导入方式：  import loggin..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python-logging模块日志原理解析及使用</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="logging模块">logging模块</h1>
+<blockquote>
+<p>logging 模块是一个较庞大的模块。具有较完备的日志体系。<br>
+主要分为：主体 Logger - 处理器 - 格式器</p>
+</blockquote>
+<blockquote>
+<p>logging 为 python 内置模块，无需安装。<br>
+导入方式：  import logging  即可</p>
+</blockquote>
+<h1 id="日志等级排序-弱-强">日志等级排序 (弱 -&gt; 强)</h1>
+<pre><code>DEBUG &lt; INFO &lt; WARNING &lt; ERROR &lt; FATAL
+
+DEBUG :  开发调试的一些信息(print调试。。。)
+INFO:    程序运行过程的重要信息（不宜过多）
+WARNING: 不影响程序运行的小问题，警告一下。记录下来以备以后解决。
+ERROR:   影响程序, 有点严重。需要处理， 不然程序 （可能，可能）就挂了。
+FATAL:   严重影响程序，立刻重新排查，修改代码吧。
+</code></pre>
+<h1 id="logging体系组件">logging体系组件</h1>
+<p>常用分为： （由外到里的包含关系）</p>
+<ol>
+<li>Logger   （主体日志）<br>
+最大的容器，里面装 Handler</li>
+<li>Handler  （处理器类）<br>
+里面装 Formatter</li>
+<li>Formatter (格式器类)<br>
+里面写一些打印信息的格式语法<br>
+为了方便说明，接下来，我会把上面的组件“由里到外”讲解。</li>
+</ol>
+<h3 id="formatter格式器类">Formatter(格式器类)</h3>
+<p>格式器：用来定义一些打印信息的字符串格式化的语法。<br>
+初始化一个 格式器：<br>
+fmt = '[%(asctime)s] [%(filename)s: %(lineno)d] [%(levelname)s] =&gt; %(message)s' # 格式<br>
+console_formatter = logging.Formatter(fmt=fmt)   # 实例化格式器，并把格式传进来<br>
+理解方式：</p>
+<ol>
+<li>我相信你只有 “格式”这行 看不明白，这格式你可以随便搭配的， 见下方官方文档有参数大全：<br>
+官档格式大全：https://docs.python.org/3.7/library/logging.html#logrecord-attributes</li>
+<li>打开官档，你会看见表格的第二列 Format。 里面的格式直接原封不动复制过来即可  eg: %(asctime)s<br>
+然后，你把这些格式用字符串拼接成自己喜欢的符号格式即可， eg:  &quot;日期为 =&gt; %(asctime)s&quot;</li>
+<li>也许你会疑惑，为什么这种 %(..)s 的格式能被识别。 而不是被当作原始字符串？？？<br>
+注意第二行代码， fmt格式字符串只是  Formatter() 的参数，它里面会自动被解析的。这你就别操心了。</li>
+<li>我把上例结果贴一下，你可能会看明白些：<br>
+&gt;&gt;&gt; [2019-09-10 18:23:19,347] [logging11.py: 15] [WARNING] =&gt; 哈哈哈<br>
+asctime   是日期<br>
+filename  是文件名<br>
+lineno    是代码行<br>
+levelname 是日志等级名 （就是上面说的 INFO WARNING ERROR之类的）<br>
+message   是 你要打印的日志信息 （下面会讲到，这里先小小埋一个点）</li>
+</ol>
+<h3 id="handler处理器类">Handler(处理器类)</h3>
+<p>处理器：用来装载上面说的 “格式器”，并处理日志 （处理器有很多种，按需选1个即可，下面说2种常用的）：<br>
+初始化一个 “流处理器” （比较常用）：<br>
+handler = logging.StreamHandler()<br>
+或初始化一个 “文件处理器” （源码明确写了， 它继承的是 上面的 “流处理器”。通常用来日志持久化）：<br>
+handler = logging.FileHandler('mylog.log', mode='a', encoding='utf-8')<br>
+# 不必解释了吧。 这API语法很熟悉了吧。 这不就是我们常用的文件 open 语法么。。。。</p>
+<p>装载“格式器”   （差点忘了吧。实例化的格式器，还没用呢， 就是在这里装载）<br>
+handler.setFormatter(fmt=file_formatter)<br>
+注意: 虽然 handler对象就可以用 setLevel()设置日志等级，但我不推荐在这里设置。继续往下看</p>
+<h3 id="logger主体日志类">Logger(主体日志类)</h3>
+<p>Logger： 用来装载 “处理器的”。</p>
+<p>实例化Logger有两种方法：<br>
+方法1：（非共享式创建, 不推荐）<br>
+log= logging.Logger(name='my_log', level='INFO')<br>
+# name 是给 Logger 起的名<br>
+# level是 日志等级（注意要大写），   开篇我们讲到过， WARNING, INFO, ERROR 这些。<br>
+方法2：（Log池共享式创建， 推荐）<br>
+log = logging.getLogger(name='console')<br>
+# 有则取出，无则创建<br>
+# name如果不传，则取出root Logger  （root Logger是logging默认给我们提供的，我一般不用）</p>
+<blockquote>
+<p>说一下这两种方法的区别：</p>
+</blockquote>
+<ol>
+<li>非共享式： 即为每次都需要重新创建。从0开始配置</li>
+<li>Log池共享式： 从Log池取出索引来操作（就相当于函数传索引操作）<br>
+你每对取出的Log做出配置时，都会映射保存更新到 Log池 中。<br>
+当下次（或其他文件， 当然是一个完整的程序）调用 getLogger() 取出的 log，就是之前我们配好的。</li>
+</ol>
+<p>装载 &quot;处理器&quot; ：（差点忘了吧， 上面定义的 处理器，还没用呢， 就是在这里用的）：<br>
+log.addHandler(handler)<br>
+设置日志等级 （这步可忽略）<br>
+log.setLevel('ERROR')</p>
+<pre><code>其实上面我们实例化Logger的时候，我们就已经传了一个 level参数，设置好了 日志等级。
+所以 log.setLevel() 这个可以不设置 （包括前面提到，handler也有 setLevel）
+     handler.setLevel()
+</code></pre>
+<p>开始输出日志信息，有以下日志等级相对应的API：<br>
+log.debug  (&quot;这是一条 调试 日志&quot;)<br>
+log.info   (&quot;这是一条 显示主要信息 日志&quot;)<br>
+log.warning('这是一条 警告 日志')<br>
+log.error  (&quot;这是一条 错误 日志&quot;)<br>
+log.fatal  (&quot;这是一条 致命错误 日志&quot;)</p>
+<pre><code>### 回顾我们前面讲的 Formatter 格式器
+我们第一个讲的就是格式器， 并说了一下常用格式。
+其中有个 %(message)s,  它就是占位上面这些API里面的参数
+    eg: log.info('哈哈哈')     
+        %(message)s格式 占位输出的就是   哈哈哈
+    
+还有个  %(levelname)s，它就是占位上面这些API的方法名
+    eg: log.info('xxx')
+         %(levelname)s 格式占位输出的就是  info
+</code></pre>
+<blockquote>
+<p>如果你对日志等级与日志的作用感到模糊，你一定要看我接下来的例子！！！！！！！！<br>
+开篇时我就提过：  日志等级排序(弱=&gt;强) =&gt;    （DEBUG &lt; INFO &lt; WARNING &lt; ERROR &lt; FATAL）</p>
+</blockquote>
+<blockquote>
+<p>你设置了一个日志等级 。那么你所用上面API对应的等级若“强于或等于” 此设定的等级，日志才会被处理<br>
+emmmmm,  如果没听懂，就当我放P了。。。 说的越正式，越不容易理解。 我们还是看下面的例子吧~~</p>
+</blockquote>
+<p>日志等级理解的小例子：<br>
+log.setLevel('WARNING')   你看我们设置的日志等级是 WARNING</p>
+<pre><code>log.debug(&quot;这是一条 调试 日志&quot;)    
+    # 这个 debug(),  你可以去开篇列的&quot;日志等级排序&quot;那里瞅一眼。
+    # debug 比 warning 弱， 所以 这条日志是 不会 被处理的。
+    # （白话理解：&quot;我给的界限是warning, 你一个 debug等级太低了，问题不严重。不配被记录。&quot;）
+    
+log.info(&quot;这是一条 显示主要信息 日志&quot;)
+    # 同理， info 也比 warning 弱， 此条日志也 不会 被处理
+    
+log.warning('这是一条 警告 日志')
+    # warning == warning （我前面说了，强于 或 等于） 所以此条日志会被处理
+    
+log.error(&quot;这是一条 错误 日志&quot;)
+    # error 比 warning 强， 所以此条日志 会 被处理
+
+log.fatal(&quot;这是一条 致命错误 日志&quot;)
+    # fatal 比  warning 强， 所以此条日志 会 被处理
+    # 再白话一下：&quot;你给我的容忍程度是 warning, 而你的这条日志都致命错误了，我肯定处理你啊&quot;
+</code></pre>
+<p>思考！上例我一直说一句话 “xxxxx, 此条日志才会被处理”。<br>
+那么这个“ 处理” ，到底是处理什么呢？？？<br>
+这时不妨回头看看，上面讲的 “处理器”， 嗯， 没错。 这些日志就是 “处理器” 处理的。</p>
+<ol>
+<li>你要是定义一个流处理器（logging.StreamHandler）,  它就会把日志输出到终端。</li>
+<li>你要是定义一个文件处理器（logging.FileHandler），  它就会自动把日志保存到文件中，做持久化</li>
+</ol>
+<h1 id="综合案例">综合案例：</h1>
+<p>业务需求如下（随便举个案例，不一定有用）：</p>
+<ol>
+<li>
+<p>比 DEBUG(强)， 但又比 WARNING(弱) ，(不包括 WARNING) 的这类日志，只输出到终端。<br>
+这类日志输出格式无要求</p>
+</li>
+<li>
+<p>比 WARNING（强） (包括 WARNING )的这类日志， 输出到 终端和文件 各一份。<br>
+这类日志输出格式有要求，格式为： [日期] [所在文件名: 代码所在行] [日志级别] =&gt; 日志内容</p>
+</li>
+</ol>
+<p>代码如下（自己使用的话，封装一下比较好）：<br>
+import logging<br>
+# 日志等级排序（弱-&gt; 强）： DEBUG &lt; INFO &lt; WARNING &lt; ERROR &lt; FATAL</p>
+<pre><code>fmt = '[%(asctime)s] [%(filename)s: %(lineno)d] [%(levelname)s] =&gt; %(message)s'  # 格式
+file_formatter = logging.Formatter(fmt=fmt)    # 定义格式器， 把格式塞进来
+file_handler = logging.FileHandler('mylog.log', mode='a', encoding='utf-8')  # 定义文件处理器
+file_handler.setFormatter(fmt=file_formatter)  # 给文件处理器设置 一个 格式器
+file_handler.setLevel('WARNING')               # 给此处理器设置 日志等级
+
+
+console_handler = logging.StreamHandler()      # 定义流处理器，用于输出到终端 
+# StreamHandler未设置格式器，它会默认给你设置一个 %(message)s，即只有日志内容，没有日期文件名等 
+console_handler.setLevel('DEBUG')              # 给流处理器设置 日志等级
+
+log = logging.getLogger(name='file_log')          # log池中取出一个log(若没有则新建)   
+log.addHandler(file_handler)                   # 添加一个文件处理器（格式化 输出到 文件）
+log.addHandler(console_handler)                # 再添加一个流处理器（无格式 输出到 终端）
+
+log.info('我只会输出到终端')     # 因为 info只比 console_handler 设置的 DEBUG强
+log.error('我既会输出到终端， 又会输出到文件')
+# 因为error 比 console_handler 设置的 DEBUG 强， 同时 error 也比 file_handler 设置的 WARNING 强
+</code></pre>
+<p>运行结果：<br>
+终端输出：<br>
+&gt;&gt; 我只会输出到终端<br>
+我既会输出到终端， 又会输出到文件</p>
+<pre><code>mylog.log 文件中：
+    [2019-09-10 23:54:59,055] [logging11.py: 20] [ERROR] =&gt; 我既会输出到终端， 又会输出到文件
+</code></pre>
+<h1 id="-华丽分割线-">----------------------华丽分割线----------------</h1>
+<h1 id="投机取巧方式-不推荐这里开始往后可不看">投机取巧方式 （不推荐，这里开始往后，可不看）</h1>
+<blockquote>
+<p>这种方式只方便了一点点，但不灵活。</p>
+</blockquote>
+<p>前面我们花了好大力气，</p>
+<ol>
+<li>先是定义了一个 格式器</li>
+<li>又是定义了一个 流处理器 和 文件处理器</li>
+<li>Logger池中，实例化一个 Logger</li>
+<li>并且把他们各种拼装， 设置日志等级。等操作 （虽然看起来很多。其实你捋通了。真的不复杂）</li>
+</ol>
+<p>其实 logging体系中， 有一个默认初始的 Logger， 叫做 root Logger.<br>
+我们不需要实例化它，也不需要实例化&quot;格式器&quot;， 也不需要实例化控制器。<br>
+一行API就可以使用它 (默认是输出到终端的)：<br>
+import logging</p>
+<pre><code>fmt = '[%(asctime)s] [%(filename)s: %(lineno)d] [%(levelname)s] =&gt; %(message)s'  # 格式
+
+logging.basicConfig(    # 默认使用的就是 root Logger
+    level='DEBUG',      # 设置日志等级为DEBUG
+    format=fmt,         # 设置格式
+)
+logging.info('我只会输出到终端')
+
+
+运行结果：
+&gt;&gt; [2019-09-11 00:15:55,219] [logging11.py: 30] [INFO] =&gt; 我只会输出到终端
+</code></pre>
+<p>如果想输出到文件，那么只需加      filename 和 filemode 两个参数即可：<br>
+import logging</p>
+<pre><code>fmt = '[%(asctime)s] [%(filename)s: %(lineno)d] [%(levelname)s] =&gt; %(message)s'  # 格式
+
+logging.basicConfig(
+    level='DEBUG',
+    format=fmt,
+    filename='mylog.log',   # 文件名
+    filemode='a'            # 文件操作符
+)
+
+运行结果：
+mylog.log文件:
+    [2019-09-11 00:20:22,396] [logging11.py: 32] [INFO] =&gt; ��ֻ��������ն�
+</code></pre>
+<p>但你发现没，往文件里面输出乱码了， 用耳朵都能想出来，我们没有配置 encoding。。。<br>
+但是，我告诉你， basicConfig() 是没有 encoding参数的。   那咋整 ？？<br>
+但它有个参数叫做 handlers，handlers熟悉吧，没错就是我们上面讲的 &quot;处理器&quot;, 复数说明可以传多个<br>
+logging.basicConfig(<br>
+level='DEBUG',<br>
+format=fmt,<br>
+handlers=[ logging.FileHandler(filename='mylog.log',mode='a',encoding='utf-8') ]<br>
+# 看这里这个处理器的定义方法，和之前讲过的一模一样。在这里我们可以配 encoding<br>
+)<br>
+# 这样就不会乱码了</p>
+<blockquote>
+<p>Note: 以上就是用 logging.baseConfig() 简单日志实现<br>
+说了它是投机取巧，因为除了文件乱码有问题之外， 它还欠缺灵活性。<br>
+比如你想想对不同级别的日志，用不同格式输出出来。这时你单用basicConfig一行是搞不定的。<br>
+所以还是推荐用 getLogger()那套组合。</p>
+</blockquote>
+<h1 id="结束语">结束语</h1>
+<p>logging模块其实还有很多很多功能：<br>
+过滤器：（其实还有个这个组件，但我没用过，就没说）<br>
+格式器：（前面给了官档大全，里面还有根据进程、线程的(PID，TID, tName,pName)等格式来输出日志。）<br>
+控制器：（我只说了 stream 和 file）,其实还有很多，它们都在logging.handlers模块下：<br>
+from logging.handlers import (<br>
+RotatingFileHandler,       # 通过设置文件大小阈值，超出这个阈值，就会将日志转存新文件<br>
+TimedRotatingFileHandler,  # 设置时间间隔，每过这个间隔，就会将日志转存新文件<br>
+HTTPHandler,               # 通过HTTP协议将日志输出到远程服务器，（只支持 GET 和 POST）<br>
+SMTPHandler,               # 通过SMTP协议，将日志输出到远程邮箱了<br>
+SocketHandler,             # 通过TCP协议发送到远程服务器。。。<br>
+DatagramHandler,           # 通过UDP协议发送到远程服务器。。。<br>
+QueueHandler,              # 发到队列中（如果想发RabbitMQ之类的，可以去github找别人写的成品）<br>
+)<br>
+# 这些用法也很简单，看官档，或者用Pycharm ctrl+左键点进源码，看一下__init__()参数实例化即可<br>
+# 实例化后，用 xxx.addHandler() 添加到 logger即可使用  （和前面讲的 file和stream用法一样）</p>
+<p>还可做成各类型配置文件使用：https://docs.python.org/3/library/logging.config.html#logging.config.fileConfig<br>
+官档案例大全：https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-orm-zhi-peeweecha-jian-tuo-zhan-san/">
+                  <h3 class="post-title">
+                    PY =&gt; Python-ORM之peewee：插件拓展（三）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

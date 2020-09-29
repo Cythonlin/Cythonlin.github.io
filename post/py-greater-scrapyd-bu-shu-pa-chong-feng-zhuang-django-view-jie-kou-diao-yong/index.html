@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Scrapyd部署爬虫+封装Django-View接口调用 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+我之前做的项目：一直用的  Linux的Screen会话工具+ Scrapy的JOBDIR来控制爬虫开关。
+但是有后来想到用 Web 来控制爬虫的开关。所以我想到了用Scrapyd服务实现。
+部署爬虫项目
+安装scrapyd服务
+pi..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Scrapyd部署爬虫+封装Django-View接口调用</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>我之前做的项目：一直用的  Linux的Screen会话工具+ Scrapy的JOBDIR来控制爬虫开关。<br>
+但是有后来想到用 Web 来控制爬虫的开关。所以我想到了用Scrapyd服务实现。</p>
+<h1 id="部署爬虫项目">部署爬虫项目</h1>
+<h3 id="安装scrapyd服务">安装scrapyd服务</h3>
+<pre><code>pip install scrapyd
+</code></pre>
+<h3 id="启动scrapyd服务">启动scrapyd服务</h3>
+<pre><code>scrapyd         # 就这一条shell命令即可启动服务
+</code></pre>
+<p>如果你相对爬虫服务做一些配置，（比如 log目录，绑定地址，绑定端口。。等，可修改如下配置文件）：<br>
+vi /usr/lib/python3.6/site-packages/scrapyd/default_scrapyd.conf</p>
+<h3 id="将爬虫程序推送到服务中">将爬虫程序推送到服务中</h3>
+<p>首先确保你的爬虫程序单测可以无误运行！<br>
+情况1：（爬虫程序在linux， 上面讲的scrapyd服务也在linux）<br>
+首先安装个模块：<br>
+pip install scrapyd-client<br>
+修改scrapy的scrapy.cfg文件：<br>
+[deploy:Cython_lin]               # 这个 Cython_lin 是服务名，可自定义，但后面还会用到<br>
+url = http://23.23.xx.xx:6800/    # 这是你上面启动的Scrapyd服务的 URL+PORT<br>
+project = Baidu</p>
+<pre><code># 这个文件是你运行 scrapy startproject 时 自动创建的文件。 在项目根目录下， 就叫 &quot;scrapy.cfg&quot;：
+</code></pre>
+<p>正式推送本机爬虫程序到Scrapyd:<br>
+如下有3个说明：<br>
+1. 你需要在项目根目录下，执行这个命令<br>
+2. Cython_lin 就是我们上面 scrapy.cfg文件 配置的服务名<br>
+3. Baidu      就是 scrapy.cfg文件 里面的那个  project属性的值，也是 项目名<br>
+scrapyd-deploy Cython_lin -p Baidu</p>
+<p>情况2，番外篇（Windows开发，Linux部署）<br>
+同样安装个客户端模块（windows）：<br>
+pip install scrapyd-client<br>
+修改scrapy的scrapy.cfg文件(windows)：<br>
+[deploy:Cython_lin]               # 这个 Cython_lin 是服务名，可自定义，但后面还会用到<br>
+url = http://23.23.xx.xx:6800/    # 这是你上面启动的Scrapyd服务的 URL+PORT<br>
+project = Baidu<br>
+建立一个文件名为 scrapyd-deploy.bat， 内容作下（windows）：<br>
+注意：这个文件是创建在python的安装路径下（如果你是虚拟环境，那么就去虚拟环境的python路径中）<br>
+@echo off<br>
+&quot;D:\Virtualenv_All\scrapy\Scripts\python.exe&quot; &quot;D:\Virtualenv_All\scrapy\Scripts\scrapyd-deploy&quot; %1 %2 %3 %4 %5 %6 %7 %8 %9<br>
+随后将刚才的路径，配置到环境变量中（如果不想设置环境变量，那么每次需要用绝对路径用scrapyd-deploy）<br>
+scrapyd-deploy Cython_lin -p Baidu</p>
+<pre><code>这条命令和上面（linux版本）讲的是一模一样的， 同样要在scrapy根路径下执行
+</code></pre>
+<h1 id="调用爬虫程序">调用爬虫程序</h1>
+<p>前面我们已经完全将爬虫Scrapyd服务部署完成。接下来就是开启调用的环节：<br>
+scrapyd采用 &quot;请求接口&quot; 的方式取开启或终止爬虫：<br>
+查看爬虫状况：<br>
+curl http://23.23.xx.xx:6800/daemonstatus.json	<br>
+正式开启爬虫程序：<br>
+curl http://39.107.86.223:6800/schedule.json -d project=Baidu -d spider=zhidao</p>
+<pre><code># 注意: &quot;Baidu&quot;是项目名，  而 &quot;zhidao&quot; 是每个 spider的名字 （就是主程序的爬虫名name=...）
+# 注意: 开启的时候会给你一个ID， 你要记住它 ，方便我们停止
+</code></pre>
+<p>停止爬虫程序：<br>
+curl http://23.23.xx.xx:6800/cancel.json -d project=Baidu -d job=运行ID</p>
+<h1 id="django视图内嵌控制爬虫程序">Django视图内嵌控制爬虫程序</h1>
+<p>上面我们说了用 curl 发送请求去操控爬虫的开启与暂停。但是这并不是习惯的做法。<br>
+更好的是，通过Qt 或者 通过Web, 来操控爬虫。<br>
+pip install python-scrapyd-api  # 预先安装此模块</p>
+<pre><code>from scrapyd_api import ScrapydAPI
+
+scrapyd = ScrapydAPI('39.107.xx.xx:6800')   # 先获取 scrapyd远程服务的客户端连接
+
+
+class SpiderView(View):       # 我使用的是 Django的 CBV
+    def get(self, request):
+        state_dict = scrapyd.list_jobs('Baidu')    # 列出项目所有爬虫任务，返回字典
+        if request.GET.get('tag') == 'start':      # 检测爬虫是否为运行状态
+            scrapyd.schedule('Baidu', 'zhidao')  # 'project_name', 'spider_name'
+            return HttpResponse('0')       # 如果正在运行，给前端一个值，按钮  
+        if request.GET.get('tag') == 'stop':     # 前端点下按钮如果get传值为stop
+            try:
+                state = state_dict['running'][0]['id']    # 若取不到，就抛异常
+            except:
+                return HttpResponse('-1')        # 随便返回一个值，不用处理
+
+            scrapyd.cancel('Baidu', state)  # 根据 id取消 爬虫入伍
+            return HttpResponse('0')        # 并返回0（这个0是我自定义的，前端也用的0）
+        return HttpResponse('') 
+</code></pre>
+<h1 id="前端交接">前端交接</h1>
+<p>其实后端接口做好了，前端就随意了。我用的 Nuxt+Vue，主要贴一下核心method吧：<br>
+methods: {<br>
+start() {<br>
+axios.get('http://39.xx.xx:8000/spider', {          # 注意这时请求的Django<br>
+params: { 'tag': 'start' }<br>
+}).then(<br>
+(response) =&gt; {<br>
+this.tag = Number.parseInt(response['data'])<br>
+if (this.tag === 0) {                            # 如果django返回值为0<br>
+this.start_msg = '开启成功，切记不要重复开启'    # 用于vue模板提示<br>
+this.start_unable = true                       # 把按钮禁用，防止重复请求<br>
+this.stop_unable = false                     # 同时把停止按钮由禁用设置为激活<br>
+this.start_layer()                   # 这个函数内部实现了消息弹框<br>
+// this.stop_unable = false<br>
+}<br>
+}<br>
+),<br>
+stop() {<br>
+axios.get('http://39.107.xx.xx:8000/spider', {   # 注意这是请求的Django<br>
+params: { 'tag': 'stop' }                # 发一个 stop参数的get请求<br>
+}).then(<br>
+(response) =&gt; {<br>
+this.tag = Number.parseInt(response['data'])<br>
+if (this.tag === 0) {                # 如果返回0, 这个0是我在Django自己指定的。<br>
+this.stop_msg = '关闭成功，切记不要重复关闭'<br>
+this.start_unable= false                      # 负负得正，开始按钮激活<br>
+this.stop_unable = true                       # 停止按钮禁用<br>
+this.stop_layer()                             # 无关禁用的弹窗信息<br>
+}<br>
+}<br>
+)<br>
+},<br>
+},</p>
+<h1 id="dockerdocker-compose">Docker+docker-compose</h1>
+<p>如果你也想过使用docker+docker-compose （开启服务，推送代码一体化）<br>
+请看下篇： https://segmentfault.com/a/1190000020424059</p>
+<h1 id="结束语">结束语</h1>
+<p>我是设置2个按钮（开启、关闭互斥，点哪个哪个就被禁用，与此同时另一个按钮就会被激活）。<br>
+当然，你也可以用 单机，双击。等用一个按钮来控制开启和关闭。<br>
+当然这些只是标志性的功能。 核心功能还是 Django视图中的 ScrapydAPI   这个API的使用<br>
+python-scrapyd-api官档：https://pypi.org/project/python-scrapyd-api/</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-logging-mo-kuai-ri-zhi-yuan-li-jie-xi-ji-shi-yong/">
+                  <h3 class="post-title">
+                    PY =&gt; Python-logging模块日志原理解析及使用
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

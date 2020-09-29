@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>GO =&gt; JetBrains全家桶初始化默认配置 | Cython_lin</title>
+<title>PY =&gt; CentOS偷懒安装Python3.7.4 | Cython_lin</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,14 +18,8 @@
 
 
 
-    <meta name="description" content="声明
-我只用过 Pycharm 和 Goland且有效。
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。
-原因
-改语法提示组合键，改崩了。
-恢复默认配置
-File -&gt; 
-    Manage IDE Settings -..." />
+    <meta name="description" content="依赖：
+yum install gcc make zlib  zlib-devel openssl openssl-devel libffi-devel bzip2-devel ncurses-devel gdbm-devel readli..." />
     <meta name="keywords" content="IDE" />
   </head>
   <body>
@@ -97,22 +91,29 @@ File -&gt;
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">GO =&gt; JetBrains全家桶初始化默认配置</h2>
+            <h2 class="post-title">PY =&gt; CentOS偷懒安装Python3.7.4</h2>
             <div class="post-date">2020-09-29</div>
             
             <div class="post-content" v-pre>
-              <h1 id="声明">声明</h1>
-<p>我只用过 Pycharm 和 Goland且有效。<br>
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。</p>
-<h1 id="原因">原因</h1>
-<p>改语法提示组合键，改崩了。</p>
-<h1 id="恢复默认配置">恢复默认配置</h1>
-<pre><code>File -&gt; 
-    Manage IDE Settings -&gt; 
-        Restore Default Settings
-</code></pre>
-<h1 id="插曲">插曲</h1>
-<pre><code>&quot;找配置文件,并删除&quot; if &quot;你不嫌麻烦&quot; else &quot;老老实实按照上面做&quot;</code></pre>
+              <p>依赖：<br>
+yum install gcc make zlib  zlib-devel openssl openssl-devel libffi-devel bzip2-devel ncurses-devel gdbm-devel readline-devel xz-devel sqlite-devel tk-devel -y<br>
+下载包（太慢，一般我选择手动，然后xftp上传）<br>
+wget https://www.python.org/ftp/python/3.7.4/Python-3.7.4.tgz<br>
+解压<br>
+tar -zxvf Python-3.7.4.tgz &amp;&amp; cd Python-3.7.4/<br>
+指定安装环境：<br>
+./configure prefix=/usr/local/python3<br>
+编译+安装：<br>
+make &amp;&amp; make install<br>
+删除原有软连接（python原来链的是python2的，我基本不用python2，所以删了）<br>
+rm -rf /usr/bin/python &amp;&amp; rm -rf /usr/bin/pip<br>
+添加软连接（这就是我们python3的软连接）<br>
+ln -s /usr/local/python3/bin/python3 /usr/bin/python &amp;&amp; ln -s /usr/local/python3/bin/pip3 /usr/bin/pip<br>
+(可选)若软连接不好使。可以使用 alias:<br>
+vi /etc/profile:<br>
+alias pip=/usr/local/python3/bin/pip3<br>
+alias python=/usr/local/python3/bin/python3<br>
+source /etc/profile</p>
 
             </div>
             
@@ -127,9 +128,9 @@ File -&gt;
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://cythonlin.github.io/post/sublime-py-cha-jian/">
+                <a href="https://cythonlin.github.io/post/py-greater-modinrayjia-su-pandas-da-xiong-mao/">
                   <h3 class="post-title">
-                    Sublime-Py插件
+                    PY =&gt; Modin(Ray)加速Pandas大熊猫
                   </h3>
                 </a>
               </div>

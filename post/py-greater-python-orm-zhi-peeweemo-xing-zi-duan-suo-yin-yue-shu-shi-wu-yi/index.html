@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python-ORM之peewee：模型-字段-索引-约束-事务（一） | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+去github搜 &quot;python orm&quot;，最高star居然不是sqlalchemy，而是peewee
+后来得知peewee，比sqlalchemy简单好用。值得一学哦！！
+我总体感觉（peewee像 Django..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python-ORM之peewee：模型-字段-索引-约束-事务（一）</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>去github搜 &quot;python orm&quot;，最高star居然不是sqlalchemy，而是peewee<br>
+后来得知peewee，比sqlalchemy简单好用。值得一学哦！！<br>
+我总体感觉（peewee像 Django-ORM的分离版，，但比Django-ORM和SqlAlchemy 小巧，简单，文档也友好）</p>
+<p>还有一个更重要的感觉就是， peewee 的 API方法名 和 SQL语句   的 单词   基本相似。<br>
+例如对比一下(关键词语法都是 update  和 where)：<br>
+SQL语句：update Lang set name='Python' where name='Java';<br>
+Peewee：Lang.update(name='Python').where(Lang.name == 'Java')<br>
+这种良心的API，可以大大降低我们的学习成本，还可以巩固我们对SQL的记忆！！！！！！<br>
+总官档地址：http://docs.peewee-orm.com/en/latest/peewee/quickstart.html<br>
+官方Github地址：https://github.com/coleifer/peewee</p>
+<h1 id="安装和导入">安装和导入</h1>
+<pre><code>pip install peewee
+from peewee import *
+# peewee的模块很结构化，都在peewee中，如果懒就都导入进来。 当然你也可以熟了，按需导入
+# 后面无特殊情况，就都是这样导入的。我就不提了。
+</code></pre>
+<h1 id="数据库">数据库</h1>
+<h3 id="postgresql-和-sqlite">postgresql 和 sqlite</h3>
+<p>peewee 只支持 sqlite, mysql 和 postgresql 数据库， 如果你有需求用oracle等，请绕行。。。<br>
+如需sqlite 和 postgresql，配置请参考 http://docs.peewee-orm.com/en/latest/peewee/database.html#database</p>
+<h3 id="mysql">mysql</h3>
+<p>当然我经常用MySQL，以后的所有都围绕mysql来讲，如下是基本配置<br>
+mysql_db = MySQLDatabase(<br>
+'lin',                 # 数据库<br>
+user='root',           # 用户名<br>
+password='123',        # 密码<br>
+host='IP',             # IP<br>
+port=3306,             # 端口<br>
+charset='utf8mb4'      # 字符集类型， utf8mb4 是 utf8的大哥<br>
+)<br>
+peewee的mysql引擎默认优先使用pymysql。<br>
+如果你没安装pymysql， 他就会去寻找 MySQLdb。 都没有就会报错。<br>
+嗯，都啥年代了，python3的时代，所以我们用 pymysql模块即可，若没安装，跳出来安装下即可<br>
+pip install pymysql<br>
+既然用的pymysql驱动，MySQLDatabase() 里面的写法 和 pymysql对象实例化的参数配置是一样的。<br>
+如果我给的例子的参数不够用，你可以来下面的链接自己选吧：https://github.com/PyMySQL/PyMySQL/blob/f08f01fe8a59e8acfb5f5add4a8fe874bec2a196/pymysql/connections.py#L494-L513</p>
+<p>建立数据库连接<br>
+print(mysql_db.connect())<br>
+关闭数据库连接<br>
+print(mysql_db.close())<br>
+测试数据库连接是否关闭<br>
+mysql_db.is_closed()<br>
+列出数据库的所有表：<br>
+mysql_db.get_tables()<br>
+列出所有字段的详细信息：<br>
+print(db.get_columns('owner'))    # 假设 owner是表名，下面同理<br>
+列出所有主键的字段：<br>
+print(db.get_primary_keys('owner'))<br>
+列出所有索引字段的详细信息：<br>
+print(db.get_indexes('owner'))<br>
+列出所有外键的字段：<br>
+print(db.get_foreign_keys('owner'))</p>
+<p>Python 各种 web框架嵌入使用 peewee 案例传送门：<br>
+官档-Web案例：http://docs.peewee-orm.com/en/latest/peewee/database.html#framework-integration</p>
+<h1 id="表-记录-字段">表-记录-字段</h1>
+<p>ORM语法 和 数据库的 （表-记录-字段）对应关系如下：</p>
+<table>
+    <thead><td>ORM结构</td><td>数据库</td></thead>
+    <tr><td>类</td><td>表</td></tr>
+    <tr><td>实例（对象）</td><td>记录</td></tr>
+    <tr><td>类属性</td><td>列</td></tr>
+</table>
+### 默认自增主键ID
+定义一个类，继承了peewee模块的Model类，这个类就可以当作Model来用了
+首先建立一张"空表"
+    mysql_db = MySQLDatabase('lin_test', user='root', password='123',
+                         host='ip', port=3306, charset='utf8mb4')
+    class Owner(Model):
+        class Meta:             
+            database=mysql_db   # 这里是"必须" 要指定的， 指定哪一数据库
+    mysql_db.create_tables([Owner])    # 注意，源码是取出参数遍历，所以这里参数用列表
+上述代码就可以建立一张"空表"。 为什么"空表" 用引号括起来呢？？
+    这是关于peewee orm的机制，"你若不指定（primary key）"，它就会"自动"为你创建一个
+    "名为 id", "类型为 int", 并设置为 "primary" 的 "自增(auto_increment)" 的字段
+但 一旦你把一个自定义的字段，设为主键，默认的id字段就会被覆盖：
+    name = CharField(primary_key=True)   # name设为了主键， 原有的默认id就没了 
+官档也说明：如果你想自己建立一个自增主键，并覆盖默认id。你可以用AutoField字段：
+    new_id = AutoField()    # 这句话直接就为你 设置为 int型 和 主键 和自增。 
+    "这是官档最推荐覆盖id的方法，  而不是自己弄一个 Integer，再设主键"
+<p>自增id就讲完了， 不过你是否发现每个 类下都有<br>
+class Meta:<br>
+database= xxx   # 这是为每张表指定数据库，必须要指定的。不然它不知道你这个表在哪个数据库<br>
+既然这样，若我们要在一个数据库中创建很多很多表，那岂不是每次都需要给每张表指定一个数据库？？<br>
+就像这样：<br>
+class User(Model):<br>
+class Meta:<br>
+database = mysql_db</p>
+<pre><code>class Owner(Model):
+    class Meta:
+        database = mysql_db
+</code></pre>
+<p>这样有点烦，但我们可以定义一个基类指定好数据库， 然后其他子类模型继承它就好了。<br>
+class BaseModel(Model):<br>
+name = CharField(max_length=10)    # 定义一个 name 字段<br>
+class Meta:<br>
+database = mysql_db</p>
+<pre><code>class User(BaseModel):    # 继承基类
+    pass
+class Owner(BaseModel):   # 继承基类
+    pass
+    
+mysql_db.create_tables([User, Owner])    # 正式创建表， 基类不需要，可以不放进来
+</code></pre>
+<p>像上述代码CharField, 更多类型字段定义，官档给的很详细了，我不再赘述了。<br>
+官档-字段-参数：http://docs.peewee-orm.com/en/latest/peewee/models.html#field-types-table<br>
+但下面我还会挑一些主要常用（有一点点点难特别）的说一下。。。</p>
+<h3 id="外键字段foreignkeyfield">外键字段（ForeignKeyField）</h3>
+<p>普通外键<br>
+class BaseModel(Model):    # 基类<br>
+name = CharField(max_length=10)<br>
+class Meta:<br>
+database = mysql_db</p>
+<pre><code>class Owner(BaseModel):   # 主人类
+    pass
+
+class Pet(BaseModel):     # 宠物类
+    owner = ForeignKeyField(
+        Owner, 
+        backref='owner_conn',  # 通过引用名获取对象。&quot;主人，你可以通过这个名字调用我&quot;
+        on_delete='Cascade',   # 级联删除
+            # 默认为None， 这时，你想删主人是删不掉的。会报错。 必须先删宠物再删主人。
+            # 设为 Cascade后， 你可以直接删主人。 他的宠物也会随之自动删除。 这就是级联删除
+        on_update=Cascade,     # 级联更新，原理同 on_delete
+    )
+</code></pre>
+<p>层级外键（通常用于层级分类,自关联查询）：<br>
+class Category(BaseModel):<br>
+name = CharField()<br>
+parent = ForeignKeyField('self', null=True, backref='children')<br>
+注： &quot;self&quot; 字符串是固定语法， 下一篇还会将，自关联查询</p>
+<h3 id="日期字段datetimefield">日期字段（DateTimeField）</h3>
+<pre><code>import datetime
+......
+date_time= DateTimeField(default=datetime.datetime.now) 
+</code></pre>
+<h3 id="表属性meta">表属性（Meta）</h3>
+<p>表属性就是可以 改表名，设置主键，联合主键，设置索引，联合索引等操作。不再赘述，见官档。<br>
+官档 Meta: http://docs.peewee-orm.com/en/latest/peewee/models.html#model-options-and-table-metadata</p>
+<h1 id="索引-和-约束">索引 和 约束</h1>
+<p>设置索引有3种方法：</p>
+<ol>
+<li>通过定义字段的参数：<br>
+普通索引<br>
+name = CharField(index=True)<br>
+唯一索引<br>
+name = CharField(unique=True)</li>
+<li>通过定义表属性Meta：<br>
+联合唯一索引<br>
+class Meta:<br>
+indexes = (<br>
+(('字段1', '字段2'), True),    # 字段1与字段2整体作为索引，True 代表唯一索引<br>
+(('字段1', '字段2'), False),   # 字段1与字段2整体作为索引，False 代表普通索引<br>
+)<br>
+需要注意的是，上面语法，三层元组嵌套， 元组你懂得， 一个元素时需要加个 , 逗号。 别忘了。</li>
+<li>索引API：<br>
+官档：http://docs.peewee-orm.com/en/latest/peewee/models.html#advanced-index-creation<br>
+设置约束有2种方法：</li>
+<li>通过定义字段的参数：<br>
+-------通常用来单一字段主键：<br>
+name = CharField(primary_key=True)</li>
+<li>通过定义表属性Meta<br>
+-------通常用作联合主键：<br>
+class Meta:<br>
+primary_key = CompositeKey('字段1', '字段2')<br>
+# primary_key = False      # 也可以不使用主键（不覆盖，也 取消 创建默认id字段）</li>
+</ol>
+<h1 id="事务">事务</h1>
+<p>支持with上下文语法，支持事务嵌套，注意嵌套事务 只会回滚 离它最近 的一层之间的代码。<br>
+包裹在with语句中的代码，只要存在异常，就会回滚。嵌套的事务，也是有一处异常，所有层事务都会回滚。<br>
+当然你也可以手动 rollback()来回滚。<br>
+嵌套事务示例如下：<br>
+with mysql_db.atomic() as transaction1:    # 第一层事务。  atomic(), 固定语法就不说了。<br>
+User.create(username='Tom')<br>
+with mysql_db.atomic() as transaction2: # 第二层事务<br>
+User.create(username='Jerry')<br>
+User.create(username='Spike')<br>
+transaction2.rollback()            # 就近原则， 第二层的rollback()回滚<br>
+User.create(username='Butch')</p>
+<pre><code># 如果真的出现回滚，那么 从 第二层的 with() 开始算 事务内容， 到 rollback() 结束
+#     形象例子： 顶部 面包片从 第二层的with()开始夹，  底部 面包片 夹到 rollback()
+
+# 注意一点，虽然是嵌套事务，但是每层with事务都有对应的名字（就是with as 之后变量）。 
+# 所以回滚写在哪层事务里面， 就要用哪层事务的名字（就近原则）。 不然会报错的。
+# 错误实例： 倒数第二行的： transaction2.rollback()  写成 transaction1.rollback()。 错误！
+</code></pre>
+<p>带有commit()的嵌套事务示例如下：（缩小事务的代码范围， 就像 &quot;面包里夹的东西变少了&quot; 的意思）<br>
+with mysql_db.atomic() as transaction1:      # 第一层事务<br>
+User.create(username='Tom')<br>
+with mysql_db.atomic() as transaction2:  # 第二层事务<br>
+User.create(username='Jerry')<br>
+transaction2.commit()                # 就这里变了， 插入了一行 commit<br>
+User.create(username='Spike')<br>
+transaction2.rollback()  # rollback()回滚<br>
+User.create(username='Butch')</p>
+<pre><code># commit()，加入了这一行，就意味着 从 这行开始算 回滚内容，到 rollback() 结束
+#     形象例子： （顶部 面包片 从commit() 这里开始夹, 底部 面包片 夹到 rollback() ）
+</code></pre>
+<p>上面无论哪个事务例子， 都必须注意：</p>
+<ol>
+<li>每层事务，只管自己层内的 rollback()，才有效， 不能管其他层的。</li>
+<li>就算你用 commit() 夹， 如果自己层内没有 rollback()， 那么你的 commit()是无效的（夹不住）<br>
+事务就差不多这些，官档还有一些用法和语法，但最终功能结果都是一样的。选一种（我的例子）就行。<br>
+官档-事务: http://docs.peewee-orm.com/en/latest/peewee/database.html#managing-transactions</li>
+</ol>
+<h1 id="闲杂用法">闲杂用法</h1>
+<p>查看ORM对应的原生SQL语句：<br>
+.....ORM语句.sql()       # 后缀 .sql() 打印对应原生sql<br>
+执行原生SQL：<br>
+# 注意，传数据用参数，不要用字符串拼接（防SQL注入）<br>
+for owner in Owner.raw('select * from owner where name=%s', 'Alice'):<br>
+print(owner.name)</p>
+<p>更原生的执行原生SQL:<br>
+print(mysql_db.execute_sql('select * from user').fetchall())<br>
+# sql，可以传位置参数（防注入），就像使用 pymysql一样。<br>
+表改名：<br>
+注：我说的改名只是查询时的临时名</p>
+<pre><code>下一篇文章查询，会提到 字段改名， 格式：  字段.alias('新字段名')
+那表改名也差不多，有2种方式：
+    方式1：
+        格式： 表类.alias('新表名')
+    方式2：
+        格式： 新表名 = 表类.alias()
+</code></pre>
+<h1 id="未结束语">未结束语</h1>
+<p>本篇写了一些入门性的模型的建立，数据库，事务，索引，算是比较基本的。<br>
+当然还有更常用，更重要的CRUD等，会在下一篇介绍。<br>
+下一篇传送门：https://segmentfault.com/a/1190000020265522</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-ban-docker-shi-yong-selenium-jian-dan-shi-li/">
+                  <h3 class="post-title">
+                    PY =&gt; Python版-Docker使用selenium简单示例
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

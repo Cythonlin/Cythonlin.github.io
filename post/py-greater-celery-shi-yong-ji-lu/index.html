@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>GO =&gt; JetBrains全家桶初始化默认配置 | Cython_lin</title>
+<title>PY =&gt; Celery使用记录 | Cython_lin</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,15 +18,14 @@
 
 
 
-    <meta name="description" content="声明
-我只用过 Pycharm 和 Goland且有效。
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。
-原因
-改语法提示组合键，改崩了。
-恢复默认配置
-File -&gt; 
-    Manage IDE Settings -..." />
-    <meta name="keywords" content="IDE" />
+    <meta name="description" content="前置环境
+pip install redis
+pip install gevent
+
+config.py
+broker_url = 'redis://ip/0'
+result_backend = 'redis://ip/1'	# tasks..." />
+    <meta name="keywords" content="Python" />
   </head>
   <body>
     <div id="app" class="main">
@@ -97,29 +96,67 @@ File -&gt;
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">GO =&gt; JetBrains全家桶初始化默认配置</h2>
+            <h2 class="post-title">PY =&gt; Celery使用记录</h2>
             <div class="post-date">2020-09-29</div>
             
             <div class="post-content" v-pre>
-              <h1 id="声明">声明</h1>
-<p>我只用过 Pycharm 和 Goland且有效。<br>
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。</p>
-<h1 id="原因">原因</h1>
-<p>改语法提示组合键，改崩了。</p>
-<h1 id="恢复默认配置">恢复默认配置</h1>
-<pre><code>File -&gt; 
-    Manage IDE Settings -&gt; 
-        Restore Default Settings
+              <h1 id="前置环境">前置环境</h1>
+<pre><code>pip install redis
+pip install gevent
 </code></pre>
-<h1 id="插曲">插曲</h1>
-<pre><code>&quot;找配置文件,并删除&quot; if &quot;你不嫌麻烦&quot; else &quot;老老实实按照上面做&quot;</code></pre>
+<h1 id="configpy">config.py</h1>
+<pre><code>broker_url = 'redis://ip/0'
+result_backend = 'redis://ip/1'	# tasks返回结果存储地址
+result_expires = 10 * 60	# 过期时间
+imports = ('tasks')
+</code></pre>
+<h1 id="taskspy">tasks.py</h1>
+<pre><code>import requests
+from celery import Celery
+
+app = Celery()
+app.config_from_object('config')
+
+@app.task(ignore_result=False)
+def crawl(url):
+    response = requests.get(url)
+    return {'data': response.text}	# 返回并储存的结果
+</code></pre>
+<h1 id="spiderpy">spider.py</h1>
+<pre><code>import tasks
+
+def main(url_list):
+	for per_url in url_list:
+	tasks.crawl.delay(per_url)
+    
+if __name__ == '__main__':
+	main(
+		['http://www.baidu.com','http://www.douyu.com/']
+	)
+</code></pre>
+<h1 id="workerpy">worker.py</h1>
+<pre><code>import os
+os.system('celery worker -A tasks  -l info -P gevent')
+	# -A tasks    即为 tasks.py对应模块
+	# -P gevent   即为异步指定环境为 gevent
+</code></pre>
+<h1 id="使用">使用</h1>
+<p>先执行 spider.py 将任务存入到redis队列中，<br>
+然后执行 worker.py，正式启动任务</p>
+<h1 id="总结">总结</h1>
+<p>celery 大体分为 3种 模块<br>
+task ：  专门定义函数，用装饰器装饰作为一个任务（类似于flask的视图）<br>
+broker： 中间人队列，存储任务  （例如 rabbitmq, redis等）<br>
+worker： 从broker队列拿出任务来 正式运行 （可多个）</p>
+<h1 id="相关配置参数参考地址">相关配置参数参考地址</h1>
+<p>https://www.cnblogs.com/cwp-bg/p/8759638.html</p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="tag">
-                    IDE
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
                   </a>
                 
               </div>
@@ -127,9 +164,9 @@ File -&gt;
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://cythonlin.github.io/post/sublime-py-cha-jian/">
+                <a href="https://cythonlin.github.io/post/py-greater-zi-bian-mo-fa-gui-ju/">
                   <h3 class="post-title">
-                    Sublime-Py插件
+                    PY =&gt; 自编魔法&#34;鬼&#34;句
                   </h3>
                 </a>
               </div>

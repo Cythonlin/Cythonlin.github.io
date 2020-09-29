@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>GO =&gt; JetBrains全家桶初始化默认配置 | Cython_lin</title>
+<title>PY =&gt; Modin(Ray)加速Pandas大熊猫 | Cython_lin</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,15 +18,13 @@
 
 
 
-    <meta name="description" content="声明
-我只用过 Pycharm 和 Goland且有效。
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。
-原因
-改语法提示组合键，改崩了。
-恢复默认配置
-File -&gt; 
-    Manage IDE Settings -..." />
-    <meta name="keywords" content="IDE" />
+    <meta name="description" content="前言
+用过Pandas的都知道，数据大了后，处理很慢。so, modin在Pandas基础上封装一层透明壳。
+并且依赖ray能实现多进程pandas操作。
+特色：一行代码实现Pandas加速。。。
+安装依赖环境
+原生windows(不支持)..." />
+    <meta name="keywords" content="Python" />
   </head>
   <body>
     <div id="app" class="main">
@@ -97,29 +95,58 @@ File -&gt;
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">GO =&gt; JetBrains全家桶初始化默认配置</h2>
+            <h2 class="post-title">PY =&gt; Modin(Ray)加速Pandas大熊猫</h2>
             <div class="post-date">2020-09-29</div>
             
             <div class="post-content" v-pre>
-              <h1 id="声明">声明</h1>
-<p>我只用过 Pycharm 和 Goland且有效。<br>
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。</p>
-<h1 id="原因">原因</h1>
-<p>改语法提示组合键，改崩了。</p>
-<h1 id="恢复默认配置">恢复默认配置</h1>
-<pre><code>File -&gt; 
-    Manage IDE Settings -&gt; 
-        Restore Default Settings
+              <h1 id="前言">前言</h1>
+<p>用过Pandas的都知道，数据大了后，处理很慢。so, modin在Pandas基础上封装一层透明壳。<br>
+并且依赖ray能实现多进程pandas操作。</p>
+<p>特色：一行代码实现Pandas加速。。。</p>
+<h1 id="安装依赖环境">安装依赖环境</h1>
+<h3 id="原生windows不支持">原生windows(不支持)</h3>
+<h3 id="wsl支持">WSL(支持)</h3>
+<pre><code>WSL就是 (Windows Sub Linux） windows内嵌的linux子系统，自行百度
+sudo pip3 install psutil
+sudo pip3 install setproctitle
+
+pip install modin[ray]
+
+WSL 不建议接触，我是感觉没啥用。（小心你的C盘~~~）
+除非你Aliyun, TencentCloud, VirtualBox, VMWare，都懒得用。。。
 </code></pre>
-<h1 id="插曲">插曲</h1>
-<pre><code>&quot;找配置文件,并删除&quot; if &quot;你不嫌麻烦&quot; else &quot;老老实实按照上面做&quot;</code></pre>
+<h3 id="linuxkaggle支持">Linux/kaggle(支持)</h3>
+<p>modin 依赖 ray （所以用了pip的 [] 语法）:  一条命令即可<br>
+pip install modin[ray]<br>
+不了解pip新鲜语法的，可以见官档： https://pip.pypa.io/en/stable/reference/pip_install/</p>
+<h3 id="macos支持买不起">MacOS(支持，买不起)</h3>
+<h1 id="导入">导入</h1>
+<pre><code>import ray
+import modin.pandas as pd
+    # 这个导入很眼熟不， 没错,就是 多了个   &quot;modin.&quot;， 用法和原生pandas没什么区别
+</code></pre>
+<h1 id="使用">使用</h1>
+<pre><code>ray.init(num_cpus=4, ignore_reinit_error=True)    
+# 第一个参数充分利用4核CPU。
+# 第二个参数 ignore_reinit_error=True， 忽略重复初始化的 而产生的报错。
+    # 如果不忽略，那么你用Jupyter运行时：
+        # 第一次会调用正常运行。
+        # 而之后每次重复调用就会报错。 所以这个参数最好设为True
+        
+pd.DataFrame()
+...
+...
+按原生pandas的语法正常使用即可。。。
+</code></pre>
+<h1 id="modin官档">Modin官档</h1>
+<p>https://modin.readthedocs.io/en/latest/using_modin.html</p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="tag">
-                    IDE
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
                   </a>
                 
               </div>
@@ -127,9 +154,9 @@ File -&gt;
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://cythonlin.github.io/post/sublime-py-cha-jian/">
+                <a href="https://cythonlin.github.io/post/py-greater-shen-kao-bei-qian-kao-bei-duo-chong-yu-fa-jie-xi/">
                   <h3 class="post-title">
-                    Sublime-Py插件
+                    PY =&gt; 深拷贝/浅拷贝多种语法解析
                   </h3>
                 </a>
               </div>

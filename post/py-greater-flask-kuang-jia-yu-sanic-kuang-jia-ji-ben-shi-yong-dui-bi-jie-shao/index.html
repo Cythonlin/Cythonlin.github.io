@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Flask框架与Sanic框架基本使用对比介绍 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Sanic 和 Flask 简要概述
+&quot;&quot;&quot;
+    Flask常用
+    Sanic和Flask很像，于是按着Sanic官方文档学了一下，对比Flask学习并做下笔记,回顾一下
+&quot;&quot;&q..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Flask框架与Sanic框架基本使用对比介绍</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="sanic-和-flask-简要概述">Sanic 和 Flask 简要概述</h1>
+<pre><code>&quot;&quot;&quot;
+    Flask常用
+    Sanic和Flask很像，于是按着Sanic官方文档学了一下，对比Flask学习并做下笔记,回顾一下
+&quot;&quot;&quot;
+
+Flask：轻量级Web框架，三方组件齐全，用时安装，扩展灵活度高。
+Sanic: 和Flask特别像，基础语法，基础命名特别相似（使用几乎差不多）。
+      Sanic是基于Uvloop(没用过，了解即可，windows不支持)实现，
+      具有 异步-非阻塞的特性
+      （网上也有说Sanic可以通过一些操作后，可以在Windows环境下使用，我试了貌似不行）
+      （Linux下运行才会具有最好的性能表现）
+      python3.5+ 原生支持原生协程 async+await， 这也可以在sanic的视图中用到，下面会介绍
+</code></pre>
+<h1 id="安装">安装</h1>
+<pre><code>pip install flask
+pip install sanic
+</code></pre>
+<h1 id="入门程序-flask-vs-sanic">入门程序 （Flask vs Sanic）</h1>
+<pre><code>Flask:
+    from flask import Flask
+    app = Flask(__name__)
+    @app.route('/')
+    def index():                    # 注意这行
+        return 'hello'              # 注意这行
+    
+    if __name__=='__main__':
+        app.run('0.0.0.0', 1119, debug=True)
+        
+Sanic：
+    from sanic import Sanic,response
+    app = Sanic(__name__)
+    @app.route('/')
+    def index(request):                # 注意这行
+        return response.text('hello')  # 注意这行
+    
+    if __name__=='__main__':
+        app.run('0.0.0.0', 1119, debug=True)           
+</code></pre>
+<h3 id="使用sanic的正确姿势-之-视图异步非阻塞">使用Sanic的正确姿势 之 视图异步非阻塞</h3>
+<pre><code>上面入门程序可以看到 
+flask 和 sanic 的路由对应的视图函数，是一样的
+
+特殊的是：sanic支持异步高性能，每个 def 前面 需要加上 async 即可
+eg: 
+    @app.route('/')
+    async def index():             # 以后写每个视图函数前面都要加上 async
+        return 'hello' 
+</code></pre>
+<h3 id="模板引擎flask-vs-sanic">模板引擎(Flask  VS  Sanic)</h3>
+<pre><code>Flask:
+   from flask import render_template
+   
+   app = Flask(__name__)
+   
+   @app.route('/')
+   def home():
+        return render_template('index.html',
+            data=[dict(name='Tom', age=18), dict(name='Jerry', age=20)]
+        )    # 这个模板渲染器是flask库中自带的，不需额外安装
+   
+Sanic：
+    pip install sanic-jinja2        # 还需安装这个三方插件
+
+    from sanic import Sanic,response
+    from sanic_jinja2 import SanicJinja2 as sj    # 导入就不说了，sj只是命名来方便调用
+    
+    app = Sanic(__name__)
+    tp = sj(app)                        # 注意这里，这个和 flask三方应用注册是一个道理
+    
+    使用方式1：（Sanic特有的装饰器方式）
+        @app.route('/')
+        @tp.template('index.html')                   # 注意这行，以装饰器的方式渲染模板
+        async def index(request):
+            return {                                 # 注意这里，返回值就是向模板填充的数据
+                'data': [
+                    dict(name='Tom', age=18),
+                    dict(name='Jerry', age=8)
+                ]
+            }
+    使用方式2： （和Flask模板使用方法很像，很像）
+        @app.route('/')
+        async def index(request):
+           return tp.render(            # 这个方法代替了 上一种方法的装饰器
+               'index.html', 
+               request,                 # 这个request参数，必须有
+               data = [                 # 模板渲染数据作为 redner()的 **kwargs参数来传递
+                    dict(name='Tom', age=18),
+                    dict(name='Jerry', age=8)
+               ]
+           )
+            
+    if __name__=='__main__':
+        app.run('0.0.0.0', 1119, debug=True)
+    
+    小结：
+        Flask的模板渲染机制是集成在 flask库中，用 render_template方法来直接渲染模板
+            并且，以方法参数的形式向模板传递数据
+        Sanic的模板渲染机制是以第三方插件 sanic-jinja2 中的 SanicJinja2组件来实现。
+            使用时，需要先注册到app中， 所接受的返回值，以装饰器的方式来渲染模板
+            
+    个人看法：
+        某种程度上来说， Sanic 更加细粒度的将 功能 以第三方应用的方式划分出来。
+        即便如此，但我还是喜欢 flask 中 render_template机制。
+</code></pre>
+<h3 id="response的各种返回方式对比分析flask-vs-sanic">response的各种返回方式对比分析(Flask VS Sanic)</h3>
+<pre><code>Flask:
+    from flask import Markup, jsonify, send_file
+    
+    @app.route('/')
+    def index():
+        # return 'hello'                              # Content-Type='text/plain' 
+        # return Markup('&lt;h1&gt;hello&lt;/h1&gt;')             # 反转义
+        # return jsonify(dict(name='Tom'))            # Content-Type-'application/json'
+        # return send_file('static/1.png')            # 返回各种类型文件
+        # return 'Tom'.encode('utf-8')                # 返回字节形式
+        
+        下面是修改 状态码 和 headers 的方式:
+        # return render_template('home.html'), 220, {'a': 1}     
+            格式： retrun 请求体,状态码,响应头
+Sanic: 
+    @app.route('/')
+    async def index(request):
+        # return response.text('hello')             # Content-Type='text/plain'
+        # return response.html('&lt;h1&gt;hello&lt;h1/&gt;')    # 代替反转义
+        # return response.json(dict(name='Tom'))    # return response.redirect('/xxx')
+        # return await response.file('static/1.png')  # 返回各种类型文件，注意有个 await 
+        # return response.raw(b'Tom')               # 返回原生字节类型数据
+        
+        下面是修改 状态码 和 headers 的方式:
+        1. 如果返回的响应体 为 模板，就用下面的方式
+           @tp.template('index.html',status=220,headers={'name':'Tom'}) # 在装饰器参数里
+        2. 如果返回的响应体 为 非模板内容，就用如下方式
+           return response.text('hello',300,{'name':'Tom'})
+           格式: response.text(请求体，状态码，响应头)
+           
+小结：
+    上面是针对response返回时，对各种数据类型的返回时可能用到的方式进行对比介绍。
+    同时还对比讲述了 如何 修改 响应头 和 状态码
+    
+个人看法：
+    Flask：
+        1. response各种变形返回方式 都封装了 flask这个模块之中
+        2. response的响应信息（状态码，响应头）等， 通过 return 以 逗号或元组 方式构造返回.
+            eg: return 响应体，状态码，响应头
+    Sanic: 
+        1. response的各种变形返回方式 都封装了 sanic 模块的 response 中 （分类更加明确）
+        2. response的响应信息（状态码，响应头）等， 都放在函数中作为参数.
+            eg: response.xx(响应体，状态码，响应头)
+</code></pre>
+<h3 id="request的各种请求方式对比分析-flask-vs-sanic">request的各种请求方式对比分析 （Flask vs Sanic）</h3>
+<pre><code>Flask:
+    from flask import request
+    
+    request.method      # 获取用户的请求方式:  GET 或 POST 
+    request.args        # 接受get的url参数
+    request.form        # 接受post的form表单   Content-Type='x-www-form-urlencoded'
+    request.json        # 必须接受 Content-Type='application/json' 格式请求的数据
+    request.data        # 请求数据对应的Content-Type除了表单（xxx-form）格式外，都可用此接受
+    request.values      # 如有form 和 url 联合参数，用这个接受
+    注：以上获取的对象都是 类字典对象， 可以使用字典的  get('前端name') 获取 value
+        此外： 你还可以使用 to_dict()方法，就变成了纯种的字典  {k: v}
+    
+    img = request.files.get() # 接受文件类型
+    img.save(img.filename)    # filename获取文件原始名， save直接保存， 默认当前路径。
+    
+    request.url         # http://localhost:5000/login
+    request.path        # /login
+    request.host        # localhost:5000
+    request.host_url    # http://localhost:5000/
+    request.remote_addr # 单纯获取IP地址
+
+    
+Sanic:      
+    flask中的request是导入进来的
+    而sanic中的request是在视图参数之中（参考django）    eg: def f(request)  就是这个意思
+    
+    request.method    # 同Flask
+    rqeust.args       # 同Flask
+    request.form      # 同Flask
+    request.json      # 请求若为表单(xxx-form)格式会报错， 除了表单都可接受 
+    request.body      # 亲求若为表单(xxx-form)格式，则会出现一大堆 二进制信息，非表单都可接受
+    
+    request.url         # 同Flask
+    request.path        # 同Flask
+    request.host        # 同Flask
+    request.ip          # 同样单纯获取IP，    属性名和上面 flask稍微有点不同
+</code></pre>
+<h3 id="路由讲解-flask-vs-sanic">路由讲解 （Flask vs Sanic）</h3>
+<pre><code>Flask:       
+    @app.route(
+        'login/&lt;int:id&gt;',          # 路由参数解析并 自动转换int类型， 冒号后为接受参数
+        methods=['GET,'POST'],     # 建议全部大写
+        endpoint='sign',           # 默认为下面的视图函数名，即login，用于url_for反向解析
+        redirect_to='/xxx'         # 重定向跳转，注意请求过来直接跳转，不进入下面视图函数
+    )      
+    def login(id):                 # request是默认必须传递的参数， id是上面路由解析接收的
+        return f'{id+1}'           # 路由参数 + python3.6新增语法实现 f-string 接受参数自增
+        
+    
+Sanic:
+    @app.route(
+        'login/&lt;int:id&gt;',          # 路由参数解析并 自动转换int类型， 冒号后为接受参数
+        methods=['GET,'POST'],     # 建议全部大写
+        name='sign'                # 同 flask 的 endpoint， 用于 url_for反向解析
+    )      
+    def login(request, id):        # request是默认必须传递的参数， id是上面路由解析接收的
+        return f'{id+1}'           # 路由参数 + python3.6新增语法实现 f-string 接受参数自增
+</code></pre>
+<h3 id="flask-模板-相关操作-flask">Flask 模板 相关操作  (Flask)</h3>
+<pre><code>注：由于 sanic 的 template还不成熟， 花式操作我也就没找，下面就只讲一下 flask的常用模板操作
+
+模板宏(macro)： 主要目的是为了前端代码的复用
+    定义 模板宏 就和 定义 python的函数类似，  或者你可以把 macro 看作 python的 def
+    eg:
+        定义部分：可理解为函数定义
+            {% macro user(type, value) %}
+                &lt;input type=&quot;{{ type }}&quot; value=&quot;{{ value }}&quot;&gt;
+            {% endmacro %}   
+        调用部分：可理解为函数调用
+            {{ user('text', '用户名') }}
+            {{ user('password','密码') }}
+            
+全局模板自定义函数：
+    视图文件.py中定义:
+        @app.template_global()
+        def f(x):
+            return x**2
+    模板中调用:
+        {{ f(5) }}
+
+模板过滤器自定义函数：
+    视图文件.py中定义:
+        @app.template_filter()
+        def add(a, b):
+            return a+b
+    模板中调用：
+        {{ 1 | add(2) }}
+   
+
+模板继承： （可理解为挖坑 与 填坑）
+    父级模板: header.html
+        xxxxxxx前面若干内容
+        {% block header %}                    # 这个 header，就是挖坑起的名，记住了
+            这里面就是你挖的坑，啥也不用写
+        {% endblock %}
+        xxxxxxx后面若干内容
+        
+    子级模板：content.html
+        {% extends 'header.html' %}           # 必须写上这句，这是填坑的暗号。。
+        
+        {% block header %}                    # 这个名header是和上面挖坑的名一样
+            这里面就是你要填坑的数据
+        {% endblock %}
+        
+        填完坑之后，这个 content.html子级模板的内容 = 父级模板内容 + 填坑内容
+
+模板代码块的导入（插入）： 作用还是 html 代码的复用
+    写好一个 html 代码块，放在 header.html中
+        eg:  &lt;h1&gt; Tom &lt;h1/&gt;        # 注意，一个html文件中就写这一句就行
+    另一个文件： index.html 写入 如下代码:
+        xxxx前面若干内容
+        {% include 'header.html' %}    # 这一句就可把 那一个html内容全部插入进来
+        xxxx后面若干内容
+</code></pre>
+<h3 id="中间件钩子函数-flask-vs-sanic">（中间件）钩子函数  （Flask vs Sanic）</h3>
+<pre><code>Flask:
+    @app.errorhandler(404)        #  错误处理的钩子函数
+    def f(err):
+        return '出错了'
+    注： 出现了异常，  before_request装饰的函数会立刻断掉，而 after_request的会依然倒序执行
+    
+    @app.before_request           #  视图函数执行之前
+    def f():                      return None代表正常按顺序执行，
+        xxx                       retrun其他值，就不会进入视图函数，直接response返回
+    注： 如果有多个before_request，那么就 正序 装饰执行
+        
+    @app.after_request            #  视图执行之后，返回给 客户端之前
+    def f(res):                   必须有个参数接受 response对象，并且return 回去
+        xxx                       
+        return res            
+    注： 如果有多个before_request，那么就 倒序 装饰执行
+    
+    如果仍然不明白执行顺序，看西面例子：
+    eg:
+        @app.before_request
+        def req1():
+            print('请求来了-1')
+        
+        @app.before_request
+        def req2():
+            print('请求来了-2')
+        
+        @app.after_request
+        def res1(response):
+            print('请求走了-1')
+        
+        @app.after_request
+        def res1(response):
+            print('请求走了-2')
+
+        
+        @app.route('/lin')
+        def lin():
+            print('进入视图')
+            return '11'
+        
+        结果&gt;&gt;&gt;
+            请求来了-1
+            请求来了-2
+            进入视图
+            请求走了-2
+            请求走了-1        # 这两个response是逆序的
+    
+Sanic:
+    from sanic.exceptions import NotFound
+    @app.exception(NotFound)   # 错误处理的钩子函数
+    def f(request, err):
+        return response.text('出错了')
+        
+    请求，返回中间件和 flask大同小异，顺序有些区别，我直接上例子了
+    eg:
+        @app.middleware('request')
+        async def req(request):
+            print('请求来了-1')
+        
+        @app.middleware('request')
+        async def req(request):
+            print('请求来了-2')
+        
+        @app.middleware('response')
+        async def res(request, response1):
+            print('请求走了-1')
+            return response1
+        
+        @app.middleware('response')
+        async def res(request, response1):
+            print('请求走了-2')
+            return response1
+        
+        @app.route(xxx) 
+        async def f(request):
+            print('进入视图')
+            return response.text('xx')
+            
+        结果&gt;&gt;&gt; 
+            请求来了-1
+            请求来了-2
+            进入视图
+            请求走了-2        # 注意这里即可，只返回一个。下面不同点会详讲
+            
+总结：Flask 与 Sanic 中间件返回顺序对比
+    相同点： 
+        request处理部分 : 装饰器代码vs执行流程  =&gt; 正序
+        response处理部分: 装饰器代码vs执行流程  =&gt; 逆序
+    不同点：
+        Sanic 只执行     最后一个 用装饰器注册的 response
+        Flask 执行顺序是  全部     用装饰器注册的 逆序返回的 response
+</code></pre>
+<h3 id="蓝图-flask-vs-sanic">蓝图 （Flask vs Sanic）</h3>
+<pre><code>蓝图使用三部曲：
+    1. 新建目录和文件，创建蓝图对象
+    2. 在主app文件中, 导入蓝图对象
+    3. 注册蓝图对象
+
+Flask:
+    1. 新建 /Admin/user.py，写入如下代码
+        from flask import Blueprint
+        user_bp = Blueprint('user_bp', __name__, url_prefix='/admin') # 增加url前缀
+        @user_bp.route('/user')
+        def f():
+            return 'admin-user'
+    
+    2. 在app中导入 蓝图对象
+        from Admin.user import user_bp
+        
+    3. 注册蓝图
+        app.register_blueprint(user_bp)   # 这里也可以写url前缀, 如果写了就会覆盖上面写的
+        
+Sanic:
+    1. 新建 /Admin/user.py，写入如下代码
+        from sanic import Blueprint, response
+        user_bp = Blueprint( __name__, url_prefix='/admin')
+        @user_bp.route('/user')
+        async def f(request):
+            return response.text('admin-user')
+    
+    2. 在app中导入 蓝图对象（同Flask）
+        from Admin.user import user_bp
+        
+    3. 注册蓝图 (本来是和flask一样用register_blueprint，后来版本更新改用 blueprint注册)
+        app.blueprint(user_bp)   # 这里也可以写url前缀, 如果写了就会覆盖上面写的
+    
+注：Flask的蓝图对象，同 Flask类似，都具有模板路径、静态文件路由 与 静态文件本地路径的配置
+    因此，蓝图实例化的时候，配置响应参数即可：
+        template_folder = 'xxx'     # 对应本地模板路径   ，默认 templates
+        static_folder = 'xxx'       # 对应本地文件路径   ，默认 static
+        static_url_path = '/xxx'    # 对应url路径       ，默认 /static
+注2： 如果蓝图 和 app 的 模板或静态文件命名重复，那么会优先选择  app下的模板或静态文件
+</code></pre>
+<h3 id="cbv-flask-vs-sanic">CBV （Flask vs Sanic）</h3>
+<pre><code>CBV(Class-Based-View)： 就是拿类当作视图 （我们之前使用的函数作为视图）
+Flask 的 CBV感觉没 FVB好用， CBV是Django的重点
+
+Flask:
+    from flask import views
+    
+    class UserView(views.MethodView):
+        methods = ['GET']				# 这里写 的是 允许的请求方式
+        decorators = [装饰器名,]			# 全局装饰器顺序装饰， 单独给函数加@装饰器也可以
+        
+        def get(self,*args, **kwargs):
+            return xx
+        def post(self, *args, **kwargs):
+            return xx
+        app.add_url_rule( '/user',None,UserView.as_view('endpoint名') )
+
+Sanic:
+    from sanic.views import HTTPMethodView
+        
+    class UserView(HTTPMethodView):  
+        async def get(self, request):        
+            return text('get')
+    
+        async def post(self, request):
+            return text('post')
+    
+    app.add_route(UserView.as_view(), '/')    # Sanic  视图在前，路由在后。
+
+总结： 讲道理，CBV在这两个轻型框架感觉用的很笨拙。。 还是很用CBV较好
+</code></pre>
+<h3 id="flask的flash-flask">Flask的flash （Flask）</h3>
+<pre><code>flash原理： 服务器给flash设置了值，那么用户每请求一次，就会把session放到用户cookie中
+    (后面会提到session插件方法)
+    与此同时也把 flash值记录在里面。 flash就相当于一跟管道
+    flash():                      # 把值塞进管道
+    get_flashed_messages():       # 把值从管道取出来
+    
+
+from flask import flash, get_flashed_messages
+
+# flash是基于 session来实现的，所以需要写一句：
+app.secret_key = '111'
+
+@app.route('/lin')
+def lin():
+    flash('666')
+    return redirect('/user')
+
+@app.route('/user')
+def user():
+    msg = get_flashed_messages()
+    print(msg)    # 注意从 flash取出来的是列表，因为你可以把不同数据多次 填入 flash
+    return ''
+&gt;&gt;&gt; [666]     </code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-ban-redis-fen-bu-shi-suo-jian-dan-shi-xian/">
+                  <h3 class="post-title">
+                    PY =&gt; Python版-Redis分布式锁简单实现
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

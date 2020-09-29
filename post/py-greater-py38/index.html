@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; PY38 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="说明
+本篇文章介绍Python3.8的一些较为好用的新特性
+赋值表达式
+语法格式：
+2种格式的区别就是，一个带括号，一个不用带括号
+(a:=1)
+a:=1
+其实这两种格式结果是一样的，只是有些情况括号可以省略不写而已。
+括号可省的情况
+#一..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; PY38</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="说明">说明</h1>
+<p>本篇文章介绍Python3.8的一些较为好用的新特性</p>
+<h1 id="赋值表达式">赋值表达式</h1>
+<h3 id="语法格式">语法格式：</h3>
+<p>2种格式的区别就是，一个带括号，一个不用带括号<br>
+(a:=1)<br>
+a:=1<br>
+其实这两种格式结果是一样的，只是有些情况括号可以省略不写而已。</p>
+<h3 id="括号可省的情况">括号可省的情况</h3>
+<h3 id="一-序列类型中-括号可省">#一、序列类型中 括号可省</h3>
+<pre><code>[a:=1, 2]
+</code></pre>
+<h4 id="二-作为函数调用的参数-括号可省">二、作为函数调用的参数 括号可省</h4>
+<pre><code># 注意我说的是函数调用，函数定义的时候压根就不能用 := 表达式，更别提可不可省了
+print(g:=1)
+</code></pre>
+<h4 id="三-以后碰见再说了应该也没啥了">三、以后碰见再说了，应该也没啥了</h4>
+<h3 id="括号不可省的情况">括号不可省的情况</h3>
+<h4 id="一-在while-if-for语句的条件中虽可省但不要省">一、在while(), if(), for()语句的条件中（虽可省但不要省）</h4>
+<pre><code>while ((b:=1) == 2): # if， for 同理
+	print(2)
+print(b)
+# &gt;&gt; 1    
+</code></pre>
+<p>强调1  := 此运算符优先级比 == 还低，虽然可省，所以这里区分语义括号要加上<br>
+强调2  := 就算while 或者 if 条件不成立， b依然赋值成功</p>
+<h4 id="二-在-f-string-中括号不可省-某些情况可省虽可省但不要省">二、在 f-string 中，括号不可省 （某些情况可省，虽可省但不要省）</h4>
+<pre><code>f'{(p:=1)}'
+print(p)
+</code></pre>
+<p>假如新变量q是未定义的，不加括号就会出现如下情况（所以这样用就没意义了， f-string括号必须加）<br>
+f'{q:=1}'<br>
+print(p)<br>
+# NameError: name 's' is not defined</p>
+<h4 id="三-以后碰见再说了也没啥了">三、以后碰见再说了，也没啥了</h4>
+<h1 id="f-string新增功能">f-string新增功能</h1>
+<p>3.8之前这么用:<br>
+f'{loss}, {acc}'<br>
+#&gt;&gt; '0.0141, 0.98912'<br>
+3.8之后这么用:<br>
+f'{loss=}, {acc=}'<br>
+#&gt;&gt; 'loss=0.0141, acc=0.98912'</p>
+<p>还有个功能(自己看结果对比的效果把):<br>
+name = 'zhang'<br>
+f'{name}'      # 'zhang'<br>
+f'{name=}'     # &quot;name='zhang'&quot;      # 新增功能1<br>
+f'{name=!s}'    # 'name=zhang'       # 新增功能2</p>
+<h1 id="欧氏距离">欧氏距离</h1>
+<pre><code>import math
+math.dist([1,2,3,4],[5,6,7,8])
+</code></pre>
+<h1 id="f-string回顾36就已经出了一直在用">f-string回顾(3.6就已经出了，一直在用)</h1>
+<h3 id="方式0-提前说明方式6-和-方式7上档次-好用">方式0: 提前说明(方式6 和 方式7上档次, 好用)</h3>
+<h3 id="方式1变量替换">方式1：变量替换</h3>
+<pre><code>name = 'zhang'
+print( f'{name}' )
+#&gt;&gt; zhang
+</code></pre>
+<h3 id="方式2内嵌表达式计算">方式2：内嵌表达式计算</h3>
+<pre><code>name = 'zhang'
+print( f'{name.upper()}' )
+#&gt;&gt; ZHANG
+</code></pre>
+<h3 id="方式3一行写不下可以多行-f-注意不需要逗号分隔并且要用小括号扩起来">方式3：一行写不下，可以多行 f''  (注意，不需要逗号分隔)，并且要用小括号扩起来</h3>
+<pre><code>name = 'zhang'
+age = 18
+gender = 'man'
+a = (
+	f'name={name}   '
+	f'age={age}   '
+	f'gender={gender}   '
+)
+print(a)
+#&gt;&gt; name=zhang   age=18   gender=man   
+</code></pre>
+<h3 id="方式4转义">方式4：转义 {}</h3>
+<pre><code># 注意一下， 
+# f'{ ' 这种会报错的
+# 因为 { 在 f''语句里面已经不是字符串了， 而是语法符号
+# 如果我们想要  {} 这种字符串， 如下解决办法
+	# 用 { 来转义 {
+	# 用 } 来转义 }
+eg:
+	f'{{'
+	输出为&gt;&gt; '{'
+    
+	f'}}'
+	输出为 &gt;&gt; '}'
+</code></pre>
+<h3 id="方式5符号格式">方式5：符号格式</h3>
+<pre><code>正号：
+	import random
+	b = random.randint(0,5)
+	f'{b:+}'
+	#&gt;&gt; +0
+</code></pre>
+<h3 id="方式6日期符号格式特别好用适用于-timedatedatetime对象">方式6：日期符号格式（特别好用，适用于 time,date,datetime对象）</h3>
+<pre><code>from datetime import datetime
+e = datetime.now()
+
+# 年月日时分秒
+f'{e:%Y}' # '2020'  表示2020年 (注意是大写的Y)
+f'{e:%m}' # '09'    表示9月份 （自动补0）(注意是小写m)
+f'{e:%d}' # '02'    表示2号
+f'{e:%H}' # '21'    表示21点了 (24小时制)
+f'{e:%M}' # '43'    表示43分了 (注意是大写的M)
+f'{e:%S}' # '50'    表示50秒了 (注意是大写的S)
+
+# 默认组合格式(分隔符是固定的)
+f'{e:%F}' # '2020-09-02'   年-月-日,  分割符是固定的 '-'
+f'{e:%T}' # '21:58:39'     时:分:秒,  分割符是固定的 ':'  (大写的X一摸一样)
+
+# 基于上面2行自己组装一下,形成完整时间
+f'{e:%F %T}' # '2020-09-02 22:02:29'   上面2种组装一下
+
+# 星期几+ 每年的第几天 + 每年的第几周
+f'{e:%j}' # '246'   表示一年中的第 246 天, 个位数前面补0,至3位
+f'{e:%u}' # '3'     表示星期3  （星期日是7）
+f'{e:%W}' # '35'    表示一年中的第 35周, 个位数前面补0,至2位(注意是大写的W)
+</code></pre>
+<h3 id="方式7-精度占位符号后面不要有空格这个较难理解">方式7: 精度占位符号(:后面不要有空格)(这个较难理解)</h3>
+<p>情况一、:.n 代表只保留前n位 (并且四舍五入)(总体位数不算小数点所在的位数)<br>
+f&quot;{1234.5678:.6}&quot;     # .6  表示保留6位 (不算小数点, 整数+小数=6位)<br>
+#&gt;&gt; '1234.57'<br>
+情况二、:m 代表只在&quot;最前面&quot;扩充&quot;至&quot;m位(注意这个&quot;至&quot;字)<br>
+f&quot;{1234.5678:15}&quot;         # 扩充至15位(小数点也算位数) 默认用空白字符代替<br>
+#&gt;&gt; '      1234.5678'<br>
+情况三、:m前面带0， 补充空字符串 改为 &quot;补0&quot;<br>
+f&quot;{1234.5678:015}&quot;    # 0代表扩充的多余位数补0 (小数点也算位数)15代表最前面扩充至15位<br>
+#&gt;&gt; '0000001234.5678'<br>
+综合情况、:m.n 结合(只能是 m.n 这种顺序的格式)<br>
+f&quot;{1234.5678:015.6}&quot;    # 15就是上面说的m, 0就是m前面补的0, 6就是上面说的n<br>
+#&gt;&gt; '000000001234.57'</p>
+<pre><code># 重点解读上面这个综合语句(按照下面的顺序才能正确解析):
+1. 先看.后面的 n,  n是6,  则 整体(整数+小数)(不包括小数点)保留6位 ===&gt; '1234.57'
+2. 然后才看 m,  m是15,   则在最前面扩充&quot;至&quot;15位置(包括小数点的位数) ===&gt; '        1234.57'
+3. 最后把第2步的空白字符补0    =====&gt;  '000000001234.57'
+</code></pre>
+<p>情况四、:m.nf (推荐, 上面&quot;情况一&quot; 和 &quot;综合情况的延申版&quot;, 针对.n设计的, 多了个f,好用多了!)<br>
+'''加了f,  核心就是 .n规则变为  小数点后保留n位,其余没变  '''</p>
+<pre><code>eg1: .nf的情况  (这种是最常用的!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)
+	f&quot;{1234.5678:.6f}&quot;       # 小数点后保留6位, 其余还是那样
+	#&gt;&gt; '1234.567800'        
+    
+eg2: m.nf的情况
+	f&quot;{1234.5678:015.6f}&quot;     # 还是前面&quot;综合情况&quot;, 先看n, n是6, 所以 &quot;小数点后&quot; 保留6位(四舍五入), 
+    						 # 然后从前面扩张整体位数 &quot;至&quot;15位, 空缺的补0即可
+	'00001234.567800'        
+</code></pre>
+<p>情况五: 百分位(作为训练acc, 也算比较常用)<br>
+&quot;&quot;&quot;<br>
+分析核心思想:<br>
+1. 先将原数扩大100倍(也就是小数点向后移2位),<br>
+2. 然后关注 .n  , 保留小数点后的n位(四舍五入)<br>
+3. 最后加个百分号%, 即可)<br>
+&quot;&quot;&quot;<br>
+f&quot;{1234.5678:.1%}&quot;<br>
+#&gt;&gt; '123456.8%'</p>
+<pre><code>f&quot;{1234.5678:.6%}&quot;
+#&gt;&gt; '123456.780000%'
+
+# 如果想带m,也可以,和上面集中情况,以及解析顺序一摸一样,m不太常用, 我这里就不列了</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/go-greater-jetbrains-quan-jia-tong-chu-shi-hua-mo-ren-pei-zhi/">
+                  <h3 class="post-title">
+                    GO =&gt; JetBrains全家桶初始化默认配置
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

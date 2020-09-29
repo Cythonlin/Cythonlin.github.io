@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Git常用命令/组合套路 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="全部配置个人信息（本机所有仓库）
+git config --global user.name  &quot;用户名 &quot;
+git config --global user.email &quot;邮箱&quot;
+
+查看个人信息
+g..." />
+    <meta name="keywords" content="DB,IDE" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Git常用命令/组合套路</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="全部配置个人信息本机所有仓库">全部配置个人信息（本机所有仓库）</h1>
+<pre><code>git config --global user.name  &quot;用户名 &quot;
+git config --global user.email &quot;邮箱&quot;
+</code></pre>
+<h1 id="查看个人信息">查看个人信息</h1>
+<pre><code>git config --list 
+</code></pre>
+<h1 id="生成ssh密钥">生成SSH密钥</h1>
+<pre><code>ssh-keygen
+pub_key - &gt; github
+</code></pre>
+<h1 id="新建仓库基操五部曲">新建仓库基操五部曲</h1>
+<pre><code>git init
+git add xxx（添加到缓存区）	  &lt;===互逆===&gt;  git reset HEAD （从缓存区拿回来）
+git commit -m '描述信息'
+git remote add origin git@github.com:hacker-lin/test.git		# 你的github 仓库克隆地址
+git push -u origin master
+</code></pre>
+<h1 id="开发分支操作n部曲">开发分支操作N部曲</h1>
+<p>假如线上有项目，你本地 没有 仓库，那么你就首先需要：<br>
+git clone xxx				# 第一次<br>
+cd 目录</p>
+<pre><code>git checkout -b new_bug    # 创建并切换到新分支
+echo new_bug&gt;new_bug		
+git add .
+git commit -m 'new_bug'
+
+git push -u origin new_bug  # 连接名 分支名 可通过（git remote， git branch）查看
+							# 这步的目的是，自己的分支写完也要push保存一下，防止丢失
+git checkout master       # 回到主分支
+git merge new_bug			# 把 new_bug分支合并到 master 分支
+git push					# 将合并完事的master重新推上去 （这样就完事一次产品的迭代）
+</code></pre>
+<p>假如线上有项目，你本地也有仓库，那么你就不需要git clone了<br>
+你只需要 git pull<br>
+git pull					# pull等价于 fetch + merge<br>
+git checkout -b new_bug01<br>
+echo new_bug01 &gt; new_bug01<br>
+git add .<br>
+git commit -m 'new_bug01'</p>
+<pre><code>git push -u origin new_bug01  # 这步的目的是，自己的分支写完也要push保存一下，防止丢失
+git checkout master        # 切换到master
+git merge new_bug01		    # 把 new_bug01分支合并进来（合并到master）
+git push					 # 将合并完事的master重新推上去 （这样就完成又一次产品的迭代）
+</code></pre>
+<h1 id="区域信息">区域信息</h1>
+<pre><code>git status  
+	# 未被git add的-（红色）
+	# 已经git add的-（绿色）
+	# 已经 git commit的-（无信息）
+git log		# 查看版本commit历史信息
+</code></pre>
+<h1 id="分支信息">分支信息</h1>
+<pre><code>git branch
+</code></pre>
+<h1 id="远程连接信息">远程连接信息</h1>
+<pre><code>git remote
+</code></pre>
+<h1 id="删除本地">删除本地</h1>
+<pre><code>rm xxxxx
+git rm xxxxx
+git commit -m '描述'</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+                  <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="tag">
+                    IDE
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-anaconda-jupyter-xiang-guan-pei-zhi/">
+                  <h3 class="post-title">
+                    PY =&gt; Anaconda-Jupyter相关配置
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

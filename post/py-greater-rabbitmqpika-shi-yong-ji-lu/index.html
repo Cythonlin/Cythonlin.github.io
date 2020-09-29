@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; RabbitMQ/Pika使用记录 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="安装
+https://github.com/docker-library/docs/tree/master/rabbitmq
+docker run -d --hostname my-rabbit -p 5672:5672 --name so..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; RabbitMQ/Pika使用记录</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="安装">安装</h1>
+<pre><code>https://github.com/docker-library/docs/tree/master/rabbitmq
+docker run -d --hostname my-rabbit -p 5672:5672 --name some-rabbit rabbitmq:3
+</code></pre>
+<h1 id="无交换机">无交换机</h1>
+<p>基本机制：生产者 - 管道 - 消息队列 - 管道 - 消费者</p>
+<h4 id="consumepy">consume.py</h4>
+<pre><code>import pika
+import time
+def callback(channel, method, properties, body):
+   time.sleep(1)
+   print(channel,  body)
+   channel.basic_ack(delivery_tag=method.delivery_tag)
+
+with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
+    channel = connection.channel()
+    queue_name = 'myqueue'
+    channel.queue_declare(		# 声明队列
+        queue=queue_name,
+        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
+        exclusive=False,    # 只能一个连接使用，并且连接后，队列雄安是
+        auto_delete=False,  # 消费者不再使用队列时，自动删除队列
+    )
+    channel.basic_qos(prefetch_count=10) # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
+    channel.basic_consume(
+        queue_name,
+        callback,
+        auto_ack=False
+        # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
+            # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
+        # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
+    )
+    channel.start_consuming()
+</code></pre>
+<h4 id="productpy">product.py</h4>
+<pre><code>import pika
+with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
+    channel = connection.channel()
+    queue_name = 'myqueue'
+    channel.queue_declare(
+        queue=queue_name,
+        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
+        exclusive=False,    # 只能一个连接使用，并且连接后，队列雄安是
+        auto_delete=False,  # 消费者不再使用队列时，自动删除队列
+    )
+
+    for x in range(50):
+        channel.basic_publish(
+            exchange='',
+            routing_key=queue_name,
+            body=str(x),
+            properties=pika.BasicProperties(
+                delivery_mode=2     # 设为2表示，队列里面的 消息 的 持久化
+            )
+        ) 
+</code></pre>
+<h1 id="有交换机">有交换机</h1>
+<p>基本机制：生产者 - 管道 - routing_key - 交换机 - binding_key - 消息队列 - 管道 - 消费者<br>
+生产者不用连接队列，因为被交换机连接。 消费者必须连接队列。</p>
+<h3 id="直连交换机-direct-routing_key和-binding_key严格匹配">直连交换机 (direct - routing_key和 binding_key严格匹配)</h3>
+<p>注意情况，若binding_key 对应的队列是临时队列， 那么 需要先启动消费者，再启动生产者<br>
+如果先启动的是生产者，那么发出到交换机的数据 找不到匹配的消费者， 那么数据就会丢失，因为交换机是临时的</p>
+<h4 id="consumepy-2">consume.py</h4>
+<pre><code>import pika
+import time
+def callback(channel, method, properties, body):
+    time.sleep(1)
+    print(body)
+    channel.basic_ack(delivery_tag=method.delivery_tag)
+
+with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
+    channel = connection.channel()
+    exchange_name = 'direct'
+    channel.exchange_declare(
+        exchange_name,
+        exchange_type='direct',
+        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
+    )
+    queue_name = 'queue'
+    channel.queue_declare(queue_name,exclusive=True)  # exclusive 代表当前连接独享队列，队列随着连接消失
+
+    binding_keys = ['debug', 'info', 'warning'] # product的routing_key要包含在这里面
+    for binding_key in binding_keys:
+        channel.queue_bind(
+            queue_name,    # 右连队列
+            exchange_name, # 左连交换机
+            routing_key=binding_key
+        )
+
+    channel.basic_qos(prefetch_count=10) # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
+    channel.basic_consume(
+        queue_name,
+        callback,
+        auto_ack=False
+        # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
+            # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
+        # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
+    )
+    channel.start_consuming()
+</code></pre>
+<h4 id="productpy-2">product.py</h4>
+<pre><code>import pika
+with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
+    channel = connection.channel()
+    exchange_name = 'direct'
+    channel.exchange_declare(
+        exchange_name,
+        exchange_type='direct',
+        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
+    )
+    routing_key = 'debug'
+
+    for x in range(50):
+        channel.basic_publish(
+            exchange=exchange_name,
+            routing_key=routing_key,
+            body=str(x)
+        )
+</code></pre>
+<h3 id="主题交换机-topic-routing_key和-binding_key模糊匹配">主题交换机 (topic - routing_key和 binding_key模糊匹配)</h3>
+<p>基本机制： 和直连基本一样，topic - routing_key和 binding_key 模糊匹配成功后，才能正确通信<br>
+代码部分，只修改<br>
+exchange_name = 'topic'<br>
+exchange_type = 'direct'<br>
+其他基本一致， binding_key 改为模糊语法即可<br>
+语法格式：<br>
+* 匹配一个代词<br>
+# 匹配 0个或多个单词<br>
+eg:<br>
+a.b  可对应为 a.*<br>
+a.b.c 可对应为 a.#</p>
+<h3 id="扇形交换机-fanout-广播机制">扇形交换机 (fanout -- 广播机制)</h3>
+<p>基本机制：开启多个 消费者等待， 然后开启一个生产者，所有队列都会开始消费<br>
+简单来说，就是 一个提供数据， 多个队列消费此数据<br>
+资源从哪里开始分配，取决于 channel.basic_qos(prefetch_count=10) 的设置</p>
+<p>不依赖 routing_key 和 binding_key。<br>
+将 exchange_type 改为 fanout</p>
+<h4 id="consumepy-3">consume.py</h4>
+<pre><code>import pika
+import time
+
+def callback(channel, method, properties, body):
+    time.sleep(1)
+    print(body)
+    channel.basic_ack(delivery_tag=method.delivery_tag)
+
+def main():
+    with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
+        channel = connection.channel()
+        exchange_name = 'fanout'
+        channel.exchange_declare(
+            exchange_name,
+            # exchange_type='direct',
+            exchange_type='fanout',
+            durable=True,  # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
+        )
+        queue_name = 'queue'
+        channel.queue_declare(queue_name)  # exclusive 代表当前连接独享队列，队列随着连接消失
+        channel.queue_bind(
+            queue_name,  # 右连队列
+            exchange_name,  # 左连交换机, 注意，因为不依赖 routing_key 和 binding_key ，所以不用写routing_key参数
+        )
+        channel.basic_qos(prefetch_count=10)  # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
+        channel.basic_consume(
+            queue_name,
+            callback,
+            auto_ack=False
+            # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
+                # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
+            # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
+        )
+        channel.start_consuming()
+main()
+</code></pre>
+<h4 id="productpy-3">product.py</h4>
+<pre><code>import pika
+
+def main():
+    with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
+        channel = connection.channel()
+        exchange_name = 'fanout'
+        channel.exchange_declare(
+            exchange_name,
+            exchange_type='fanout',
+            durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
+        )
+        for x in range(50):
+            channel.basic_publish(
+                exchange=exchange_name,
+                routing_key='',
+                body=str(x)
+            )
+main()</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-git-chang-yong-ming-ling-zu-he-tao-lu/">
+                  <h3 class="post-title">
+                    PY =&gt; Git常用命令/组合套路
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

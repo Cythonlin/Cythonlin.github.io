@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Anaconda-Jupyter相关配置 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Conda虚拟环境命令
+查看所有虚拟环境（2种，结果一摸一样）
+conda info --e
+或
+conda env list
+
+创建
+conda create -n rs python=3.8.5
+
+激活：
+conda activate ..." />
+    <meta name="keywords" content="IDE" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Anaconda-Jupyter相关配置</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="conda虚拟环境命令">Conda虚拟环境命令</h1>
+<h3 id="查看所有虚拟环境2种结果一摸一样">查看所有虚拟环境（2种，结果一摸一样）</h3>
+<pre><code>conda info --e
+或
+conda env list
+</code></pre>
+<h3 id="创建">创建</h3>
+<pre><code>conda create -n rs python=3.8.5
+</code></pre>
+<h3 id="激活">激活：</h3>
+<pre><code>conda activate rs
+</code></pre>
+<h3 id="退出">退出：</h3>
+<pre><code>conda deactivate
+</code></pre>
+<h3 id="删除虚拟环境">删除虚拟环境：</h3>
+<pre><code>conda remove -n rs --all
+</code></pre>
+<h3 id="查看当前虚拟环境所安装的包">查看当前虚拟环境所安装的包</h3>
+<pre><code>conda list
+</code></pre>
+<h3 id="搜索某包的信息包括channel">搜索某包的信息（包括channel）</h3>
+<pre><code>conda search requests
+</code></pre>
+<h3 id="升级当前conda">升级当前conda</h3>
+<pre><code>conda update conda
+</code></pre>
+<h3 id="查看镜像">查看镜像</h3>
+<pre><code>conda config --show channels
+</code></pre>
+<h3 id="更改镜像">更改镜像</h3>
+<pre><code>conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --set show_channel_urls yes
+</code></pre>
+<h3 id="删除镜像">删除镜像</h3>
+<pre><code>conda config --remove channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+</code></pre>
+<h3 id="更新-某环境的-某个包">更新 某环境的 某个包</h3>
+<p>conda update -n rs requests</p>
+<h3 id="删除-某环境-的-某个包">删除 某环境 的 某个包</h3>
+<p>conda remove -n rs requests</p>
+<h1 id="生成jupyter配置文件">生成Jupyter配置文件</h1>
+<pre><code>jupyter notebook --generate-config
+</code></pre>
+<p>这条命令过后，会提示你 xxx路径下，创建了一个xxx配置文件，记下来。</p>
+<h1 id="更换jupyter基目录">更换Jupyter基目录</h1>
+<ol>
+<li>打开上面的配置文件（windows用Sublime或普通的notebook）（linux用vim即可）</li>
+<li>搜索关键词 c.NotebookApp.notebook_dir     # 把后面字符串设成你的路径即可</li>
+<li>保存退出，重新打开 Jupyter。</li>
+</ol>
+<h1 id="调高jupyter的io频率若不调-可能会越界">调高Jupyter的IO频率（若不调 可能会越界）</h1>
+<ol>
+<li>打开上面的配置文件（windows用Sublime或普通的notebook）（linux用vim即可）</li>
+<li>搜索关键词 c.NotebookApp.iopub_data_rate_limit    # 把后面的数字调大（越大越好）</li>
+<li>保存退出，重新打开 Jupyter。</li>
+</ol>
+<h1 id="修改jupyter主题样式">修改Jupyter主题样式</h1>
+<p>安装<br>
+pip install jupyterthemes     （Anaconda-prompt 的pip）<br>
+列出所有样式名称<br>
+jt -l<br>
+修改样式<br>
+jt -t monokai<br>
+如果感觉都不好看，可恢复(使用完记得重启jupyter)：<br>
+jt -r<br>
+别人推荐的样式（主题+字体+界面宽度一气呵成）：<br>
+jt -t chesterish -f fira -fs 13 -nf ptsans -nfs 11 -N -kl -cursw 5 -cursc r -cellw 95% -T<br>
+官方样式说明：<br>
+https://github.com/dunovank/jupyter-themes<br>
+或者这篇教程：<br>
+https://towardsdatascience.com/bringing-the-best-out-of-jupyter-notebooks-for-data-science-f0871519ca29</p>
+<h1 id="jupyter全屏编辑">Jupyter全屏编辑</h1>
+<p>这个我之前查过，修改配置文件的都不好用<br>
+（上面改主题的时候可以该宽度，但貌似必须修改主题，才能修改界面宽度，否则不可以）</p>
+<p>只在StackOverflow上找到了一种简陋的解决办法<br>
+每个ipynb文件头部加上固定的2条语句即可：<br>
+from IPython.core.display import display, HTML<br>
+display(HTML(&quot;<style>.container { width:100% !important; }</style>&quot;))</p>
+<h1 id="有趣的扩展不是很实用">有趣的扩展（不是很实用）</h1>
+<p>内嵌dataframe表格操作: （玩玩可以，慎用， 小型数据就撑不住了，导致整个kernel崩溃）<br>
+安装：<br>
+pip install qgrid<br>
+jupyter nbextension enable --py --sys-prefix qgrid<br>
+导入：<br>
+from qgrid import show_grid as s<br>
+使用案例：<br>
+df = pd.DataFrame([['bac', 'bcd'],['应用','博客']])<br>
+s(df, show_toolbar=True)<br>
+结果如下:<br>
+笔记无法插入本地图片。。。。。。很易懂的结果。</p>
+<p>内嵌小浏览器：<br>
+from IPython.display import IFrame<br>
+IFrame('https://www.baidu.com/s?ie=UTF-8&amp;wd=fsd', width=1200, height=1000)</p>
+<h1 id="conda各种疑难杂症安装">Conda各种疑难杂症安装</h1>
+<p>所有包几乎都可以用 Anaconda-prompt 中的 pip，这种 安装方法是&quot;下下策&quot;。<br>
+因为有时用这个装可能出问题。</p>
+<h3 id="opencv">Opencv</h3>
+<p>conda:<br>
+conda install -c menpo opencv<br>
+pip:<br>
+pip install opencv-python</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="tag">
+                    IDE
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/">
+                  <h3 class="post-title">
+                    PY =&gt; 超级鹰打码（Python）+报错回扣
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

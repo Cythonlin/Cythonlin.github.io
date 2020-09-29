@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python版-Docker使用selenium简单示例 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Dockerfile内容如下
+FROM python
+RUN pip install -i http://pypi.douban.com/simple \
+    requests selenium retrying --trusted-h..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python版-Docker使用selenium简单示例</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="dockerfile内容如下">Dockerfile内容如下</h2>
+<pre><code>FROM python
+RUN pip install -i http://pypi.douban.com/simple \
+    requests selenium retrying --trusted-host pypi.douban.com
+</code></pre>
+<h2 id="docker-composeyaml内容如下">docker-compose.yaml内容如下</h2>
+<pre><code>version: &quot;3.7&quot;
+services:
+  myspider:
+    build: .
+    volumes:  # 数据卷映射
+      - /root/mycode:/root/mycode
+    command: python /root/mycode/1.py
+    # 依赖下方 selenium服务，注意此依赖仅仅能做到
+    # selenium服务先启动， myspider服务后启动（有的服务内部程序启动的快，有的慢）
+    # 根本程度上还是解决不了 完全依赖 的 问题， 因此可以用延时处理等方法
+    depends_on:
+      - selenium
+  selenium:
+    image: selenium/standalone-chrome # 拉取镜像完成自动化全套配置
+    ports:
+      - &quot;4444:4444&quot;
+    shm_size: 2g  # 设置主机共享内存2g
+    hostname: selenium    # 其他容器可以用此名来访问 eg: http://selenium:4444/
+</code></pre>
+<h2 id="爬虫脚本代码1py如下">爬虫脚本代码1.py如下</h2>
+<pre><code>import requests
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.chrome.options import Options
+from retrying import retry
+
+# 注：docker-compose.yaml中的depends_on那里提到过：
+# 服务可以起到先后依赖的效果。
+# 而服务中的启动程序，并不能达到完全的依赖（启动速度相当的情况下，谁快谁慢运气成分）
+
+# 可以通过加延时来控制先后顺序
+# import time    
+# time.sleep(3)    # 这种睡眠延时方式，或多或少不太精确，可以用下面的 retrying代替之
+
+# 也可以通过 retrying模块装饰实现
+# retrying用法，可参考  https://segmentfault.com/a/1190000019301761#articleHeader17
+@retry(
+    stop_max_attempt_number = 10000,
+    stop_max_delay = 10*1000,
+)
+def verify_request():
+    response = requests.get(&quot;http://selenium:4444&quot;, timeout=0.5)
+    print(response)
+verify_request()
+
+# 下面基本上是连接Docker Selenium服务的固定写法，可当作模板套
+options = Options()
+options.add_argument('--headless')
+with webdriver.Remote(
+    command_executor='http://selenium:4444/wd/hub',   # selenium为docker-compose的host名
+    desired_capabilities=DesiredCapabilities.CHROME,
+    options=options
+) as driver:
+    driver.get('http://www.baidu.com')
+    # 这里使用绝对路径， 否则数据卷映射失败
+    # 映射部分在上面 docker-compose.yaml 的 volumes部分
+    with open('/root/mycode/test.html', 'w') as f:    
+        f.write(driver.page_source)
+        print('写入成功')
+</code></pre>
+<h2 id="踩坑">踩坑</h2>
+<pre><code>selenium 因为有服务端程序，所以我们可以在远程&quot;云服务器用Docker容器部署&quot;
+容器部署后。。。。
+&quot;只能云服务器中访问，
+不能在远程服务器访问。
+（
+    其实根本不需要在远程服务器访问的，某种邪恶的念头，让我走了弯路。。。一根筋想要远程访问
+    其实代码同是部署在容器中的，容器互通是完全OK的。
+    但如果你也想试试远程访问， 它却真的无法访问。。。。。。。。。。。
+）&quot;
+
+（
+    我的认知里，既然云服务器宿主机可以访问容器内部 启动的服务端程序 
+    而远程服务器不能访问容器内部的  启动的服务端程序。。。。那一定是容器和宿主机连通配置问题阿。
+    带着这个思路，找了很久很久， 然并卵。。。
+）
+
+实在没办法了。。kexue上 网，搜一下这个问题的解决方案吧。
+后来无意中发现，客户端现在居然可以连上了。。 
+后来测试，哇， 果然是 需要kexue 上 网才能 远程访问到，此服务端。。。
+
+但我现在还没有明白，为什么我云服务器宿主机， 不需要kexue 上 网，也能成功访问内部容器的服务端？？
+（虽然这个疑惑没有必要）</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-flask-kuang-jia-yu-sanic-kuang-jia-ji-ben-shi-yong-dui-bi-jie-shao/">
+                  <h3 class="post-title">
+                    PY =&gt; Flask框架与Sanic框架基本使用对比介绍
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

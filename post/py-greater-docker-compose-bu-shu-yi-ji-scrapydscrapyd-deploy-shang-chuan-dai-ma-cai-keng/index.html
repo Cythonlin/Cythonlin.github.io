@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; docker-compose部署以及scrapyd+scrapyd-deploy上传代码踩坑 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+踩了 5-6个小时的坑，各种测试。人要没了。不过结果我已经满意了。
+这篇文章是对 https://segmentfault.com/a/1190000020388794 的完善与排初BUG!
+大坑1（scrapyd服务bind_add..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; docker-compose部署以及scrapyd+scrapyd-deploy上传代码踩坑</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>踩了 5-6个小时的坑，各种测试。人要没了。不过结果我已经满意了。<br>
+这篇文章是对 https://segmentfault.com/a/1190000020388794 的完善与排初BUG!</p>
+<h1 id="大坑1scrapyd服务bind_address">大坑1（scrapyd服务bind_address）：</h1>
+<p>我用的Docker (我记得之前不用docker的时候scrapyd的配置文件好像是默认的 0.0.0.0)<br>
+但是我发现 Docker容器里面 默认是 bind 127.0.0.1  （真是 f--k了.. 弄了好几个小时没发现）<br>
+如果你用的docker， 先在Docker 同级目录下新建一个  default_scrapyd.conf<br>
+然后写入如下配置（不用犹豫，全部复制进去即可）：<br>
+[scrapyd]<br>
+eggs_dir    = eggs<br>
+logs_dir    = logs<br>
+items_dir   =<br>
+jobs_to_keep = 5<br>
+dbs_dir     = dbs<br>
+max_proc    = 0<br>
+max_proc_per_cpu = 4<br>
+finished_to_keep = 100<br>
+poll_interval = 5.0<br>
+bind_address = 0.0.0.0<br>
+http_port   = 6800<br>
+debug       = off<br>
+runner      = scrapyd.runner<br>
+application = scrapyd.app.application<br>
+launcher    = scrapyd.launcher.Launcher<br>
+webroot     = scrapyd.website.Root</p>
+<pre><code>[services]
+schedule.json     = scrapyd.webservice.Schedule
+cancel.json       = scrapyd.webservice.Cancel
+addversion.json   = scrapyd.webservice.AddVersion
+listprojects.json = scrapyd.webservice.ListProjects
+listversions.json = scrapyd.webservice.ListVersions
+listspiders.json  = scrapyd.webservice.ListSpiders
+delproject.json   = scrapyd.webservice.DeleteProject
+delversion.json   = scrapyd.webservice.DeleteVersion
+listjobs.json     = scrapyd.webservice.ListJobs
+daemonstatus.json = scrapyd.webservice.DaemonStatus
+</code></pre>
+<p>最后在你的Dockerfile中末尾写入（视情况而定。 每个人的目录结构都不同）<br>
+COPY default_scrapyd.conf /usr/local/lib/python3.6/site-packages/scrapyd/default_scrapyd.conf</p>
+<h1 id="大坑2-docker-compose-的command多命令问题">大坑2 (docker-compose: 的command多命令问题)</h1>
+<p>scrapyd部署需要两步：</p>
+<ol>
+<li>先开启 scrapyd 服务 (scrapyd 命令即可)</li>
+<li>再把爬虫程序通过 scrapyd-deploy 推送到 scrapyd服务上<br>
+很明显：2 是依赖 1 的。</li>
+</ol>
+<h3 id="错误解决方式">错误解决方式：</h3>
+<p>但是，docker-compose command: 只能运行一条命令。 我按照常理使用N种思想想让他支持多条命令：</p>
+<ol>
+<li>起初 用 &amp;&amp;</li>
+<li>用 sh脚本</li>
+<li>这个命令是最荒唐的。。。 网上千篇一律的博客。 百分之80都是互相抄袭的。（然后我还真用了。。）<br>
+最荒唐的命令如下：（我一直窃喜，以为找到解决办法了，就一直以这个命令为轴做调试，测试。。。。）
+<h1 id="command">command:</h1>
+<h1 id="-binbash">- /bin/bash</h1>
+<h1 id="-c">- -c</h1>
+<h1 id="-">- |</h1>
+<h1 id="scrapyd">scrapyd</h1>
+<h1 id="scrapyd-deploy-cython_lin-p-baidu">scrapyd-deploy Cython_lin -p Baidu</h1>
+</li>
+</ol>
+<p>这个命令有两种结果（这两种结果还tm是随机的。   生无可恋）：</p>
+<ol>
+<li>scrapyd先执行，直接堵塞。后面命令失效（即使你用&amp; 也解决不了随机启动顺序问题）</li>
+<li>scrapyd-deploy Cython_lin -p Baidu 先执行 （直接报错，以为scrapyd还没起来呢）<br>
+到此为止：：：：：：： 我上面说的都是错误的方式！！！！！！！！！！！！！！<br>
+（差点一棵树上勒到死，  既然docker-compose文件内部只能运行一条命令。那么我们拿外面去运行啊！！）<br>
+（思想已经绝望僵化的我， 这次是真的看见了希望，曙光）</li>
+</ol>
+<h3 id="正确解决方式">正确解决方式:</h3>
+<p>docker-compose.yml文件里面只写：<br>
+command: scrapyd<br>
+然后保存退出， 然后执行 ：<br>
+docker-compose up -d<br>
+# 我们需要让 scrapyd启动一会，才可以启动 scrapy-deploy的（等一小会就行了）<br>
+然后继续执行：<br>
+docker-compose exec crawl  scrapyd-deploy Cython_lin -p Baidu</p>
+<pre><code>特别注意！说明以下！（docker-compose命令有两种方式）：
+    docker-compose exec      正确
+    docker-compose run       错误 (在外面千万不要用这种 （当然我是说我这个业务）)
+</code></pre>
+<h1 id="结束语">结束语</h1>
+<p>也许有些错误很小， 但是当你怀疑变多的时候，脑海会出现海量解决问题的分支。<br>
+然后机械排BUG， 最终生无可恋。。。。。<br>
+其实有时不妨先冷静下来， 然后专注，一锤定音。找出BUG！！！</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-scrapyd-bu-shu-pa-chong-feng-zhuang-django-view-jie-kou-diao-yong/">
+                  <h3 class="post-title">
+                    PY =&gt; Scrapyd部署爬虫+封装Django-View接口调用
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

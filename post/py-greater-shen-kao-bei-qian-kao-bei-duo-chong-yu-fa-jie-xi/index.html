@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; 深拷贝/浅拷贝多种语法解析 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="列表为例（可变类型容器），直接上代码：
+第一种：
+a = [[1,2], [3,4]]
+[_.append(666) for _ in a]        # 原生列表  （for 也是一样的，图个方便，用了推导式）
+print(a)
+&g..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; 深拷贝/浅拷贝多种语法解析</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="列表为例可变类型容器直接上代码">列表为例（可变类型容器），直接上代码：</h1>
+<p>第一种：<br>
+a = [[1,2], [3,4]]<br>
+[_.append(666) for _ in a]        # 原生列表  （for 也是一样的，图个方便，用了推导式）<br>
+print(a)</p>
+<pre><code>&gt;&gt; [[1, 2, 666], [3, 4, 666]]
+</code></pre>
+<p>第二种：<br>
+a = [[1,2], [3,4]]<br>
+[_.append(666) for _ in a[:]]     # 新增操作： 对整个列表切片自爆<br>
+print(a)</p>
+<pre><code>&gt;&gt; [[1, 2, 666], [3, 4, 666]]
+</code></pre>
+<p>第三种：<br>
+a = [[1,2], [3,4]]<br>
+[_.append(666) for _ in copy.copy(a)]      # 新增操作： 对整个列表使用浅拷贝API<br>
+print(a)</p>
+<pre><code>&gt;&gt; [[1, 2, 666], [3, 4, 666]]
+</code></pre>
+<p>#------------------   分割线-------------------------<br>
+第四种：<br>
+a = [[1,2], [3,4]]<br>
+[_.append(666) for _ in copy.deepcopy(a)]      # 新增操作： 整个列表使用深拷贝API<br>
+print(a)</p>
+<pre><code>&gt;&gt; [[1, 2], [3, 4]]
+</code></pre>
+<p>第五种：（注意 和 第二种 对比）<br>
+a = [[1,2], [3,4]]<br>
+[_[:].append(666) for _ in a]      # 新增操作：对即将操作的子列表切片自爆<br>
+print(a)</p>
+<pre><code>&gt;&gt; [[1, 2], [3, 4]]
+</code></pre>
+<p>第六种：（注意 和 第三种 对比）<br>
+a = [[1,2], [3,4]]<br>
+[copy.copy(_).append(666) for _ in a]   # 新增操作：对即将操作的子列表 使用浅拷贝API<br>
+print(a)</p>
+<pre><code>&gt;&gt; [[1, 2], [3, 4]]
+</code></pre>
+<h1 id="提醒0">提醒0</h1>
+<p>多级容器需谨慎 （虽然多级 纯 元组是不可变类型，你想弄也弄不动它~~~）<br>
+但是这种情况，你还是需要注意：<br>
+a = ([1,2], [3,4])<br>
+# 里面的列表依然是可变的， 这算是刚入门的基础。但还应该留意</p>
+<h1 id="提醒一">提醒一</h1>
+<p>除了 deepcopy， 其他操作都是浅拷贝。<br>
+如果你喜欢使用 [::] ， [:] 这种切片拷贝， 那么更应该注意一下上述案例问题。</p>
+<h1 id="提醒二">提醒二</h1>
+<p>也许你看上述代码很一般。甚至没有任何感觉。<br>
+但是当你把子列表当作中间值（任意操作变换）， 再提醒一次 ===&gt; 作为 中间值（或者说临时值）使用时。<br>
+你的BUG可能在向你招手！</p>
+<h1 id="附赠求-子集-案例">附赠：求 子集 案例</h1>
+<pre><code>import copy
+def f(sub):
+	temp_list = [[]]
+
+	for x in sub:
+		for y in copy.deepcopy(temp_list):
+			y.append(x)
+			temp_list.append(y)
+
+	return temp_list
+
+print(f(list(range(4))))</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-docker-compose-bu-shu-yi-ji-scrapydscrapyd-deploy-shang-chuan-dai-ma-cai-keng/">
+                  <h3 class="post-title">
+                    PY =&gt; docker-compose部署以及scrapyd+scrapyd-deploy上传代码踩坑
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

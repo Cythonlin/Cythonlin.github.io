@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python-ORM之peewee：插件拓展（三） | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601351269921">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="声明
+本篇主要讲，关于peewee的一些拓展：
+包括新式CRUD-数据导入导出-信号-数据库反向生成模型。
+扩展官档：http://docs.peewee-orm.com/en/latest/peewee/playhouse.html
+作者..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601351269921" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python-ORM之peewee：插件拓展（三）</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="声明">声明</h1>
+<p>本篇主要讲，关于peewee的一些拓展：<br>
+包括新式CRUD-数据导入导出-信号-数据库反向生成模型。<br>
+扩展官档：http://docs.peewee-orm.com/en/latest/peewee/playhouse.html</p>
+<h1 id="作者友好-与-peewee提问方式">作者友好 与 peewee提问方式</h1>
+<p>当我用到拓展模块的 新CRUD时，文档给的内容少之又少。<br>
+因为拓展的新CRUD是真的方便好用，和（PyMongo的用法差不多）<br>
+但是功能却不全。并且与我们第二篇，讲的CRUD又不兼容。<br>
+所以在难以取舍之际， 我选择了提问。</p>
+<h4 id="peewee作者在官档中详细说到-如果你有问题或疑惑可以通过以下两种方式">peewee作者在官档中详细说到。 如果你有问题或疑惑可以通过以下两种方式：</h4>
+<ol>
+<li>去stack overflow 提问题，标签打上python 和 peewee。 peewee作者会不定期浏览并回答你给你帮助。</li>
+<li>去https://groups.google.com/group/peewee-orm，这个google群组提问。（需要kexue 上 网）</li>
+</ol>
+<h4 id="所以我选择了去-stack-overflow提问">所以我选择了去 stack overflow提问。</h4>
+<p>我问题发出去，应该是不到一小时，作者就给回复了，我惊了。。（发完我就睡觉了，第二天起来才看到）<br>
+提问内容传送门如下：https://stackoverflow.com/questions/57774747/is-there-liking-query-operator-join-query-in-playhouse-extensions-to-peewee/57776856#57776856</p>
+<h4 id="作者回复的意思是">作者回复的意思是：</h4>
+<p>拓展的playhouse.dataset里面的DataSet 的 新式CRUD API 的涉及初衷就是为了简单使用。<br>
+但它并不会代替 核心CRUD (就是我们第二篇讲的CRUD)<br>
+并且，它设计的初衷就是让我们可以方便 （json/csv格式的数据  与 数据库的数据 相互导入或导出）<br>
+我说的这些操作，下面都会写到。</p>
+<h4 id="所以说该提问就提问你收获了peewee知识的同时又能增加peewee的社区活跃度">所以说，该提问就提问，你收获了peewee知识的同时，又能增加peewee的社区活跃度。</h4>
+<h1 id="playhouse扩展模块的dataset">playhouse扩展模块的DataSet</h1>
+<p>我们前2篇文章就用了这一行代码就可以导入所有，因为所有基本功能都集成在 peewee下<br>
+from peewee import *<br>
+但接下来讲的是扩展，而扩展就是新分支了，与peewee没关系了<br>
+from playhouse.dataset import DataSet</p>
+<h1 id="数据库连接">数据库连接</h1>
+<p>进入正题，连接MySQL,你可以有两种连接方式：<br>
+# 强调一下，官档中给出 DataSet 是在 playhouse.dataset 下<br>
+# 我再强调一下， 是 DataSet ， 而不是 DataBase  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!<br>
+from playhouse.dataset import DataSet<br>
+db = DataSet('mysql://root:Jilin963389970@39.107.86.223:3306/test')</p>
+<p>官档-所有数据库的连接示例： http://docs.peewee-orm.com/en/latest/peewee/playhouse.html#db-url</p>
+<h1 id="数据库与表的基本操作">数据库与表的基本操作</h1>
+<h3 id="创建表">创建表</h3>
+<pre><code>owner = db['owner']
+# 后面这个&quot;owner&quot; 是你自己指定的key, 也就是你指定的 &quot;表名&quot;
+# 前面这个 owner 变量用来接受返回结果，它就是一个实例化的表对象。 一会我们用它做一系列操作
+
+我讲完了，表已经创建好了,  (你脸上有没有出现问号。。) 惊不惊喜，意不意外？？
+题外话：
+    如果你用过，pymongo来使用MongoDB, 那这种原理应该不陌生的。
+ 
+那 owner = db['owner']     这一行代码究竟做了什么？
+    1. 它会去数据库，创建一个 名为 owner的表 （有则返回，无则创建）
+    2. 不但创建了表， 而且它还在表中 自动创建了一个 id  (int型，主键，自增)
+</code></pre>
+<h3 id="列出表-列出字段">列出表 &amp; 列出字段</h3>
+<p>列出表（等价于MySQL中的命令：  show tables）<br>
+print(db.tables)<br>
+&gt;&gt; ['new_owner', 'owner']<br>
+列出表中的字段（等价于MySQL中的命令：  show columns）：<br>
+table = db['owner']        # 先选择一个表。<br>
+print(table.columns)<br>
+&gt;&gt; ['id', 'name', 'age', 'gender', 'hobby', 'nickname']<br>
+统计表中记录数（就是行数）<br>
+print(len(table))<br>
+&gt;&gt; 10</p>
+<h1 id="事务transaction">事务(transaction)</h1>
+<p>其实我在第一篇，已经讲过事务了<br>
+事务-传送门： https://segmentfault.com/a/1190000020265149#articleHeader11<br>
+当时我是用的 MySQLDatabase 连接工具。<br>
+我只讲了一种使用方法：  db.atomic()<br>
+其实还有另外一种使用方法，就是  db.transaction()<br>
+这两种方法差不多， 你可以这么认为，就是把 atomic 和 transaction 单词换一下，用法一模一样</p>
+<pre><code>而现在我们是使用的 DataSet 连接工具 （开篇我强调过）：
+    db = DataSet(....)   
+    DataSet 只提供给我们   transaction()这种用法， 而没有提供 atomic()
+    
+但我说了，这两种用法你可以认为只是单词换了一下。用法一样的。
+因此你完全可以直接看我前面给的 &quot;事务-传送门&quot; 这篇之前写的文章。  
+</code></pre>
+<h1 id="crud-这种crud方式我不太推荐">CRUD (这种CRUD方式我不太推荐)</h1>
+<ol>
+<li>我们第二章详细讲过全套的CRUD，其实那就够了。</li>
+<li>而本章这个拓展的CRUD，完全是另一种模式。另一个模块的东西。</li>
+<li>但我不推荐用，因为感觉还没成熟，不完善（很多CRUD细节功能没有）， 官档给的也粗略。</li>
+<li>此外，下面涉及到与 本套CRUD有关联的操作，  我下面统称为 &quot;拓展的CRUD&quot;</li>
+</ol>
+<h3 id="增加数据">增加数据</h3>
+<pre><code>owner.insert(name='Alice', age=20)
+owner.insert(name='Zhang', age=18)
+
+这看起来没什么问题，我们之前讲的差不多。但你有没有意识到几个问题：
+1. owner表 是自动创建出来的，它只有一个主键。
+2. 我们没有创建 name 和 age 字段
+3. 既然没有创建字段，为什么可以插入数据？？？
+
+解惑：
+    1. 我们调用第一个 insert()的时候, 它就会自动帮我们 去数据库创建对应参数的字段（固定了）:
+       数据类型关系对照如下：
+           python数据类型  MySQL数据类型
+               int            int(11)     允许为空   默认值未空
+               str            text        允许为空   默认值未空
+        那peewee为我们自动创建的字段如下：
+        +-------+---------+------+-----+---------+----------------+
+        | Field | Type    | Null | Key | Default | Extra          |
+        +-------+---------+------+-----+---------+----------------+
+        | id    | int(11) | NO   | PRI | NULL    | auto_increment |
+        | name  | text    | YES  |     | NULL    |                |
+        | age   | int(11) | YES  |     | NULL    |                |
+        +-------+---------+------+-----+---------+----------------+
+    2. 创建后，它还会自动为我们根据我们传的参数， 对应的插入 值
+    3. 特别注意，特别注意：
+        假如我们插入这样一条错误&quot;类型&quot;的数据: 
+            owner.insert(name=18, age=18)    # 按理说name应该为 text型，age应该为整形
+            虽然我们name给的整形，但，peewee内部会自动为我们转为将 name转为字符串类型
+            同理 字符串也会自动帮我们转为整形（对应数据库中的类型）。 但'abc'这样的转不了哦
+</code></pre>
+<h3 id="修改数据">修改数据</h3>
+<pre><code>owner.update(name='Alice',  age='50')
+这行代码为我们做了如下事情：
+    将&quot;所有&quot;行数据， name改为 Alice, age改为 50
+    
+owner.update(name='Alice',  age='50',columns=['name'])
+多加了一个 columns参数，为我们做了如下事情：
+    先看最后的 columns=['name']  ： 其实他就等价于  where name = xxx
+    其实意思就是以 &quot;name字段为条件&quot; 修改数据：(而name我们已经给了 = 'Alice')
+    具体过程如下：
+        1. 找到 name = Alice， 的所有记录
+        2. 将 name= Alice 的记录   name改为Alice（相当于没变）, age 改为 50
+
+owner.update(gender='man')
+    你仔细看看，我们之前是没有 gender这个字段的。 如果更新未创建字段，它会为我们做如下事情：
+    1. 它会自动为我们在这个表中创建一个 这个 &quot;gender新字段&quot;
+    2. 并且，&quot;所有行记录&quot; 都会被赋予成 &quot;man&quot; 值。 注意是 所有行，所有行，所有行
+    
+    3. 如果你只想&quot;给指定记录部分&quot;赋予 &quot;man&quot;值， 那你可以加一个我们之前说的 &quot;columns参数&quot;
+       自然而然地，其他 &quot;未通过 columns指定的记录&quot; 就会被赋予 NULL 值。
+</code></pre>
+<h3 id="查询数据">查询数据</h3>
+<p>首先说一下它这个查询的特色。</p>
+<ol>
+<li>
+<p>可以对查询结果进行 切片，索引操作（和python的切片和索引是一模一样的）</p>
+</li>
+<li>
+<p>索引之后自动转为 列表嵌字典 [{}, {}]</p>
+</li>
+<li>
+<p>下面3种方式，也都支持 切片和索引（我就不举例了，很简单）<br>
+方式1：all() 获取全部数据<br>
+owner = db1['owner']<br>
+query = owner.all()<br>
+for obj in query:<br>
+print(obj)        # 遍历每条记录， 结果是 字典 类型<br>
+方式2：find() 查询符合条件的所有数据<br>
+query = owner.find(name='Tom')   # 查询名为 Tom的数据<br>
+for obj in query:<br>
+print(obj)        # 遍历每条记录， 结果是 字典 类型<br>
+方式3：find_one() 查询符合条件的   第一条   数据<br>
+print(owner.find_one(name='Tom'))</p>
+<p>注意一下，find_one 查出来结果就是一条字典。  不要再遍历了，遍历就出事了。。。</p>
+</li>
+</ol>
+<h3 id="删除数据">删除数据</h3>
+<pre><code>result = owner.delete(name='Tom')
+ 
+说明：
+    1. 若 delete() 不指定参数，那么即为全部删除。。慎用
+    2. 返回值result的值， 代表删除数据的条数
+</code></pre>
+<h1 id="jsoncsv数据-导入到数据库只能联用拓展的crud">Json/CSV数据 导入到数据库（只能联用拓展的CRUD）</h1>
+<h3 id="json实例">Json实例</h3>
+<p>我在当前目录下创建一个 new_owner.json， 内容如下：<br>
+[<br>
+{&quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 18},<br>
+{&quot;name&quot;: &quot;Zhang&quot;, &quot;age&quot;: 30}<br>
+]<br>
+主文件代码如下：<br>
+new_owner = db['new_owner']    # 新建一张表，名为 new_owner<br>
+new_owner.thaw(<br>
+filename='new_owner.json',   # 就是上面的那个 json文件<br>
+format='json'                # 指定格式为json, 默认值是 csv<br>
+)<br>
+这样就导入好了，数据库内容如下：<br>
++----+------+-------+<br>
+| id | age  | name  |<br>
++----+------+-------+<br>
+|  1 |   18 | Alice |<br>
+|  2 |   30 | Zhang |<br>
++----+------+-------+<br>
+特殊情况分析： 假如基于上面创建好的数据库与数据， 将刚刚的json文件稍加改动，加个 &quot;gender&quot;<br>
+[<br>
+{&quot;name&quot;: &quot;Alice&quot;, &quot;age&quot;: 18, &quot;gender&quot;: &quot;man&quot;},<br>
+{&quot;name&quot;: &quot;Zhang&quot;, &quot;age&quot;: 30}<br>
+]<br>
+假如我们还是用上面的一模一样的主文件代码（我这里就不重复写了），导入刚修改的 新json数据。<br>
+我们分析一下：<br>
+我说了，是在原有表 和 字段的 基础上去导入新数据。 （原有数据库字段为 name 和 age）<br>
+但是今时不同往日。。。  我们刚刚的json新添加了一个， gender。<br>
+而原有的数据库中，并没有这个字段。 如果我们还是用之前的这个代码：<br>
+new_owner.thaw(<br>
+filename='new_owner.json',   # 就是上面的那个 json文件<br>
+format='json'                # 指定格式为json, 默认值是 csv<br>
+)<br>
+那么，peewee会自动把这个 新 gender 键，同步到数据库，并生成 新字段 gender<br>
++----+------+-------+--------+<br>
+| id | age  | name  | gender |<br>
++----+------+-------+--------+<br>
+|  1 |   18 | Alice | NULL   |<br>
+|  2 |   30 | Zhang | NULL   |<br>
+|  3 |   18 | Alice | man    |<br>
+|  4 |   30 | Zhang | NULL   |<br>
++----+------+-------+--------+    看见了把，gender字段，会自动生成。</p>
+<p>但是在某种情况下， 你并不想让数据库 创建这个 新字段<br>
+假如json中 &quot;gender&quot; ， 它属于一个脏数据，我们不需要他，而是单纯的想插入 name和age数据。<br>
+那么你可以，添加一个 strict=True 参数：<br>
+new_owner.thaw(<br>
+filename='new_owner.json',<br>
+format='json',<br>
+strict=True                # 看这里，添加一个这个 strict=True就好了<br>
+)</p>
+<pre><code>strict=True意味着，它会对照json的key 与 数据库的字段， 并以数据库的字段为主，严格匹配插入。
+</code></pre>
+<h3 id="csv示例">CSV示例</h3>
+<p>其实和json的几乎差不多，注意csv格式，逗号分隔，设置表头。 new_owner.csv 内容如下:<br>
+name,age<br>
+Alice,18<br>
+Zhang,30<br>
+主文件代码如下<br>
+new_owner.thaw(<br>
+filename='owner.csv',<br>
+# format='csv'         # 我说过，format默认参数就是csv，所以给不给format参数都行。<br>
+# strict=True          # 严格匹配字段插入， 和上面讲的json是一模一样的作用。<br>
+)<br>
+最后说个小细节，不知道你有没有注意，我们json和csv文件，  都没有指定id。<br>
+虽然没有指定，但是 peewee 同样会为我们自动创建  id (同样也是 int(11), 主键， 自增)</p>
+<h1 id="数据库数据导入到jsoncsv只能联用拓展的crud">数据库数据导入到Json/CSV（只能联用拓展的CRUD）</h1>
+<p>导入都说完了，导出就更简单了。。就API变个名的事：<br>
+导出单个表的全部数据：<br>
+owner = db['owner']</p>
+<pre><code>owner.freeze(
+    filename='new_owner.json',  
+    format='json',  # 指定格式为json,   你要是不指定，默认值是 csv
+)
+</code></pre>
+<p>当然，这里有个特色，导出方式还可以 导出某个查询结果！！<br>
+query = owner.find(name='Tom')<br>
+db.freeze(<br>
+query,                      # 查询结果，注意这个查询结果，必须是个查询集类型。<br>
+filename='new_owner.json',<br>
+format='json',  # 指定格式为json,   你要是不指定，默认值是 csv<br>
+)</p>
+<h1 id="中场暂停">中场暂停。。。</h1>
+<p>至此，playhouse.dataset的DataSet里面的 新版CRUD，及其附属功能（json导入导出等）讲完。<br>
+也许你会很不适应。 （这新版的CRUD，如果实在不能掌握，就当了解即可）</p>
+<p>最重要的还是第二篇文章的CRUD：https://segmentfault.com/a/1190000020265522<br>
+以下要讲的，就是 第二篇文章讲的，正常的 （from peewee import * ）里面的 CRUD 相关的操作了。</p>
+<h1 id="信号signal">信号(Signal)</h1>
+<p>官方只设定了如下 4 种信号：<br>
+一、pre_save： 保存之前调用<br>
+二、post_save：保存之后调用<br>
+pre_save 和 post_save只支持下面两种API：<br>
+1. create()  # 创建数据<br>
+触发：<br>
+Owner.create(name='Tom')  # create包含了 save() ，所以会自动触发<br>
+2. save()    # 更新数据<br>
+触发：<br>
+obj = Owner.get(name='Butch')<br>
+obj.name = 'Alice'<br>
+obj.save()<br>
+注意： 你想用保存信号，就必须用这两种API，  用 update()是不好使的哦！！！！！！！！！！<br>
+三、pre_delete：  删除数据之前调用<br>
+四、post_delete：删除数据之后调用<br>
+pre_delete 和 post_delete 只支持一种 API ，那就是  delete_instance()<br>
+触发：<br>
+objs = Owner.select().where(Owner.name=='lin')<br>
+for obj in objs:<br>
+obj.delete_instance()</p>
+<p>接下来我们开始看代码如何写：<br>
+先把表和数据构造出来，还是老方式：<br>
+from peewee import *</p>
+<pre><code># 注意是 playhouse里的Model， 以及前面提到的 4 种 信号
+from playhouse.signals import Model, post_save, pre_save, pre_delete, post_delete    
+
+
+db = MySQLDatabase('test', user='root', password='123',
+               host='IP', port=3306, charset='utf8mb4')
+               
+class Owner(Model):        
+&quot;&quot;&quot;
+    特别注意，这个Model, 使用是playhouse.signals下的 Model
+    而不是 peewee 下的 Model, 这需要特别注意
+    两个模块都有Model, 所以把用的Model放在 相对偏下面导入 
+&quot;&quot;&quot;
+                             
+    data = IntegerField()    # 而字段依然是 from peewee import * 导入的
+    class Meta:
+        database=db
+db.create_tables([Owner])
+</code></pre>
+<p>进入正题：信号使用有两种方式：<br>
+方式1（装饰器方式）：<br>
+# 前面的4种信号的用法就是用来，装饰一个自定义函数。<br>
+# 这个自定义函数就是信号出发之后，为我们做事的。<br>
+# 接下来我以 post_save 为例 （当然我这个例子只是强调一下语法，并没有实用价值）</p>
+<pre><code>@pre_save(sender=Owner)  # sender指定 我们的模型类
+def aaa(model_class, instance, created=True):  # 这个名字随便起
+    &quot;&quot;&quot;
+        model_class:   就是 Owner这个类，默认传进来方便你使用
+        instance 和 create=True 照着写上就行不用管它
+    &quot;&quot;&quot;
+    print(f&quot;数据入库之前我们捕获了此表名=&gt;{model_class}&quot;)
+    for obj in model_class.select().dicts():   # model_class就是Owner类，它可以任意CRUD
+        print(f&quot;再次查看此表信息{obj}&quot;)
+
+触发信号：
+obj = Owner.get(name='Tom')
+obj.name = 'Rose'
+obj.save()
+</code></pre>
+<p>方式2 (函数连接)：<br>
+信号-官档：http://docs.peewee-orm.com/en/latest/peewee/playhouse.html#connecting-handlers<br>
+其实你用 方式1 就行了。</p>
+<h1 id="数据库反向生成-python模型类">数据库反向生成 Python模型类</h1>
+<p>参数官档：http://docs.peewee-orm.com/en/latest/peewee/playhouse.html#command-line-options<br>
+看好参数大小写就行（test是我的数据库名）：<br>
+python -m pwiz -e mysql -H 192.6.6.6 -p 3306 -u root -P test &gt; mymodel.py<br>
+# 指定了 -P ，密码是后续命令行 追入的。</p>
+<h1 id="模型迁移-migration">模型迁移 migration</h1>
+<p>我没怎么看，需要的自己瞅瞅。。<br>
+模型迁移-官档：http://docs.peewee-orm.com/en/latest/peewee/playhouse.html#schema-migrations</p>
+<h1 id="结束语">结束语</h1>
+<p>其实ORM都差不多。<br>
+Django：的ORM还算可以。但是不太好脱离框架单独使用 (相当于与Django平级)。<br>
+sqlalchemy：没怎么用过。之前看过几眼。感觉极度不适。感觉学习成本有点高（相当于与Python平级）<br>
+peewee：是一个可单独使用的简便的ORM框架（写web爬虫之类的都能用得上，相当于与Python平级）</p>
+<p>我感觉：如果ORM的学习成本大于SQL的学习成本， 那倒不如精修一下SQL，即使换了环境也能用得上。<br>
+有时候高阶ORM用多了，可能连SQL都不会写了。。。 （It's just for me......）</p>
+<p>第一篇传送门：https://segmentfault.com/a/1190000020265149<br>
+第二篇传送门：https://segmentfault.com/a/1190000020265522</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-orm-zhi-peeweecrud-wan-zheng-jie-xi-er/">
+                  <h3 class="post-title">
+                    PY =&gt; Python-ORM之peewee：CRUD完整解析（二）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
