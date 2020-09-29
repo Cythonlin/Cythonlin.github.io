@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; PySpark-Spark Core（RDD） | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601353053893">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+第一篇传送门：https://segmentfault.com/a/1190000020841646
+RDD认知
+RDD是什么？
+RDD: 弹性分布式数据集（Resiliennt Distributed Datasets）
+转为格式R..." />
+    <meta name="keywords" content="RS" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601353053893" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; PySpark-Spark Core（RDD）</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>第一篇传送门：<a href="https://segmentfault.com/a/1190000020841646">https://segmentfault.com/a/1190000020841646</a></p>
+<h1 id="rdd认知">RDD认知</h1>
+<h3 id="rdd是什么">RDD是什么？</h3>
+<p>RDD: 弹性分布式数据集（Resiliennt Distributed Datasets）</p>
+<p>转为格式RDD的几种方式：<br>
+1. parallelize:<br>
+rdd = sc.parallelize([1,2,3,4,5])   # 里面传的就是普通python类型</p>
+<pre><code>2. 读文件/读数据库/读ES等各种方式，此处以读文件为例：
+    rdd = sc.textFile('file:///home/lin/data/hello.txt')
+</code></pre>
+<h3 id="rdd核心概念">RDD核心概念</h3>
+<p>Application:<br>
+application: 一个app 就是一个自定义的 py脚本（被 spark-submit提交的）或一个spark-shell<br>
+app = 1个 driver + 多个executors(相当于多个进程)</p>
+<pre><code>注意：数据在不同的 app之间 不能被共享， 若想要共享（需要考虑外部存储）
+</code></pre>
+<p>Driver:<br>
+每一个.py脚本中都有一个 sparkcontext，它就是driver<br>
+Worker Node:<br>
+相当于standalone 的 slave节点<br>
+Executor:<br>
+Executor(进程)：每个Driver中都有多个 Executors</p>
+<pre><code>并且可以运行多个 Tasks
+</code></pre>
+<p>Job:<br>
+job:  对应下面即将要说的 action   : collect() 等</p>
+<pre><code>一个 task 对应 一个 job  (一个 transformation 对应 一个 action)
+一个 job 对应 多个 task  (多个 transformations链式调用之后，再调用一个action)
+</code></pre>
+<p>Task:<br>
+task: 对应下面即将要说的 transformation   :map() 等<br>
+每个task可用一个线程执行。多个task可并行</p>
+<p>Stage:<br>
+一个job被切分为多份<br>
+Cluster Manager:<br>
+管理 从 Standalone, YARN, Mesos 中获取的资源<br>
+就是 --master 指定的参数<br>
+其中 还包括 空间 内存等参数配置<br>
+Cache:<br>
+缓存： ### persist &amp; cache &amp; unpersist 三种API可供选择<br>
+Lineage(依赖,血缘关系)：<br>
+依赖：<br>
+父              子               孙<br>
+RDD1  -&gt; map-&gt;  RDD2 -&gt; filter-&gt; RDD3<br>
+服务器1：        part1 -&gt;        part1-&gt;          part1<br>
+服务器2：        part2 -&gt;        part2-&gt;          part2<br>
+服务器3：        part3 -&gt;        part3-&gt;          part3</p>
+<pre><code>    如上图: 假如 RDD3 的 part2 挂了， 那么就会退回到 RDD2的part2再计算一遍。
+           而不是回到&quot;最初&quot;的起点。
+           
+窄依赖（Narrow, 依赖的很少，很窄）：
+    重点:  '子part' 只依赖一个 '父part'。
+    map, filter 等:  元素被摊分在每一个part中， 子part出错就找&quot;对应&quot;（一个） 父part即可。
+
+宽依赖（Wide, 依赖的很多，很宽）：
+    重点:  '子part' 依赖多个 '父part' 同时计算得到。
+    shuffle操作: xxBy, join等： 子part出错 找&quot;对应&quot;（多个） 父part 重新共同计算。
+</code></pre>
+<p>stage:<br>
+遇到 1个宽依赖， 就会做 shuffle操作。<br>
+然后就会把&quot;之前&quot;的 “所有窄依赖”划分为 &quot;1个stage&quot;。<br>
+最后，整体全部，也当作 &quot;1个stage&quot;。</p>
+<h3 id="官档图">官档图</h3>
+<p>传送门：<a href="http://spark.apache.org/docs/latest/cluster-overview.html">http://spark.apache.org/docs/latest/cluster-overview.html</a><br>
+<img src="/img/bVbzEU3" alt="image.png" loading="lazy"></p>
+<h1 id="rdd两大算子">RDD两大算子</h1>
+<h2 id="transformation-lazy">Transformation （Lazy）</h2>
+<p>主要机制：各种操作不会被立刻执行，但这些操作之间的关系会被记录下来，等待下面action调用。<br>
+直观理解举例：<br>
+1. 像 sqlalchemy 中的 filter(), groupby(), page()等操作<br>
+2. 像 tensorflow1.x 中的 sess.run() 之前的各种操作<br>
+3. 像 数据库的事务，在提交之前的各种操作<br>
+接下来介绍，Transformation 的各种操作。</p>
+<h3 id="map">map</h3>
+<pre><code>同 python 的 map。
+你只需记住RDD类型里面包裹的就是我们熟悉的python类型
+所以： 
+    python 的 map 怎么用， RDD对象的 map 就怎么用， 下面filter同理
+
+只举一个语法格式例子：（下面同理）
+    rdd.map(lambda x:x+1)
+</code></pre>
+<h3 id="filter">filter</h3>
+<pre><code>同上，同python
+</code></pre>
+<h3 id="flatmap">flatMap</h3>
+<pre><code>和 map 几乎差不多。
+唯一有一点区别：
+    map 每次基于单个元素，返回什么，那最终结果就是什么（最后拼成序列）。
+    flatMap 每次基于单个元素，若返回的是序列（列表等），那么会自动被解包，并一字排开返回。
+</code></pre>
+<h3 id="groupby-和-groupbykey">groupBy 和 groupByKey</h3>
+<p>说一下 没有key, 和 带有key的区别（后面同理，就不啰嗦了）：<br>
+没有key:<br>
+1. 一般必须需要一个 函数句柄 (lambda), 而这个句柄是针对（操作后新形成的key）使用的<br>
+2. 针对一层序列   [, , ...]<br>
+带有key<br>
+1. 一般无参<br>
+2. 针对双层序列   [(),(),...]<br>
+直接上例子了（对比着看）：<br>
+rdd1 = sc.parallelize(['a','b','c','a'])                      # 一层序列<br>
+rdd2 = sc.parallelize( [('a',1),('b',2), ('c',3), ('a',4)] )  # 双层序列</p>
+<pre><code>group1 = rdd1.groupBy(lambda x:x)   # 针对 一层序列， 注意这里，必须写 函数句柄
+group2 = rdd2.groupByKey()          # 针对 双层序列
+
+print( group1.collect() )
+print( group2.collect() )
+
+# 可以这样告诉你， 他们俩的最外层结果是一样的: [{key:value}, ...], 
+结果如下 ~~~~
+[
+    ('a', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e4384c88&gt;),     
+    ('b', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e43848d0&gt;),
+    ('c', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e4384940&gt;)
+]
+# 如果加了count(), 那么它们的结果就是一样的了，返回统计的个数， 等到 action再说。
+</code></pre>
+<h3 id="reducebykey">reduceByKey</h3>
+<p>照应双层或多层序列，或者 承接 groupByKey()<br>
+rdd = sc.parallelize(['Tom', 'Jerry', 'Tom', 'Putch'])<br>
+rdd.map(lambda x:(x,1)).reduceByKey(lambda x,y:x+y).collect()</p>
+<pre><code># 结果（可以忽略上面的 collect(), 它属于action，放在这里方便贴个结果）
+&gt;&gt; [('Tom', 2), ('Jerry', 1), ('Putch', 1)]
+</code></pre>
+<h3 id="sortby-和-sortbykey">sortBy 和 sortByKey</h3>
+<p>sortBy：根据元素排序（这里的例子是根据key排序， a[1]代表根据value排序）<br>
+&gt;&gt;&gt; a = sc.parallelize([['z',1], ['b',4],['h',3]])<br>
+&gt;&gt;&gt; a.sortBy(lambda a:a[0]).collect()<br>
+[['b', 4], ['h', 3], ['z', 1]]<br>
+&gt;&gt;&gt; a.sortBy(lambda a:a[1]).collect()<br>
+[['z', 1], ['h', 3], ['b', 4]]<br>
+sortByKey：根据key排序<br>
+&gt;&gt;&gt; a.sortByKey().collect()<br>
+[('b', 4), ('h', 3), ('z', 1)]<br>
+可选参数：<br>
+ascending=False  (默认为True升序)</p>
+<h3 id="union">union</h3>
+<pre><code>rdd1.union(rdd2)    # 相当于 python的 &quot;列表加法&quot; 或者 python的 &quot;extend&quot;
+</code></pre>
+<h3 id="distinct">distinct</h3>
+<pre><code>rdd.distinct()      # 去重
+</code></pre>
+<h3 id="join">join</h3>
+<p>前提： （我的理解就是，能转化成 python 字典的列表格式即可）<br>
+eg:  [ [1,2], [3,4], [5,6] ]<br>
+两层列表<br>
+每层列表的每个元素中，  只有2个元素</p>
+<pre><code>错误格式示例：
+    [['a','b','c'], ['d','e','f']]
+
+也不能说错误吧，不过若是这种3个-多个子元素的格式， join时默认会取前2个元素。其余丢弃。
+</code></pre>
+<p>内连接（innerJoin）：<br>
+左外连接（leftOuterJoin）：<br>
+右外连接（rightOuterJoin）：<br>
+全外连接（fullOuterJoin）：</p>
+<p>完整示例：<br>
+rdd1 = sc.parallelize( [['a','b'], ['d','e']] )       # 左<br>
+rdd2 = sc.parallelize( [['a','c'], ['e','f']] )       # 右<br>
+# 开头说过:能转化成字典的列表格式即可，或者你可以写成这样（但是不能传原生字典进去）：<br>
+rdd1 = sc.parallelize( list({'a': 'b', 'd': 'e'}.items()) )<br>
+rdd2 = sc.parallelize( list({'a': 'c', 'e': 'f'}.items()) )</p>
+<pre><code># 内连接（交集）
+print( rdd1.join(rdd2).collect() )             # [('a', ('b', 'c'))]
+
+# 左连接（左并集）
+print( rdd1.leftOuterJoin(rdd2).collect() )    # [('d', ('e', None)), ('a', ('b', 'c'))]
+
+# 右连接（右并集）
+print( rdd1.rightOuterJoin(rdd2).collect() )   # [('a', ('b', 'c')), ('e', (None, 'f'))]
+
+# 全连接（并集）
+print( rdd1.fullOuterJoin(rdd2).collect() )    # [('d', ('e', None)), ('a', ('b', 'c')), ('e', (None, 'f'))]
+</code></pre>
+<h3 id="persist-cache-unpersist">persist &amp; cache &amp; unpersist</h3>
+<p>cache(): 缓存<br>
+persist(): 持久化<br>
+unpersist(): 清空缓存  （他属于 action-立即触发， 为了方便对比，我就一起放到了这里）<br>
+官档：http://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence</p>
+<h2 id="action-commit">Action (Commit)</h2>
+<p>主要机制：拿到 transformation 记录的关系， 用 action的各种操作来真正触发、执行、返回结果。<br>
+对应上面，继续直观举例：<br>
+1. 像 sqlalchemy 中的 commit()<br>
+2. 像 tensorflow1.x 中的 sess.run()<br>
+3. 像 数据库的事务的 &quot;提交&quot;<br>
+接下来介绍，Action 的各种操作。</p>
+<h3 id="collect">collect</h3>
+<p>执行transformation记录的关系 并 返回结果， 在Pyspark中就是RDD类型 转 Python数据类型。<br>
+(中间你可以链式调用各种 transformation方法，结尾调用一个 collect(), 就可以出结果了)<br>
+rdd1.xx().xx().collect()</p>
+<h3 id="count">count</h3>
+<p>统计元素项的个数，同上语法, 同上理念，触发返回结果<br>
+rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
+rdd2.count()  # 无参<br>
+&gt;&gt; 2</p>
+<h3 id="reduce">reduce</h3>
+<pre><code>rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )
+rdd2.reduce(lambda x,y:x+y)    # 参数为2个参数的函数句柄，做&quot;累&quot;的操作，（累加，累乘）等
+&gt;&gt; ['a', 'c', 'd', 'e', 'f', 'g']
+</code></pre>
+<h3 id="take">take</h3>
+<p>相当于mysql的limit操作，取前n个<br>
+rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
+rdd2.take(0)  # []<br>
+rdd2.take(1)  # [['a', 'c', 'd']]<br>
+rdd2.take(2)  # [['a', 'c', 'd'], ['e', 'f', 'g']]</p>
+<pre><code>再次强调： take的参数是，个数的意思，而不是索引，不要混淆额
+</code></pre>
+<h3 id="top">top</h3>
+<p>返回最大的n个元素（会自动给你排序的）<br>
+rdd2 = sc.parallelize( [1,2,3,8,5,3,6,8])<br>
+rdd2.top(3)<br>
+&gt;&gt; [8, 8, 6]</p>
+<h3 id="foreach">foreach</h3>
+<p>遍历每个元素，对子元素做-对应函数句柄的操作，下面说这个action的两点注意事项：<br>
+注意1： 无返回值（返回None）<br>
+注意2： 通常用作 print(), 但是它不会在notebook中打印， 而是在你后台开启的spark中打印。<br>
+rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
+rdd2.foreach(lambda x:print(x))</p>
+<pre><code>&gt;&gt; ['a', 'c', 'd']
+   ['e', 'f', 'g']
+</code></pre>
+<h3 id="saveastextfile">saveAsTextFile</h3>
+<pre><code>rdd = sc.textFile('file:///home/lin/data')
+rdd.saveAsTextFile('file:///home/lin/mydata')  
+
+# 这里有个注意事项： saveAsTextFile的参数路径不能在都进来的路径范围内。
+# 或者说，读是从这个文件夹A（这是最后一级的目录）读进来的， 写就不能写入文件夹A了
+# 另外， mydata是目录名， 进去你会看见 part-00000  这样的文件名，这才是真数据文件。
+</code></pre>
+<h1 id="spark优化相关">Spark优化相关</h1>
+<h3 id="序列化">序列化：</h3>
+<pre><code>好处1：网络传输必备
+好处2：节省内存
+两种方式序列化方式：
+    1. Java内部序列化（默认，较慢，但兼容性好）
+    2. Kryo （较快，但兼容性不太好） 
+</code></pre>
+<h3 id="内存管理">内存管理：</h3>
+<p>可分为 execution（进程执行） 和 storage（存储）<br>
+execution相关操作: shuffle, join, sort, aggregation<br>
+storage相关操作  :   cache，<br>
+特点：<br>
+execution 和 storage 共享整体内存：<br>
+execution起到 &quot;存霸&quot; 的角色:<br>
+1. 若 execution区域内存 不够用了， 它会去抢夺 storage 区域的内存（不归还）<br>
+2. 当然，可以为 storage 设置阈值 （必须给 storage留下多少）<br>
+具体分配多少：<br>
+总内存 = n<br>
+execution内存 = (总内存 - 300M) * 50%<br>
+storage内存   = (总内存 - 300M) * 50%</p>
+<pre><code>说白了，就是留给JVM 300M， 然后 execution 和 storage 各分一半。
+</code></pre>
+<p>查看内存占用情况<br>
+可通过WebUI查看<br>
+（序列化后存储，通常会节省内存）</p>
+<h3 id="broadcasting-variable">Broadcasting Variable</h3>
+<p>情景：正常来说，每个 task（map, filter等） 都会占用1份数据，100个task就会拿100份数据。<br>
+这种情况造成了数据的冗余， BroadCasting Variable（广播变量）就是解决这一问题的。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="tag">
+                    RS
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/">
+                  <h3 class="post-title">
+                    PY =&gt; Ubuntu-Hadoop-YARN-HDFS-Hive-Spark安装配置
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

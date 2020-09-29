@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>RS =&gt; 推荐系统（一）环境配置+数据收集 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601353053893">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Python环境
+miniconda创建虚拟环境：
+conda create -n reco_sys python=3.6.7
+激活/退出 虚拟环境：
+conda activate spider-venv
+conda deactivate
+..." />
+    <meta name="keywords" content="RS" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601353053893" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">RS =&gt; 推荐系统（一）环境配置+数据收集</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="python环境">Python环境</h1>
+<p>miniconda创建虚拟环境：<br>
+conda create -n reco_sys python=3.6.7<br>
+激活/退出 虚拟环境：<br>
+conda activate spider-venv<br>
+conda deactivate<br>
+2个slave需要安装依赖：<br>
+yum -y install gcc<br>
+安装模块：<br>
+pip install redis supervisor apscheduler chardet jieba jupyter numpy pandas scipy scikit-learn pyspark findspark happybase pyhdfs -i https://pypi.douban.com/simple</p>
+<h1 id="大数据环境">大数据环境</h1>
+<h3 id="lambda环境启动脚本配置">Lambda环境启动脚本配置</h3>
+<p>禁用+关闭防火墙：<br>
+systemctl disable firewalld.service<br>
+systemctl stop firewalld.service<br>
+同步系统时间（不这样做 hbase可能启动失败）（3台都运行命令）：<br>
+yum install ntpdate -y<br>
+ntpdate 0.cn.pool.ntp.org</p>
+<p>创建综合启动脚本<br>
+vi start.sh<br>
+/root/bigdata/hadoop/sbin/start-all.sh<br>
+start-hbase.sh<br>
+/root/bigdata/spark/sbin/start-all.sh</p>
+<pre><code>vi stop.sh
+    /root/bigdata/spark/sbin/stop-all.sh 
+    stop-hbase.sh
+    /root/bigdata/hadoop/sbin/stop-all.sh
+</code></pre>
+<p>开启<br>
+/root/scripts/start.sh<br>
+停止<br>
+/root/scripts/stop.sh</p>
+<h3 id="ui地址查log也可">UI地址（查log也可）：</h3>
+<p>Hadoop UI:<br>
+http://192.168.19.137:8088<br>
+YARN UI：<br>
+http://192.168.19.137:50070<br>
+Hbase UI:<br>
+http://192.168.19.137:16010<br>
+Spark UI：<br>
+http://192.168.19.137:8080/</p>
+<h3 id="数据库运行">数据库运行：</h3>
+<p>MySQL启动：<br>
+systemctl start docker<br>
+docker start mysql<br>
+Hive元数据服务开启:<br>
+nohup hive --service metastore &amp;</p>
+<h3 id="spark相关问题">spark相关问题</h3>
+<p>spark on yarn 启动巨慢，解决办法：<br>
+hadoop fs -mkdir -p /system/spark-lib<br>
+hadoop fs -put /root/bigdata/spark-2.2.2-bin-hadoop2.7/jars/* /system/spark-lib<br>
+hadoop fs -chmod -R 755 /system/spark-lib<br>
+cd $SPARK_HOME/conf<br>
+cp spark-defaults.conf.template spark-defaults.conf<br>
+vi spark-defaults.conf<br>
+spark.yarn.jars    hdfs://192.168.19.137:9000//system/spark-lib/*</p>
+<pre><code>如果用的是 jupyter, 记得重启 jupyter服务
+jupyter notebook --allow-root --ip 0.0.0.0
+</code></pre>
+<h3 id="hdfs-hive相关问题">HDFS-Hive相关问题</h3>
+<p>内部表修改为外部表：<br>
+alter table user_profile SET TBLPROPERTIES('EXTERNAL'='TRUE');</p>
+<h1 id="数据构成">数据构成</h1>
+<h3 id="数据库1-toutiao">数据库1： toutiao</h3>
+<pre><code>news_article_basic   # 文章标题
+news_article_content  # 文章内容  
+news_channel       # 文章频道（类别）
+user_basic			  # 用户业务数据 
+user_profile       # 用户私人信息
+</code></pre>
+<h3 id="数据库2-profile">数据库2： profile</h3>
+<pre><code>user_action			  # 用户行为日志
+</code></pre>
+<h3 id="数据库2-article">数据库2： article</h3>
+<pre><code>article_data       # 合并文章标题+内容+频道后的存储结果
+...
+</code></pre>
+<h1 id="数据迁移sqoop">数据迁移（Sqoop）</h1>
+<h3 id="耗时">耗时</h3>
+<pre><code>4000w (10+g): 30+ min
+</code></pre>
+<h3 id="检测sqoop是否能连通mysql-并列出mysql所有数据库">检测Sqoop是否能连通MySQL, 并列出MySQL所有数据库:</h3>
+<pre><code>sqoop list-databases --connect jdbc:mysql://192.168.19.137:3306/ --username root -P
+</code></pre>
+<h3 id="全量导入方式不推荐">全量导入方式（不推荐）：</h3>
+<pre><code>#!/bin/bash
+array=(user_profile user_basic news_user_channel news_channel user_follow user_blacklist user_search news_collection news_article_basic news_article_content news_read news_article_statistic user_material)
+
+for table_name in ${array[@]};
+do
+    sqoop import \
+        --connect jdbc:mysql://192.168.19.137/toutiao \
+        --username root \
+        --password password \
+        --table $table_name \
+        --m 5 \
+        --hive-home /root/bigdata/hive \
+        --hive-import \
+        --create-hive-table  \
+        --hive-drop-import-delims \
+        --warehouse-dir /user/hive/warehouse/toutiao.db \
+        --hive-table toutiao.$table_name
+done
+</code></pre>
+<h3 id="增量导入方式">增量导入方式</h3>
+<p>方式1： 通过指定递增的字段来导入（不推荐，因为某些字段的值不是递增的）<br>
+append：即通过指定一个递增的列，如：--incremental append --check-column num_iid --last-value 0<br>
+方式2：incremental： 时间戳<br>
+--incremental lastmodified <br>
+--check-column column <br>
+--merge-key key <br>
+--last-value '2012-02-01 11:0:00'</p>
+<pre><code>就是只导入check-column的列比'2012-02-01 11:0:00'更大（新）的数据,按照key合并
+</code></pre>
+<h3 id="增量导入位置">增量导入位置</h3>
+<ol>
+<li>直接sqoop导入到hive(–incremental lastmodified 模式不支持导入 Hive )</li>
+<li>sqoop导入到hdfs，然后建立hive表关联<br>
+--target-dir /user/hive/warehouse/toutiao.db/</li>
+</ol>
+<h3 id="sqoop导入到hdfshive表关联到hdfs填坑">sqoop导入到hdfs，hive表关联到hdfs填坑</h3>
+<p>现象：<br>
+查出一堆 null<br>
+原因：<br>
+sqoop 导出的 hdfs 分片数据，都是使用逗号 , 分割的。<br>
+由于 hive 默认的分隔符是 /u0001（Ctrl+A）,为了平滑迁移，需要在创建表格时指定数据的分割符号。<br>
+解决方式：<br>
+导入数据到hive中，需要在创建HIVE表加入 row format delimited fields terminated by ','</p>
+<h3 id="sqoop迁移到hdfs后hive创建表并指定关联位置实例">sqoop迁移到hdfs后，Hive创建表并指定关联位置实例</h3>
+<pre><code>create table user_profile(
+	user_id BIGINT comment &quot;userID&quot;,
+	gender BOOLEAN comment &quot;gender&quot;)
+COMMENT &quot;toutiao user profile&quot;
+row format delimited fields terminated by ','
+LOCATION '/user/hive/warehouse/toutiao.db/user_profile';
+</code></pre>
+<p>注：<br>
+5个表中，只有 news_article_content<br>
+（因为这个表奇怪字符太多，是全量导入的，hive不需要手动创建表，会自动创建的）<br>
+而这个表从 hdfs 拿到的数据是已经做过过滤的，所以不需要 加分隔符了，也就是不需要下面这行代码：<br>
+row format delimited fields terminated by ','</p>
+<h1 id="flume日志收集到hive中">Flume日志收集到Hive中</h1>
+<h3 id="新建数据库">新建数据库</h3>
+<pre><code>create database if not exists profile comment &quot;use action&quot; location '/user/hive/warehouse/profile.db/';
+</code></pre>
+<h3 id="创建表的格式语法实例如下">创建表的格式语法实例如下：</h3>
+<pre><code>create table user_action(
+actionTime STRING comment &quot;user actions time&quot;,
+readTime STRING comment &quot;user reading time&quot;,
+channelId INT comment &quot;article channel id&quot;,
+param map&lt;string, string&gt; comment &quot;action parameter&quot;)
+COMMENT &quot;user primitive action&quot;
+PARTITIONED BY(dt STRING)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+LOCATION '/user/hive/warehouse/profile.db/user_action';
+</code></pre>
+<p>文档中：Hive建表，有个问题 map 需要指定数据类型:<br>
+param map&lt;string, string&gt; comment &quot;action parameter&quot;)</p>
+<pre><code>map 要向上面一样指定 &lt;string, string&gt; 才可以， 不然会报如下错误：
+'''mismatched input 'comment' expecting &lt; near 'map' in map type'''
+</code></pre>
+<p>疑难参数解读：<br>
+PARTITIONED BY(dt STRING)：  hive按照 dt 字段分区<br>
+为什么要分区：<br>
+Hive适合处理大的文件内容量，少的文件数量。<br>
+Flume收集日志可能来一点日志就加到一个新文件中。<br>
+如此一来，文件零散的特别多。 Hive处理的会很慢。</p>
+<pre><code>		所以，Hive指定个分区，来把小文件们分成几大块（就是几个分区），这样处理会更快
+        
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'： 处理Json格式数据
+</code></pre>
+<p>数据导入步骤如下（虚代替Flume）（操作完成后是查不到数据的，需要关联，下面会解释）：<br>
+hadoop fs -put /root/data/backup/profile.db/user_action/*  /user/hive/warehouse/profile.db/user_action/</p>
+<pre><code># 删除: hadoop fs -rmr /user/hive/warehouse/profile.db/*
+</code></pre>
+<h3 id="flume-收集配置">Flume 收集配置</h3>
+<p>进入flume/conf目录<br>
+创建一个collect _ click.conf的文件，写入flume的配置：<br>
+a1.sources = s1<br>
+a1.sinks = k1<br>
+a1.channels = c1</p>
+<pre><code>a1.sources.s1.channels= c1
+a1.sources.s1.type = exec
+a1.sources.s1.command = tail -F /root/logs/userClick.log
+a1.sources.s1.interceptors=i1 i2
+a1.sources.s1.interceptors.i1.type=regex_filter
+a1.sources.s1.interceptors.i1.regex=\\{.*\\}
+a1.sources.s1.interceptors.i2.type=timestamp
+
+# channel1
+a1.channels.c1.type=memory
+a1.channels.c1.capacity=30000
+a1.channels.c1.transactionCapacity=1000
+
+# k1
+a1.sinks.k1.type=hdfs
+a1.sinks.k1.channel=c1
+a1.sinks.k1.hdfs.path=hdfs://192.168.19.137:9000/user/hive/warehouse/profile.db/user_action/%Y-%m-%d
+a1.sinks.k1.hdfs.useLocalTimeStamp = true
+a1.sinks.k1.hdfs.fileType=DataStream
+a1.sinks.k1.hdfs.writeFormat=Text
+a1.sinks.k1.hdfs.rollInterval=0
+a1.sinks.k1.hdfs.rollSize=10240
+a1.sinks.k1.hdfs.rollCount=0
+a1.sinks.k1.hdfs.idleTimeout=60
+</code></pre>
+<p>参数说明：<br>
+sources：为实时查看文件末尾，interceptors解析json文件<br>
+channels：指定内存存储，并且制定batchData的大小，PutList和TakeList的大小见参数，Channel总容量大小见参数<br>
+指定sink：形式直接到hdfs，以及路径，文件大小策略默认1024、event数量策略、文件闲置时间<br>
+开始收集：<br>
+/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1</p>
+<h3 id="hive-关联分区">Hive 关联分区：</h3>
+<p>如果不关联分区，无论是 Flume收集到HDFS的分区数据，还是我们传进去HDFS模拟的分区数据 通过Hive是查不到的<br>
+关联分区如下操作：<br>
+alter table user_action add partition (dt='2018-12-11') location &quot;/user/hive/warehouse/profile.db/user_action/2018-12-11/&quot;</p>
+<h1 id="进程管理-supervisor">进程管理 Supervisor</h1>
+<h3 id="正常配置流程">正常配置流程</h3>
+<p>安装:<br>
+pip install supervisor<br>
+创建配置文件（当前目录执行，或者主目录执行都可，总配置文件就会生成到当前目录下）：<br>
+echo_supervisord_conf &gt; supervisord.conf<br>
+创建自定义配置文件目录：<br>
+mkdir /etc/supervisor<br>
+vim 打开编辑supervisord.conf文件，修改最后1行：<br>
+[include]<br>
+files = relative/directory/<em>.ini<br>
+为<br>
+[include]<br>
+files = /etc/supervisor/</em>.conf<br>
+将最开始生成的 supervisord.conf 复制到 /etc/ 下， 然后主文件就不用动了：<br>
+cp supervisord.conf /etc/<br>
+最后在  /etc/supervisor 这个目录中，自定义我们自己需要的 启动程序的配置文件模板，这里为 vi reco.conf：<br>
+见下面Flume案例</p>
+<h3 id="flumesupervisor-配置案例">Flume+Supervisor 配置案例</h3>
+<p>flume启动需要相关hadoop,java环境，可以在shell脚本汇总添加:<br>
+先创建一个存放此shell脚本的目录：<br>
+mkdir /root/toutiao_project/scripts<br>
+打开文件:<br>
+vi /root/toutiao_project/scripts/collect_click.sh<br>
+并写入:<br>
+#!/usr/bin/env bash</p>
+<pre><code>export JAVA_HOME=/root/bigdata/jdk
+export HADOOP_HOME=/root/bigdata/hadoop
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin
+
+/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1
+</code></pre>
+<p>并在	/etc/supervisor 的reco.conf添加:<br>
+[program:flume]<br>
+command=/bin/bash /root/toutiao_project/scripts/collect_click.sh<br>
+user=root<br>
+autorestart=true<br>
+redirect_stderr=true<br>
+stdout_logfile=/root/logs/collect.log<br>
+loglevel=info<br>
+stopsignal=KILL<br>
+stopasgroup=true<br>
+killasgroup=true</p>
+<p>启动 supervisor服务:<br>
+supervisord -c /etc/supervisord.conf<br>
+查看 supervisor是否运行：<br>
+ps aux | grep supervisord<br>
+管理 supervisor进程管理界面，输入命令：<br>
+supervisorctl<br>
+管理界面可通过如下 命令+进程名 来管理进程：<br>
+start flume<br>
+stop flume<br>
+restart flume</p>
+<pre><code>status		# 查看所有进程状态
+update		# 重启配置文件修改过的程序
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="tag">
+                    RS
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-pyspark-spark-sql/">
+                  <h3 class="post-title">
+                    PY =&gt; PySpark-Spark SQL
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

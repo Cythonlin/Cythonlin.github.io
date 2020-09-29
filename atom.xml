@@ -2,13 +2,1868 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T04:12:23.853Z</updated>
+    <updated>2020-09-29T04:17:36.976Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[RS => 推荐系统（一）环境配置+数据收集]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/">
+        </link>
+        <updated>2020-09-29T04:17:17.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="python环境">Python环境</h1>
+<p>miniconda创建虚拟环境：<br>
+conda create -n reco_sys python=3.6.7<br>
+激活/退出 虚拟环境：<br>
+conda activate spider-venv<br>
+conda deactivate<br>
+2个slave需要安装依赖：<br>
+yum -y install gcc<br>
+安装模块：<br>
+pip install redis supervisor apscheduler chardet jieba jupyter numpy pandas scipy scikit-learn pyspark findspark happybase pyhdfs -i https://pypi.douban.com/simple</p>
+<h1 id="大数据环境">大数据环境</h1>
+<h3 id="lambda环境启动脚本配置">Lambda环境启动脚本配置</h3>
+<p>禁用+关闭防火墙：<br>
+systemctl disable firewalld.service<br>
+systemctl stop firewalld.service<br>
+同步系统时间（不这样做 hbase可能启动失败）（3台都运行命令）：<br>
+yum install ntpdate -y<br>
+ntpdate 0.cn.pool.ntp.org</p>
+<p>创建综合启动脚本<br>
+vi start.sh<br>
+/root/bigdata/hadoop/sbin/start-all.sh<br>
+start-hbase.sh<br>
+/root/bigdata/spark/sbin/start-all.sh</p>
+<pre><code>vi stop.sh
+    /root/bigdata/spark/sbin/stop-all.sh 
+    stop-hbase.sh
+    /root/bigdata/hadoop/sbin/stop-all.sh
+</code></pre>
+<p>开启<br>
+/root/scripts/start.sh<br>
+停止<br>
+/root/scripts/stop.sh</p>
+<h3 id="ui地址查log也可">UI地址（查log也可）：</h3>
+<p>Hadoop UI:<br>
+http://192.168.19.137:8088<br>
+YARN UI：<br>
+http://192.168.19.137:50070<br>
+Hbase UI:<br>
+http://192.168.19.137:16010<br>
+Spark UI：<br>
+http://192.168.19.137:8080/</p>
+<h3 id="数据库运行">数据库运行：</h3>
+<p>MySQL启动：<br>
+systemctl start docker<br>
+docker start mysql<br>
+Hive元数据服务开启:<br>
+nohup hive --service metastore &amp;</p>
+<h3 id="spark相关问题">spark相关问题</h3>
+<p>spark on yarn 启动巨慢，解决办法：<br>
+hadoop fs -mkdir -p /system/spark-lib<br>
+hadoop fs -put /root/bigdata/spark-2.2.2-bin-hadoop2.7/jars/* /system/spark-lib<br>
+hadoop fs -chmod -R 755 /system/spark-lib<br>
+cd $SPARK_HOME/conf<br>
+cp spark-defaults.conf.template spark-defaults.conf<br>
+vi spark-defaults.conf<br>
+spark.yarn.jars    hdfs://192.168.19.137:9000//system/spark-lib/*</p>
+<pre><code>如果用的是 jupyter, 记得重启 jupyter服务
+jupyter notebook --allow-root --ip 0.0.0.0
+</code></pre>
+<h3 id="hdfs-hive相关问题">HDFS-Hive相关问题</h3>
+<p>内部表修改为外部表：<br>
+alter table user_profile SET TBLPROPERTIES('EXTERNAL'='TRUE');</p>
+<h1 id="数据构成">数据构成</h1>
+<h3 id="数据库1-toutiao">数据库1： toutiao</h3>
+<pre><code>news_article_basic   # 文章标题
+news_article_content  # 文章内容  
+news_channel       # 文章频道（类别）
+user_basic			  # 用户业务数据 
+user_profile       # 用户私人信息
+</code></pre>
+<h3 id="数据库2-profile">数据库2： profile</h3>
+<pre><code>user_action			  # 用户行为日志
+</code></pre>
+<h3 id="数据库2-article">数据库2： article</h3>
+<pre><code>article_data       # 合并文章标题+内容+频道后的存储结果
+...
+</code></pre>
+<h1 id="数据迁移sqoop">数据迁移（Sqoop）</h1>
+<h3 id="耗时">耗时</h3>
+<pre><code>4000w (10+g): 30+ min
+</code></pre>
+<h3 id="检测sqoop是否能连通mysql-并列出mysql所有数据库">检测Sqoop是否能连通MySQL, 并列出MySQL所有数据库:</h3>
+<pre><code>sqoop list-databases --connect jdbc:mysql://192.168.19.137:3306/ --username root -P
+</code></pre>
+<h3 id="全量导入方式不推荐">全量导入方式（不推荐）：</h3>
+<pre><code>#!/bin/bash
+array=(user_profile user_basic news_user_channel news_channel user_follow user_blacklist user_search news_collection news_article_basic news_article_content news_read news_article_statistic user_material)
+
+for table_name in ${array[@]};
+do
+    sqoop import \
+        --connect jdbc:mysql://192.168.19.137/toutiao \
+        --username root \
+        --password password \
+        --table $table_name \
+        --m 5 \
+        --hive-home /root/bigdata/hive \
+        --hive-import \
+        --create-hive-table  \
+        --hive-drop-import-delims \
+        --warehouse-dir /user/hive/warehouse/toutiao.db \
+        --hive-table toutiao.$table_name
+done
+</code></pre>
+<h3 id="增量导入方式">增量导入方式</h3>
+<p>方式1： 通过指定递增的字段来导入（不推荐，因为某些字段的值不是递增的）<br>
+append：即通过指定一个递增的列，如：--incremental append --check-column num_iid --last-value 0<br>
+方式2：incremental： 时间戳<br>
+--incremental lastmodified <br>
+--check-column column <br>
+--merge-key key <br>
+--last-value '2012-02-01 11:0:00'</p>
+<pre><code>就是只导入check-column的列比'2012-02-01 11:0:00'更大（新）的数据,按照key合并
+</code></pre>
+<h3 id="增量导入位置">增量导入位置</h3>
+<ol>
+<li>直接sqoop导入到hive(–incremental lastmodified 模式不支持导入 Hive )</li>
+<li>sqoop导入到hdfs，然后建立hive表关联<br>
+--target-dir /user/hive/warehouse/toutiao.db/</li>
+</ol>
+<h3 id="sqoop导入到hdfshive表关联到hdfs填坑">sqoop导入到hdfs，hive表关联到hdfs填坑</h3>
+<p>现象：<br>
+查出一堆 null<br>
+原因：<br>
+sqoop 导出的 hdfs 分片数据，都是使用逗号 , 分割的。<br>
+由于 hive 默认的分隔符是 /u0001（Ctrl+A）,为了平滑迁移，需要在创建表格时指定数据的分割符号。<br>
+解决方式：<br>
+导入数据到hive中，需要在创建HIVE表加入 row format delimited fields terminated by ','</p>
+<h3 id="sqoop迁移到hdfs后hive创建表并指定关联位置实例">sqoop迁移到hdfs后，Hive创建表并指定关联位置实例</h3>
+<pre><code>create table user_profile(
+	user_id BIGINT comment &quot;userID&quot;,
+	gender BOOLEAN comment &quot;gender&quot;)
+COMMENT &quot;toutiao user profile&quot;
+row format delimited fields terminated by ','
+LOCATION '/user/hive/warehouse/toutiao.db/user_profile';
+</code></pre>
+<p>注：<br>
+5个表中，只有 news_article_content<br>
+（因为这个表奇怪字符太多，是全量导入的，hive不需要手动创建表，会自动创建的）<br>
+而这个表从 hdfs 拿到的数据是已经做过过滤的，所以不需要 加分隔符了，也就是不需要下面这行代码：<br>
+row format delimited fields terminated by ','</p>
+<h1 id="flume日志收集到hive中">Flume日志收集到Hive中</h1>
+<h3 id="新建数据库">新建数据库</h3>
+<pre><code>create database if not exists profile comment &quot;use action&quot; location '/user/hive/warehouse/profile.db/';
+</code></pre>
+<h3 id="创建表的格式语法实例如下">创建表的格式语法实例如下：</h3>
+<pre><code>create table user_action(
+actionTime STRING comment &quot;user actions time&quot;,
+readTime STRING comment &quot;user reading time&quot;,
+channelId INT comment &quot;article channel id&quot;,
+param map&lt;string, string&gt; comment &quot;action parameter&quot;)
+COMMENT &quot;user primitive action&quot;
+PARTITIONED BY(dt STRING)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+LOCATION '/user/hive/warehouse/profile.db/user_action';
+</code></pre>
+<p>文档中：Hive建表，有个问题 map 需要指定数据类型:<br>
+param map&lt;string, string&gt; comment &quot;action parameter&quot;)</p>
+<pre><code>map 要向上面一样指定 &lt;string, string&gt; 才可以， 不然会报如下错误：
+'''mismatched input 'comment' expecting &lt; near 'map' in map type'''
+</code></pre>
+<p>疑难参数解读：<br>
+PARTITIONED BY(dt STRING)：  hive按照 dt 字段分区<br>
+为什么要分区：<br>
+Hive适合处理大的文件内容量，少的文件数量。<br>
+Flume收集日志可能来一点日志就加到一个新文件中。<br>
+如此一来，文件零散的特别多。 Hive处理的会很慢。</p>
+<pre><code>		所以，Hive指定个分区，来把小文件们分成几大块（就是几个分区），这样处理会更快
+        
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'： 处理Json格式数据
+</code></pre>
+<p>数据导入步骤如下（虚代替Flume）（操作完成后是查不到数据的，需要关联，下面会解释）：<br>
+hadoop fs -put /root/data/backup/profile.db/user_action/*  /user/hive/warehouse/profile.db/user_action/</p>
+<pre><code># 删除: hadoop fs -rmr /user/hive/warehouse/profile.db/*
+</code></pre>
+<h3 id="flume-收集配置">Flume 收集配置</h3>
+<p>进入flume/conf目录<br>
+创建一个collect _ click.conf的文件，写入flume的配置：<br>
+a1.sources = s1<br>
+a1.sinks = k1<br>
+a1.channels = c1</p>
+<pre><code>a1.sources.s1.channels= c1
+a1.sources.s1.type = exec
+a1.sources.s1.command = tail -F /root/logs/userClick.log
+a1.sources.s1.interceptors=i1 i2
+a1.sources.s1.interceptors.i1.type=regex_filter
+a1.sources.s1.interceptors.i1.regex=\\{.*\\}
+a1.sources.s1.interceptors.i2.type=timestamp
+
+# channel1
+a1.channels.c1.type=memory
+a1.channels.c1.capacity=30000
+a1.channels.c1.transactionCapacity=1000
+
+# k1
+a1.sinks.k1.type=hdfs
+a1.sinks.k1.channel=c1
+a1.sinks.k1.hdfs.path=hdfs://192.168.19.137:9000/user/hive/warehouse/profile.db/user_action/%Y-%m-%d
+a1.sinks.k1.hdfs.useLocalTimeStamp = true
+a1.sinks.k1.hdfs.fileType=DataStream
+a1.sinks.k1.hdfs.writeFormat=Text
+a1.sinks.k1.hdfs.rollInterval=0
+a1.sinks.k1.hdfs.rollSize=10240
+a1.sinks.k1.hdfs.rollCount=0
+a1.sinks.k1.hdfs.idleTimeout=60
+</code></pre>
+<p>参数说明：<br>
+sources：为实时查看文件末尾，interceptors解析json文件<br>
+channels：指定内存存储，并且制定batchData的大小，PutList和TakeList的大小见参数，Channel总容量大小见参数<br>
+指定sink：形式直接到hdfs，以及路径，文件大小策略默认1024、event数量策略、文件闲置时间<br>
+开始收集：<br>
+/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1</p>
+<h3 id="hive-关联分区">Hive 关联分区：</h3>
+<p>如果不关联分区，无论是 Flume收集到HDFS的分区数据，还是我们传进去HDFS模拟的分区数据 通过Hive是查不到的<br>
+关联分区如下操作：<br>
+alter table user_action add partition (dt='2018-12-11') location &quot;/user/hive/warehouse/profile.db/user_action/2018-12-11/&quot;</p>
+<h1 id="进程管理-supervisor">进程管理 Supervisor</h1>
+<h3 id="正常配置流程">正常配置流程</h3>
+<p>安装:<br>
+pip install supervisor<br>
+创建配置文件（当前目录执行，或者主目录执行都可，总配置文件就会生成到当前目录下）：<br>
+echo_supervisord_conf &gt; supervisord.conf<br>
+创建自定义配置文件目录：<br>
+mkdir /etc/supervisor<br>
+vim 打开编辑supervisord.conf文件，修改最后1行：<br>
+[include]<br>
+files = relative/directory/<em>.ini<br>
+为<br>
+[include]<br>
+files = /etc/supervisor/</em>.conf<br>
+将最开始生成的 supervisord.conf 复制到 /etc/ 下， 然后主文件就不用动了：<br>
+cp supervisord.conf /etc/<br>
+最后在  /etc/supervisor 这个目录中，自定义我们自己需要的 启动程序的配置文件模板，这里为 vi reco.conf：<br>
+见下面Flume案例</p>
+<h3 id="flumesupervisor-配置案例">Flume+Supervisor 配置案例</h3>
+<p>flume启动需要相关hadoop,java环境，可以在shell脚本汇总添加:<br>
+先创建一个存放此shell脚本的目录：<br>
+mkdir /root/toutiao_project/scripts<br>
+打开文件:<br>
+vi /root/toutiao_project/scripts/collect_click.sh<br>
+并写入:<br>
+#!/usr/bin/env bash</p>
+<pre><code>export JAVA_HOME=/root/bigdata/jdk
+export HADOOP_HOME=/root/bigdata/hadoop
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin
+
+/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1
+</code></pre>
+<p>并在	/etc/supervisor 的reco.conf添加:<br>
+[program:flume]<br>
+command=/bin/bash /root/toutiao_project/scripts/collect_click.sh<br>
+user=root<br>
+autorestart=true<br>
+redirect_stderr=true<br>
+stdout_logfile=/root/logs/collect.log<br>
+loglevel=info<br>
+stopsignal=KILL<br>
+stopasgroup=true<br>
+killasgroup=true</p>
+<p>启动 supervisor服务:<br>
+supervisord -c /etc/supervisord.conf<br>
+查看 supervisor是否运行：<br>
+ps aux | grep supervisord<br>
+管理 supervisor进程管理界面，输入命令：<br>
+supervisorctl<br>
+管理界面可通过如下 命令+进程名 来管理进程：<br>
+start flume<br>
+stop flume<br>
+restart flume</p>
+<pre><code>status		# 查看所有进程状态
+update		# 重启配置文件修改过的程序
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => PySpark-Spark SQL]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-pyspark-spark-sql/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-pyspark-spark-sql/">
+        </link>
+        <updated>2020-09-29T04:16:24.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="spark-sql">Spark SQL</h1>
+<p>Spark SQL 分为三类：</p>
+<ol>
+<li>SQL</li>
+<li>DataFrame (参考pandas，但略有不同)</li>
+<li>Datasets (由于python是动态的，所以不支持python)</li>
+</ol>
+<h3 id="初始环境">初始环境：</h3>
+<pre><code>import findspark
+findspark.init()
+
+from pyspark.sql import SparkSession        
+spark = SparkSession.builder.appName('myspark').getOrCreate()    # 初始化session
+# spark.sparkContext.parallelize([1,2,3,4]).collect()  # 里面包含之前说过的sparkContext
+...
+中间这部分留给下面写
+...
+spark.stop()         # 关闭 session
+</code></pre>
+<p>从json导入为df:<br>
+df = spark.read.json(&quot;file:///home/lin/data/user.json&quot;,multiLine=True)<br>
+打印DF字段信息：<br>
+df.printSchema()</p>
+<pre><code>root
+ |-- age: long (nullable = true)
+ |-- gender: string (nullable = true)
+ |-- name: string (nullable = true)
+</code></pre>
+<h3 id="crud">CRUD</h3>
+<p>增<br>
+from pyspark.sql import functions as f</p>
+<pre><code># schema就相当于 pandas 指定的 columns, 双层序列，  [2x4] 的样本
+df1 = spark.createDataFrame([[1,2,3,4],[5,6,7,8]],schema=['1_c','2_c', '3_c', '4_c'])
++-----+-----+-----+-----+
+|1\_col|2\_col|3\_col|4\_col|
++-----+-----+-----+-----+
+|    1|    2|    3|    4|
+|    5|    6|    7|    8|
++-----+-----+-----+-----+
+
+# lit可以在指定空列的时候，指定 null值， 或者 int型（里面有很多类型，可以发现）
+# df2 = df1.withColumn('null_col', f.lit(None)).withColumn('digit_col', f.lit(2))
+df2 = df1.withColumn('5_col', df1['4_col']+1)   # 在原来列字段基础上。
+df2.show()
+</code></pre>
+<p>删<br>
+df2 = df1.drop('age')        # 删除 age列<br>
+df2 = df1.dropna()           # 删除空行<br>
+df2 = df1.drop_duplicates()  # 删除重复-行<br>
+改<br>
+和&quot;增&quot;，差不多，只不过字段，指定为原有字段字符串即可。</p>
+<p>查<br>
+下面的讲的（投影、过滤、排序、分组），几乎都是查。</p>
+<h3 id="投影">投影</h3>
+<p>投影所有：<br>
+df.show(n=20)        # 默认就是 n=20 只返回 前20条记录</p>
+<pre><code>+---+------+--------+
+|age|gender|    name|
++---+------+--------+
+| 18|   man|zhangsan|
++---+------+--------+
+</code></pre>
+<p>选中某列投影：<br>
+df.select('name','age').show()        # 若直接写 '*', 和直接 df.show()是一个效果</p>
+<pre><code>+--------+---+
+|    name|age|
++--------+---+
+|zhangsan| 18|
++--------+---+
+</code></pre>
+<p>或者用另两种方式投影（投影过程可计算）：<br>
+df.select(df['name'],df['age']+20).show() # 同上，这是另一种写法，注意一下列名<br>
+df.select(df.name, df.age+20).show()      # 同上，这是另二种写法，注意一下列名</p>
+<pre><code>+--------+----------+
+|    name|(age + 20)|
++--------+----------+
+|zhangsan|        38|
++--------+----------+
+</code></pre>
+<p>取出前N条DF，并转化为 [ {} , {} ] 格式<br>
+df_user.take(1)  # [Row(age=18, name='张三')]<br>
+df_user.head(1)  # [Row(age=18, name='张三')]<br>
+df_user.first()  # Row(age=18, name='张三')    # 注意,无列表</p>
+<h3 id="排序">排序</h3>
+<pre><code>df_user.head(1)
+df_user.sort(df_user.name.desc()).show()
+
+# 另外说明一点, df的每个熟悉都有,一些操作符函数, desc()就是一种操作符函数
+</code></pre>
+<h3 id="过滤">过滤：</h3>
+<pre><code>df.filter( df['age'] &gt; 15).show()
+
++---+------+----+
+|age|gender|name|
++---+------+----+
++---+------+----+
+</code></pre>
+<h3 id="分组">分组：</h3>
+<pre><code>df.groupBy('name').count().show()
+
++--------+-----+
+|    name|count|
++--------+-----+
+|zhangsan|    1|
++--------+-----+
+</code></pre>
+<h3 id="join">Join</h3>
+<pre><code>df_user.join(df_user, on=df_user.name==df_user.name, how='inner').show()
+
++----+---+----+---+
+|name|age|name|age|
++----+---+----+---+
+|李四| 20|李四| 20 |
+|张三| 18|张三| 18 |
++----+---+----+---+
+# 特别提醒， 此 Join， 只要都进来是 DF格式的任何数据库，都可 Join
+# 比如： MySQL 和 Hive  ,  Json 也可。
+</code></pre>
+<h3 id="储存为临时视图表-并调用sql语句">储存为临时视图（表), 并调用sql语句：</h3>
+<pre><code>df.createOrReplaceTempView('user')                  # 创建为 user临时视图
+df_sql = spark.sql('select * from user').show()     # spark.sql返回的还是df, 所以要show()
+
++---+------+--------+
+|age|gender|    name|
++---+------+--------+
+| 18|   man|zhangsan|
++---+------+--------+
+</code></pre>
+<h3 id="rdd-与-df互转">RDD 与 DF互转</h3>
+<p>RDD -&gt; DF<br>
+### RDD -&gt; DF 需要把RDD做成两种格式(任选其一)<br>
+### 第一种 Row 格式<br>
+from pyspark import Row<br>
+rdd_user = spark.sparkContext.parallelize( [('张三',18), ('李四',20)] )<br>
+rdd_user_row = rdd_user.map(lambda x:Row(name=x[0], age=x[1]))<br>
+print(rdd_user_row.collect()) # [Row(age=18, name='张三'), Row(age=20, name='李四')]<br>
+df_user = spark.createDataFrame(rdd_user_row)</p>
+<pre><code>### 第二种 [('张三', 18),('李四', 20)]
+    rdd_user = spark.sparkContext.parallelize( [('张三',18), ('李四',20)] )
+    df_user = rdd_user.toDF(['name', 'age'])        # 给定列名
+df_user.show()
+</code></pre>
+<p>DF -&gt; RDD<br>
+rdd_row = df_user.rdd.map(lambda x: x.asDict())  # 或者 x.name, x.age取值<br>
+rdd_row.collect()  # [{'age': 18, 'name': '张三'}, {'age': 20, 'name': '李四'}]</p>
+<h3 id="csv读写">CSV读写</h3>
+<p>从HDFS中读取(我们先新建一个CSV并扔到HDFS中),<br>
+vi mydata.csv:<br>
+name,age<br>
+zhangsan,18<br>
+lisi, 20</p>
+<pre><code>hadoop fs -mkdir /data                 # 在HDFS中新建一个目录 /data
+hadoop fs -put mydata.csv /data        # 并把本地 mydata.csv扔进去 (-get可拿出来)
+</code></pre>
+<p>在代码中读取 HDFS数据:<br>
+df = spark.read.csv(&quot;hdfs:///data/mydata.csv&quot;, header=True)<br>
+df.show()<br>
+# header=True 代表, csv文件的第一行作为csv的抬头(列名)<br>
+# df.write.csv(&quot;hdfs:///data/mydata.csv&quot;, header=True)   # read改为write就变成了写</p>
+<h3 id="hive读写">Hive读写</h3>
+<p>Hive的配置与依赖之前讲过了（最值得注意的是需要先启动一个 metadata的服务）<br>
+先验传送门：<a href="https://segmentfault.com/a/1190000020841646">https://segmentfault.com/a/1190000020841646</a><br>
+import findspark<br>
+findspark.init()</p>
+<pre><code>from pyspark.sql import SparkSession   
+
+spark = SparkSession.builder\
+    .appName(&quot;Spark Hive Example&quot;)\
+    .master(&quot;local[*]&quot;)\
+    .config(&quot;hive.metastore.uris&quot;, &quot;thrift://localhost:9083&quot;)\
+    .enableHiveSupport()\
+    .getOrCreate()
+
+spark.sql(&quot;use mydatabase&quot;)        # 执行Hive 的 SQL, 切换数据库（前提你得有）
+</code></pre>
+<p>读：<br>
+df = spark.table('person').show()  # 直接对表操作 (注意，sql语句也可)<br>
+写：<br>
+df = spark.table('person')<br>
+df2 = df.withColumn('nickname', df.name)  # 稍微变动一下，添一个字段<br>
+df2.write.saveAsTable(&quot;new_person&quot;)       # 写入新表</p>
+<h3 id="mysql读写">MySQL读写</h3>
+<p>读：<br>
+# 注意0：有好几种方式，我只列举一个 成对的读写配置。<br>
+# 注意1: url中 &quot;hive&quot;是数据库名. 你也可以起为别的名<br>
+# 注意2：table的值--&quot;TBLS&quot;,  它是 MySQL中&quot;hive库&quot;中的一个表。<br>
+# 注意3：特别注意！ TBLS不是我们想要的表。他只是一个大表，管理了我们hive的信息<br>
+#        TBLS中的 一个列属性 &quot;TBL_NAME&quot; 才是真正我们需要的表！！</p>
+<pre><code>df = spark.read.jdbc(
+    url='jdbc:mysql://localhost:3306/hive?user=root&amp;password=123',
+    table=&quot;TBLS&quot;,
+    properties={&quot;driver&quot;:&quot;com.mysql.jdbc.Driver&quot;},
+)
+
+df.show()
+df.select(&quot;TBL_NAME&quot;).show()
+</code></pre>
+<p>写：<br>
+df.write.jdbc(<br>
+url='jdbc:mysql://localhost:3306/hive?user=root&amp;password=123',<br>
+table=&quot;new_table&quot;,<br>
+mode='append',<br>
+properties={&quot;driver&quot;: &quot;com.mysql.jdbc.Driver&quot;}<br>
+)</p>
+<pre><code># 同是特别注意： 和读一样， 它写入的新表，也是一个整体的表结构。
+#     此表的一个列&quot;TBL_NAME&quot;，它才对应了我们真正要操作的表</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => PySpark-Spark Core（RDD）]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-pyspark-spark-corerdd/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-pyspark-spark-corerdd/">
+        </link>
+        <updated>2020-09-29T04:15:57.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<p>第一篇传送门：<a href="https://segmentfault.com/a/1190000020841646">https://segmentfault.com/a/1190000020841646</a></p>
+<h1 id="rdd认知">RDD认知</h1>
+<h3 id="rdd是什么">RDD是什么？</h3>
+<p>RDD: 弹性分布式数据集（Resiliennt Distributed Datasets）</p>
+<p>转为格式RDD的几种方式：<br>
+1. parallelize:<br>
+rdd = sc.parallelize([1,2,3,4,5])   # 里面传的就是普通python类型</p>
+<pre><code>2. 读文件/读数据库/读ES等各种方式，此处以读文件为例：
+    rdd = sc.textFile('file:///home/lin/data/hello.txt')
+</code></pre>
+<h3 id="rdd核心概念">RDD核心概念</h3>
+<p>Application:<br>
+application: 一个app 就是一个自定义的 py脚本（被 spark-submit提交的）或一个spark-shell<br>
+app = 1个 driver + 多个executors(相当于多个进程)</p>
+<pre><code>注意：数据在不同的 app之间 不能被共享， 若想要共享（需要考虑外部存储）
+</code></pre>
+<p>Driver:<br>
+每一个.py脚本中都有一个 sparkcontext，它就是driver<br>
+Worker Node:<br>
+相当于standalone 的 slave节点<br>
+Executor:<br>
+Executor(进程)：每个Driver中都有多个 Executors</p>
+<pre><code>并且可以运行多个 Tasks
+</code></pre>
+<p>Job:<br>
+job:  对应下面即将要说的 action   : collect() 等</p>
+<pre><code>一个 task 对应 一个 job  (一个 transformation 对应 一个 action)
+一个 job 对应 多个 task  (多个 transformations链式调用之后，再调用一个action)
+</code></pre>
+<p>Task:<br>
+task: 对应下面即将要说的 transformation   :map() 等<br>
+每个task可用一个线程执行。多个task可并行</p>
+<p>Stage:<br>
+一个job被切分为多份<br>
+Cluster Manager:<br>
+管理 从 Standalone, YARN, Mesos 中获取的资源<br>
+就是 --master 指定的参数<br>
+其中 还包括 空间 内存等参数配置<br>
+Cache:<br>
+缓存： ### persist &amp; cache &amp; unpersist 三种API可供选择<br>
+Lineage(依赖,血缘关系)：<br>
+依赖：<br>
+父              子               孙<br>
+RDD1  -&gt; map-&gt;  RDD2 -&gt; filter-&gt; RDD3<br>
+服务器1：        part1 -&gt;        part1-&gt;          part1<br>
+服务器2：        part2 -&gt;        part2-&gt;          part2<br>
+服务器3：        part3 -&gt;        part3-&gt;          part3</p>
+<pre><code>    如上图: 假如 RDD3 的 part2 挂了， 那么就会退回到 RDD2的part2再计算一遍。
+           而不是回到&quot;最初&quot;的起点。
+           
+窄依赖（Narrow, 依赖的很少，很窄）：
+    重点:  '子part' 只依赖一个 '父part'。
+    map, filter 等:  元素被摊分在每一个part中， 子part出错就找&quot;对应&quot;（一个） 父part即可。
+
+宽依赖（Wide, 依赖的很多，很宽）：
+    重点:  '子part' 依赖多个 '父part' 同时计算得到。
+    shuffle操作: xxBy, join等： 子part出错 找&quot;对应&quot;（多个） 父part 重新共同计算。
+</code></pre>
+<p>stage:<br>
+遇到 1个宽依赖， 就会做 shuffle操作。<br>
+然后就会把&quot;之前&quot;的 “所有窄依赖”划分为 &quot;1个stage&quot;。<br>
+最后，整体全部，也当作 &quot;1个stage&quot;。</p>
+<h3 id="官档图">官档图</h3>
+<p>传送门：<a href="http://spark.apache.org/docs/latest/cluster-overview.html">http://spark.apache.org/docs/latest/cluster-overview.html</a><br>
+<img src="/img/bVbzEU3" alt="image.png" loading="lazy"></p>
+<h1 id="rdd两大算子">RDD两大算子</h1>
+<h2 id="transformation-lazy">Transformation （Lazy）</h2>
+<p>主要机制：各种操作不会被立刻执行，但这些操作之间的关系会被记录下来，等待下面action调用。<br>
+直观理解举例：<br>
+1. 像 sqlalchemy 中的 filter(), groupby(), page()等操作<br>
+2. 像 tensorflow1.x 中的 sess.run() 之前的各种操作<br>
+3. 像 数据库的事务，在提交之前的各种操作<br>
+接下来介绍，Transformation 的各种操作。</p>
+<h3 id="map">map</h3>
+<pre><code>同 python 的 map。
+你只需记住RDD类型里面包裹的就是我们熟悉的python类型
+所以： 
+    python 的 map 怎么用， RDD对象的 map 就怎么用， 下面filter同理
+
+只举一个语法格式例子：（下面同理）
+    rdd.map(lambda x:x+1)
+</code></pre>
+<h3 id="filter">filter</h3>
+<pre><code>同上，同python
+</code></pre>
+<h3 id="flatmap">flatMap</h3>
+<pre><code>和 map 几乎差不多。
+唯一有一点区别：
+    map 每次基于单个元素，返回什么，那最终结果就是什么（最后拼成序列）。
+    flatMap 每次基于单个元素，若返回的是序列（列表等），那么会自动被解包，并一字排开返回。
+</code></pre>
+<h3 id="groupby-和-groupbykey">groupBy 和 groupByKey</h3>
+<p>说一下 没有key, 和 带有key的区别（后面同理，就不啰嗦了）：<br>
+没有key:<br>
+1. 一般必须需要一个 函数句柄 (lambda), 而这个句柄是针对（操作后新形成的key）使用的<br>
+2. 针对一层序列   [, , ...]<br>
+带有key<br>
+1. 一般无参<br>
+2. 针对双层序列   [(),(),...]<br>
+直接上例子了（对比着看）：<br>
+rdd1 = sc.parallelize(['a','b','c','a'])                      # 一层序列<br>
+rdd2 = sc.parallelize( [('a',1),('b',2), ('c',3), ('a',4)] )  # 双层序列</p>
+<pre><code>group1 = rdd1.groupBy(lambda x:x)   # 针对 一层序列， 注意这里，必须写 函数句柄
+group2 = rdd2.groupByKey()          # 针对 双层序列
+
+print( group1.collect() )
+print( group2.collect() )
+
+# 可以这样告诉你， 他们俩的最外层结果是一样的: [{key:value}, ...], 
+结果如下 ~~~~
+[
+    ('a', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e4384c88&gt;),     
+    ('b', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e43848d0&gt;),
+    ('c', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e4384940&gt;)
+]
+# 如果加了count(), 那么它们的结果就是一样的了，返回统计的个数， 等到 action再说。
+</code></pre>
+<h3 id="reducebykey">reduceByKey</h3>
+<p>照应双层或多层序列，或者 承接 groupByKey()<br>
+rdd = sc.parallelize(['Tom', 'Jerry', 'Tom', 'Putch'])<br>
+rdd.map(lambda x:(x,1)).reduceByKey(lambda x,y:x+y).collect()</p>
+<pre><code># 结果（可以忽略上面的 collect(), 它属于action，放在这里方便贴个结果）
+&gt;&gt; [('Tom', 2), ('Jerry', 1), ('Putch', 1)]
+</code></pre>
+<h3 id="sortby-和-sortbykey">sortBy 和 sortByKey</h3>
+<p>sortBy：根据元素排序（这里的例子是根据key排序， a[1]代表根据value排序）<br>
+&gt;&gt;&gt; a = sc.parallelize([['z',1], ['b',4],['h',3]])<br>
+&gt;&gt;&gt; a.sortBy(lambda a:a[0]).collect()<br>
+[['b', 4], ['h', 3], ['z', 1]]<br>
+&gt;&gt;&gt; a.sortBy(lambda a:a[1]).collect()<br>
+[['z', 1], ['h', 3], ['b', 4]]<br>
+sortByKey：根据key排序<br>
+&gt;&gt;&gt; a.sortByKey().collect()<br>
+[('b', 4), ('h', 3), ('z', 1)]<br>
+可选参数：<br>
+ascending=False  (默认为True升序)</p>
+<h3 id="union">union</h3>
+<pre><code>rdd1.union(rdd2)    # 相当于 python的 &quot;列表加法&quot; 或者 python的 &quot;extend&quot;
+</code></pre>
+<h3 id="distinct">distinct</h3>
+<pre><code>rdd.distinct()      # 去重
+</code></pre>
+<h3 id="join">join</h3>
+<p>前提： （我的理解就是，能转化成 python 字典的列表格式即可）<br>
+eg:  [ [1,2], [3,4], [5,6] ]<br>
+两层列表<br>
+每层列表的每个元素中，  只有2个元素</p>
+<pre><code>错误格式示例：
+    [['a','b','c'], ['d','e','f']]
+
+也不能说错误吧，不过若是这种3个-多个子元素的格式， join时默认会取前2个元素。其余丢弃。
+</code></pre>
+<p>内连接（innerJoin）：<br>
+左外连接（leftOuterJoin）：<br>
+右外连接（rightOuterJoin）：<br>
+全外连接（fullOuterJoin）：</p>
+<p>完整示例：<br>
+rdd1 = sc.parallelize( [['a','b'], ['d','e']] )       # 左<br>
+rdd2 = sc.parallelize( [['a','c'], ['e','f']] )       # 右<br>
+# 开头说过:能转化成字典的列表格式即可，或者你可以写成这样（但是不能传原生字典进去）：<br>
+rdd1 = sc.parallelize( list({'a': 'b', 'd': 'e'}.items()) )<br>
+rdd2 = sc.parallelize( list({'a': 'c', 'e': 'f'}.items()) )</p>
+<pre><code># 内连接（交集）
+print( rdd1.join(rdd2).collect() )             # [('a', ('b', 'c'))]
+
+# 左连接（左并集）
+print( rdd1.leftOuterJoin(rdd2).collect() )    # [('d', ('e', None)), ('a', ('b', 'c'))]
+
+# 右连接（右并集）
+print( rdd1.rightOuterJoin(rdd2).collect() )   # [('a', ('b', 'c')), ('e', (None, 'f'))]
+
+# 全连接（并集）
+print( rdd1.fullOuterJoin(rdd2).collect() )    # [('d', ('e', None)), ('a', ('b', 'c')), ('e', (None, 'f'))]
+</code></pre>
+<h3 id="persist-cache-unpersist">persist &amp; cache &amp; unpersist</h3>
+<p>cache(): 缓存<br>
+persist(): 持久化<br>
+unpersist(): 清空缓存  （他属于 action-立即触发， 为了方便对比，我就一起放到了这里）<br>
+官档：http://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence</p>
+<h2 id="action-commit">Action (Commit)</h2>
+<p>主要机制：拿到 transformation 记录的关系， 用 action的各种操作来真正触发、执行、返回结果。<br>
+对应上面，继续直观举例：<br>
+1. 像 sqlalchemy 中的 commit()<br>
+2. 像 tensorflow1.x 中的 sess.run()<br>
+3. 像 数据库的事务的 &quot;提交&quot;<br>
+接下来介绍，Action 的各种操作。</p>
+<h3 id="collect">collect</h3>
+<p>执行transformation记录的关系 并 返回结果， 在Pyspark中就是RDD类型 转 Python数据类型。<br>
+(中间你可以链式调用各种 transformation方法，结尾调用一个 collect(), 就可以出结果了)<br>
+rdd1.xx().xx().collect()</p>
+<h3 id="count">count</h3>
+<p>统计元素项的个数，同上语法, 同上理念，触发返回结果<br>
+rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
+rdd2.count()  # 无参<br>
+&gt;&gt; 2</p>
+<h3 id="reduce">reduce</h3>
+<pre><code>rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )
+rdd2.reduce(lambda x,y:x+y)    # 参数为2个参数的函数句柄，做&quot;累&quot;的操作，（累加，累乘）等
+&gt;&gt; ['a', 'c', 'd', 'e', 'f', 'g']
+</code></pre>
+<h3 id="take">take</h3>
+<p>相当于mysql的limit操作，取前n个<br>
+rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
+rdd2.take(0)  # []<br>
+rdd2.take(1)  # [['a', 'c', 'd']]<br>
+rdd2.take(2)  # [['a', 'c', 'd'], ['e', 'f', 'g']]</p>
+<pre><code>再次强调： take的参数是，个数的意思，而不是索引，不要混淆额
+</code></pre>
+<h3 id="top">top</h3>
+<p>返回最大的n个元素（会自动给你排序的）<br>
+rdd2 = sc.parallelize( [1,2,3,8,5,3,6,8])<br>
+rdd2.top(3)<br>
+&gt;&gt; [8, 8, 6]</p>
+<h3 id="foreach">foreach</h3>
+<p>遍历每个元素，对子元素做-对应函数句柄的操作，下面说这个action的两点注意事项：<br>
+注意1： 无返回值（返回None）<br>
+注意2： 通常用作 print(), 但是它不会在notebook中打印， 而是在你后台开启的spark中打印。<br>
+rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
+rdd2.foreach(lambda x:print(x))</p>
+<pre><code>&gt;&gt; ['a', 'c', 'd']
+   ['e', 'f', 'g']
+</code></pre>
+<h3 id="saveastextfile">saveAsTextFile</h3>
+<pre><code>rdd = sc.textFile('file:///home/lin/data')
+rdd.saveAsTextFile('file:///home/lin/mydata')  
+
+# 这里有个注意事项： saveAsTextFile的参数路径不能在都进来的路径范围内。
+# 或者说，读是从这个文件夹A（这是最后一级的目录）读进来的， 写就不能写入文件夹A了
+# 另外， mydata是目录名， 进去你会看见 part-00000  这样的文件名，这才是真数据文件。
+</code></pre>
+<h1 id="spark优化相关">Spark优化相关</h1>
+<h3 id="序列化">序列化：</h3>
+<pre><code>好处1：网络传输必备
+好处2：节省内存
+两种方式序列化方式：
+    1. Java内部序列化（默认，较慢，但兼容性好）
+    2. Kryo （较快，但兼容性不太好） 
+</code></pre>
+<h3 id="内存管理">内存管理：</h3>
+<p>可分为 execution（进程执行） 和 storage（存储）<br>
+execution相关操作: shuffle, join, sort, aggregation<br>
+storage相关操作  :   cache，<br>
+特点：<br>
+execution 和 storage 共享整体内存：<br>
+execution起到 &quot;存霸&quot; 的角色:<br>
+1. 若 execution区域内存 不够用了， 它会去抢夺 storage 区域的内存（不归还）<br>
+2. 当然，可以为 storage 设置阈值 （必须给 storage留下多少）<br>
+具体分配多少：<br>
+总内存 = n<br>
+execution内存 = (总内存 - 300M) * 50%<br>
+storage内存   = (总内存 - 300M) * 50%</p>
+<pre><code>说白了，就是留给JVM 300M， 然后 execution 和 storage 各分一半。
+</code></pre>
+<p>查看内存占用情况<br>
+可通过WebUI查看<br>
+（序列化后存储，通常会节省内存）</p>
+<h3 id="broadcasting-variable">Broadcasting Variable</h3>
+<p>情景：正常来说，每个 task（map, filter等） 都会占用1份数据，100个task就会拿100份数据。<br>
+这种情况造成了数据的冗余， BroadCasting Variable（广播变量）就是解决这一问题的。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Ubuntu-Hadoop-YARN-HDFS-Hive-Spark安装配置]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/">
+        </link>
+        <updated>2020-09-29T04:15:19.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="环境条件">环境条件</h1>
+<p>Java 8<br>
+Python 3.7<br>
+Scala 2.12.10<br>
+Spark 2.4.4<br>
+hadoop 2.7.7<br>
+hive 2.3.6<br>
+mysql 5.7<br>
+mysql-connector-java-5.1.48.jar</p>
+<p>R 3.1+（可以不安装）</p>
+<h1 id="安装java">安装Java</h1>
+<p>先验传送门：https://segmentfault.com/a/1190000020746647#articleHeader0</p>
+<h1 id="安装python">安装Python</h1>
+<p>用Ubuntu自带Python3.7</p>
+<h1 id="安装scala">安装Scala</h1>
+<p>下载：https://downloads.lightbend.com/scala/2.12.10/scala-2.12.10.tgz<br>
+解压：<br>
+tar -zxvf 下载好的Scala<br>
+配置：<br>
+vi ~/.bashrc<br>
+export SCALA_HOME=/home/lin/spark/scala-2.12.10<br>
+export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>S</mi><mi>C</mi><mi>A</mi><mi>L</mi><msub><mi>A</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{SCALA_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mord mathdefault">A</span><span class="mord mathdefault">L</span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
+保存退出<br>
+激活配置：<br>
+source ~/.bashrc</p>
+<h1 id="安装hadoop">安装Hadoop</h1>
+<p>提前说明： 若不使用HDFS 和 YARN，整个 Hadoop安装可忽略，可以直接安装spark。<br>
+下载：<a href="https://archive.apache.org/dist/hadoop/common/">https://archive.apache.org/dist/hadoop/common/</a><br>
+详细地址: https://archive.apache.org/dist/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz<br>
+解压：<br>
+tar -zxvf 下载好的 hadoop<br>
+配置hadoop:<br>
+vi ~/.bashrc<br>
+export HADOOP_HOME=/home/lin/hadoop/hadoop-2.7.7<br>
+export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>H</mi><mi>A</mi><mi>D</mi><mi>O</mi><mi>O</mi><msub><mi>P</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{HADOOP_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
+激活配置：<br>
+source ~/.bashrc</p>
+<h3 id="hdfs配置">HDFS配置：</h3>
+<p>进入解压后的 etc/hadoop   (注意这不是根目录的etc， 而是解压后的hadoop目录下的etc)<br>
+echo $JAVA_HOME        # 复制打印出的路径</p>
+<pre><code>vi hadoop-env.sh:  （找到 export JAVA_HOME 这行，并替换为如下）
+    export JAVA_HOME=/home/lin/spark/jdk1.8.0_181  
+    
+vi core-site.xml:  （hdfs后面为 主机名:端口号）  （主机名就是终端显示的 @后面的~~~）
+    &lt;property&gt;
+      &lt;name&gt;fs.default.name&lt;/name&gt;
+      &lt;value&gt;hdfs://lin:8020&lt;/value&gt;       
+    &lt;/property&gt;
+    
+vi hdfs-site.xml： (同样在 &lt;configuration&gt; 之间加入) (/home/lin/hdfs是我已经有的目录)
+    &lt;property&gt;
+      &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
+      &lt;value&gt;/home/lin/hdfs/dfs/name&lt;/value&gt;
+    &lt;/property&gt;
+
+    &lt;property&gt;
+      &lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;
+      &lt;value&gt;/home/lin/hdfs/dfs/data&lt;/value&gt;
+    &lt;/property&gt;
+</code></pre>
+<p>格式化HDFS：<br>
+hadoop namenode -format<br>
+# 然后去刚才上面配置的这个路径里面是否有新东西出现： /home/lin/hdfs<br>
+开启HDFS (先进入 sbin目录下，   sbin 和 etc bin是同级的， 这里说的都是hadoop里的目录):<br>
+./start-dfs.sh</p>
+<pre><code># 一路yes, 若让你输入密码， 则输入对应服务器的密码。（我这里都是本机）
+# 若提示权限错误，继续往下看（支线）
+    sudo passwd root              # 激活ubuntu的root用户，并设置密码
+    vi /etc/ssh/sshd_config：
+        PermitRootLogin yes       # 任意位置添加这个（此选项之前可能是存在的注释后再添加）
+    service ssh restart 
+</code></pre>
+<p>查看HDFS里面根目录 / 的内容：<br>
+hadoop fs -ls /<br>
+向HDFS里面根目录 / 中 传入文件：<br>
+echo test &gt; test.txt     # 首先，随便建立一个文件</p>
+<pre><code>hadoop fs -put test.txt /     # 向HDFS里面根目录 / 中 传入文件
+
+hadoop fs -ls /          # 再次查看，就发现有 test.txt 文件了。
+</code></pre>
+<p>从HDFS里面根目录 / 中 读取文件test.txt：<br>
+hadoop fs -text /test.txt<br>
+从Hadoop WebUI 中查看刚才的文件是否存在：<br>
+http://192.168.0.108:50070/           # 50070是默认端口</p>
+<pre><code>点击右侧下拉框 &quot;Utilities&quot;  -&gt;  &quot;Browser the file system &quot;
+清晰可见， 我们的test.txt 躺在那里~
+</code></pre>
+<h3 id="yarn配置">YARN配置</h3>
+<p>还是etc/hadoop这个目录:<br>
+cp mapred-site.xml.template mapred-site.xml</p>
+<pre><code>vi mapred-site.xml：
+    &lt;property&gt;
+      &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+      &lt;value&gt;yarn&lt;/value&gt;
+    &lt;/property&gt;
+    
+vi yarn-site.xml:
+    &lt;property&gt;
+      &lt;name&gt;yarn.nodemanager.services&lt;/name&gt;
+      &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
+    &lt;/property&gt;     
+</code></pre>
+<p>启动 YARN: （还是 sbin目录下）<br>
+./start-yarn.sh</p>
+<pre><code># 同样，若有密码，输入机器的密码即可
+</code></pre>
+<p>从Hadoop WebUI 中查看YARN：<br>
+http://192.168.0.108:8088/</p>
+<h1 id="安装mysql">安装MySQL</h1>
+<p>下面要用MySQL, 所以单独提一下MySQL 的 安装与配置:<br>
+其实MySQL是不需要单独说的, (但我装的时候出现了和以往的不同经历), 所以还是说一下吧:<br>
+apt-get install mysql-server-5.7<br>
+安装容易, 不同版本的MySQL配置有些鸡肋 (我用的是 Ubuntu19):<br>
+vi /etc/mysql/mysql.conf.d/mysqld.cnf:<br>
+bind-address     0.0.0.0               # 找到修改一下即可<br>
+修改密码+远程连接权限 (默认无密码):<br>
+mysql                # 啥参数也不用加, 直接就能进去<br>
+use mysql<br>
+update mysql.user set authentication_string=password(&quot;123&quot;) where user=&quot;root&quot;;<br>
+update user set plugin=&quot;mysql_native_password&quot;;<br>
+flush privileges;</p>
+<pre><code>select host from user;
+update user set host ='%' where user ='root';
+flush privileges;
+</code></pre>
+<p>重启服务:<br>
+systemctl restart mysql<br>
+服务端连接测试:<br>
+mysql -uroot -p<br>
+# 密码 123<br>
+远程连接测试 (Navicat):<br>
+成功</p>
+<h1 id="安装hive">安装Hive</h1>
+<p>下载: https://archive.apache.org/dist/hive/hive-2.3.6/apache-hive-2.3.6-bin.tar.gz</p>
+<p>解压：<br>
+tar -zxvf apache-hive-2.3.6-bin.tar.gz<br>
+配置Hive：<br>
+vi ~/.bashrc<br>
+export HIVE_HOME=/home/lin/hive/apache-hive-2.3.6-bin<br>
+export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>H</mi><mi>I</mi><mi>V</mi><msub><mi>E</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{HIVE_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault" style="margin-right:0.22222em;">V</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.05764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
+激活配置：<br>
+source ~/.bashrc<br>
+Hive其他相关配置(同理进入hive解压目录的 conf目录中):<br>
+cp hive-env.sh.template hive-env.sh<br>
+vi hive-env.sh:<br>
+HADOOP_HOME=/home/lin/hadoop/hadoop-2.7.7<br>
+Hive-MySQL相关配置(同是在 conf目录下):<br>
+vi hive-site.xml:  (特别注意后两个 <property> 里面的内容, 自己修改一下用户名和密码)<br>
+<configuration><br>
+<property><br>
+<name>javax.jdo.option.ConnectionURL</name><br>
+<value>jdbc:mysql://localhost:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false</value><br>
+</property><br>
+<property><br>
+<name>javax.jdo.option.ConnectionDriverName</name><br>
+<value>com.mysql.jdbc.Driver</value><br>
+</property><br>
+<property><br>
+<name>javax.jdo.option.ConnectionUserName</name><br>
+<value>root</value><br>
+</property><br>
+<property><br>
+<name>javax.jdo.option.ConnectionPassword</name><br>
+<value>123</value><br>
+</property><br>
+</configuration></p>
+<p>下载 jdbc-mysql驱动,并放入Hive中,操作如下  (因为我们上面hive-site.xml 用的是mysql):</p>
+<ol>
+<li>
+<p>首先下载: http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.48/mysql-connector-java-5.1.48.jar</p>
+</li>
+<li>
+<p>将此jar文件放入 hive的lib目录中(和 conf同级):</p>
+</li>
+<li>
+<p>将此jar文件再copy一份放入 spark的 jar目录下（为了后续jupyter直连MySQL(不通过Hive)使用）<br>
+初始化(先确保之前的HDFS和MySQL已经启动):<br>
+schematool -dbType mysql -initSchema</p>
+<h1 id="注意事项1-这个用命令初始化的-步骤是-hive-2-才需要做的">注意事项1: 这个用命令初始化的 步骤是 Hive 2.+ 才需要做的</h1>
+<h1 id="注意事项2-初始化一次即可-多次初始化会使得mysql有重复的键-报错">注意事项2: 初始化一次即可, 多次初始化,会使得MySQL有重复的键. 报错.</h1>
+</li>
+</ol>
+<p>开启 metastore 服务：<br>
+nohup hive --service metastore &amp;<br>
+检测是否初始化(去MySQL表中查看):<br>
+use hive<br>
+show tables;<br>
+# 若有数据,则说明初始化成功<br>
+启动hive:<br>
+hive<br>
+建库, 建表测试 (注意,千万不要用 user这种关键字当作表名等):<br>
+HIVE中输入:<br>
+create database mydatabase;<br>
+use mydatabase;<br>
+create table person (name string);</p>
+<pre><code>MySQL中查看Hive表的相关信息: 
+    select * from TBLS;                 # 查看所有表结构信息
+    select * from COLUMNS_V2;           # 查看所有列的信息
+</code></pre>
+<p>向Hive导入文件:<br>
+vi hive_data.txt: (写入如下两行)<br>
+tom catch jerry<br>
+every one can learn AI</p>
+<pre><code>load data local inpath '/home/lin/data/hive_data.txt' into table person;
+</code></pre>
+<p>查询:<br>
+select * from person;<br>
+PySpark客户端配置连接代码:<br>
+import findspark<br>
+findspark.init()</p>
+<pre><code>from pyspark.sql import SparkSession    
+
+spark = SparkSession.builder\
+    .appName(&quot;Spark Hive Example&quot;)\
+    .master(&quot;local[*]&quot;)\
+    .config(&quot;hive.metastore.uris&quot;, &quot;thrift://localhost:9083&quot;)\
+    .enableHiveSupport()\
+    .getOrCreate()
+    
+spark.sql(&quot;use mydatabase&quot;).show()
+spark.sql('show tables').show()
+</code></pre>
+<h1 id="安装spark">安装Spark</h1>
+<p>下载：<a href="https://www.apache.org/dyn/closer.lua/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz">spark-2.4.4-bin-hadoop2.7.tgz</a>：<br>
+粗糙传送门：<a href="https://spark.apache.org/downloads.html">https://spark.apache.org/downloads.html</a><br>
+详细传送门：<a href="http://ftp.riken.jp/net/apache/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz"><strong>http://ftp.riken.jp/net/apache/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz</strong></a></p>
+<p>解压：<br>
+tar -zxvf 下载好的spark-bin-hadoop<br>
+配置spark：<br>
+vi ~/.bashrc<br>
+export SPARK_HOME=home/lin/spark/spark-2.4.4-bin-hadoop2.7<br>
+export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>S</mi><mi>P</mi><mi>A</mi><mi>R</mi><msub><mi>K</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{SPARK_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.00773em;">R</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
+激活配置：<br>
+source ~/.bashrc</p>
+<h1 id="最后一步python环境可能出错">最后一步（Python环境可能出错）</h1>
+<p>pyspark脚本默认调用的是 &quot;python&quot; 这个名， 而ubuntu默认只有&quot;python&quot; 和 &quot;python3&quot;。<br>
+所以我们需要做如下软连接，来使得可以输入python， 直接寻找python3.7命令（不要用alias）<br>
+ln -s /usr/bin/python3.7 /usr/bin/python</p>
+<h1 id="测试">测试</h1>
+<p>服务端直接输入命令：<br>
+pyspark<br>
+或远程浏览器输入:<br>
+http://192.xx.xx.xx:4040/jobs</p>
+<h1 id="远程使用jupyter连接">远程使用Jupyter连接</h1>
+<p>安装 Jupyter Notebook:</p>
+<pre><code>pip3 install jupyter   
+# 若新环境，需要安pip:  apt-get install python3-pip
+</code></pre>
+<p>pip 安装 findspark 和 pyspark</p>
+<pre><code>pip install pyspark
+pip install findspark                          （Linux服务端）
+</code></pre>
+<p>启动 Jupyter Notebook 服务（--ip指定 0.0.0.0），(--allow-root若不加上可能会报错)</p>
+<pre><code>jupyter notebook --allow-root --ip 0.0.0.0     （Linux服务端）
+</code></pre>
+<hr>
+<p>下面说的是Jupyter Notebook 客户端（Windows10）<br>
+下面两行findspark代码必须放在每个py脚本的第一行</p>
+<pre><code>import findspark
+findspark.init()
+
+PYSPARK_PYTHON = &quot;/usr/bin/python&quot;
+os.environ[&quot;PYSPARK_PYTHON&quot;] = PYSPARK_PYTHON
+os.environ[&quot;PYSPARK_DRIVER_PYTHON&quot;] = PYSPARK_PYTHON
+</code></pre>
+<p>然后才可正常写其他代码<br>
+from pyspark import SparkConf, SparkContext</p>
+<pre><code>sc = SparkContext(
+    master='local[*]',   # 下面会讲这个参数
+    appName='myPyspark', # 随便起名
+) 
+# 这句话，就把 spark启动起来了，然后才可以通过浏览器访问了。 4040
+# 如果你 python魔法玩的6，那么提到上下文，你应该会自动想到 with语句 （__enter__,__exit__）
+# 不写参数，本地运行，这样也是可以的，  sc = SparkContext() 
+
+raw_data = [1,2,3]
+rdd_data = sc.parallelize(raw_data)  # python列表类型 转 spark的RDD
+print(rdd_data)
+raw_data = rdd_data.collect()        # spark的RDD 转回到 python列表类型
+print(raw_data)
+
+sc.stop()    # 关闭spark, 同理，浏览器也就访问不到了。
+</code></pre>
+<p>解释 SparkContext 的 master参数：</p>
+<ol>
+<li>&quot;local&quot; : 表示只用一个线程，本地运行。</li>
+<li>&quot;local[*]&quot; : 表示用(cpu的个数)个线程，本地运行。</li>
+<li>&quot;local[n]&quot; : 表示用n个线程，本地运行。</li>
+<li>&quot;spark://ip:host&quot; : 连其他集群<br>
+回顾环境问题 并 解释 &quot;本地&quot; 的概念：</li>
+<li>在 Linux 中 安装了 Spark全套环境。</li>
+<li>在 Linux 中 安装了 Jupyter， 并启动了 Jupyter Notebook 服务。</li>
+<li>在 Win10 中 远程连接 Linux中的 &quot;Jupyter Notebook&quot;服务 写业务代码（相当于客户端连接）<br>
+所以， 之前所说的 &quot;本地&quot;, 这个词归根结底是相对于 Linux来说的，我们写代码一直操作的是Linux。</li>
+</ol>
+<h1 id="通常使用spark-submit">通常使用spark-submit</h1>
+<p>首先：我们自己编写一个包含各种 pyspark-API 的 xx.py 脚本<br>
+如果：你用了我上面推荐的 Jupyter Notebook，你会发现文件是.ipynb格式，可以轻松转.py<br>
+<img src="/img/bVbzB5s" alt="image.png" loading="lazy"><br>
+最后提交py脚本：<br>
+spark-submit --master local[*] --name myspark /xx/xx/myspark.py</p>
+<pre><code># 你会发现 --master 和 --name  就是上面我们代码中配置的选项，对号入座写入即可。
+# /xx/xx/myspark.py 就是 py脚本的绝对路径。 喂给spark，让他去执行。即可。
+</code></pre>
+<h1 id="standalone部署spark">Standalone部署Spark</h1>
+<p>介绍：<br>
+Standalone部署需要同时启动：<br>
+master端<br>
+slave 端<br>
+按着下面配置，最后一条  ./start-all.sh 即可同时启动。<br>
+查看 JAVA_HOME环境变量。<br>
+echo $JAVA_HOME</p>
+<pre><code># 记住结果，复制出来
+</code></pre>
+<p>进入conf目录，做一些配置（conf和spark中的bin目录同级）：<br>
+cp spark-env.sh.template spark-env.sh<br>
+vi spark-env.sh：（里面写）<br>
+JAVA_HOME=上面的结果</p>
+<pre><code>cp slaves.template slaves
+vi slaves: （localhost改成本机机器名）
+    lin
+</code></pre>
+<p>上面配置完毕后，进入sbin目录（和上面的conf在一个目录中）<br>
+./start-all.sh          # 启动</p>
+<pre><code># 若提示权限错误，继续往下看（支线）
+sudo passwd root              # 激活ubuntu的root用户，并设置密码
+vi /etc/ssh/sshd_config：
+    PermitRootLogin yes       # 任意位置添加这个（此选项之前可能是存在的注释后再添加）
+service ssh restart
+</code></pre>
+<p>启动没报错，会给你弹出一条绝对路径的日志文件 xxx<br>
+cat xxx         # 即可看见启动状态 ，各种日志信息</p>
+<pre><code>其中有几条信息:
+    Successfully started service 'WorkerUI' on port 8082  （浏览器访问 8082端口）
+    Successfully registered with master spark://lin:7077  （代码上下文访问）
+其中，有些信息可能未打印出来： 建议浏览器中：( 8080-8082 )端口都可以尝试一下。        
+</code></pre>
+<p>输入命令，查看启动状态：<br>
+jps             # 若同时有 worker 和 master 说明启动成功<br>
+测试：<br>
+pyspark --master spark://lin:7077</p>
+<pre><code># WebUI 的 Worker端，就可看见有 一个Job被添加了进来
+</code></pre>
+<h1 id="yarn部署spark">YARN部署Spark</h1>
+<p>配置：<br>
+echo $HADOOP_HOME<br>
+# 我的是 /home/lin/hadoop/hadoop-2.7.7</p>
+<pre><code>进入spark解压包的路径的 conf 目录中:
+vi spark-env.sh:   ( etc/hadoop前面就是刚才 echo出来的，  etc/hadoop大家都是一样的)
+    HADOOP_CONF_DIR=/home/lin/hadoop/hadoop-2.7.7/etc/hadoop
+</code></pre>
+<p>启动spark：<br>
+spark-submit --master yarn --name myspark  script/myspark.py<br>
+# 注意 --master 的值改成了 yarn ， 其他不变。</p>
+<pre><code>或者你可以：
+     pyspark --master yarn     
+看到启动成功，说明配置成功
+</code></pre>
+<h1 id="spark历史服务配置">Spark历史服务配置</h1>
+<p>痛点：有时我们的spark上下文 stop后，WebUI就不可访问了。<br>
+若有未完成，或者历史信息, 也就看不到了。<br>
+这时我们配置 history 服务就可在 context stop后，仍可查看 未完成job。</p>
+<p>预新建一个HDFS目录myhistory (根路径下),下面用得到：<br>
+hadoop fs -mkdir /myhistory<br>
+首先，进入 spark解压包的 conf目录下：<br>
+cp spark-defaults.conf.template spark-defaults.conf</p>
+<pre><code>vi spark-defaults.conf: (解开如下注释, lin本机名称, 放在HDFS的根路径下的myhistory)
+    spark.eventLog.enabled           true
+    spark.eventLog.dir               hdfs://lin:8020/myhistory
+    
+vi spark-env.sh:  (我们之前 把template 复制过一次，所以这次直接编辑即可)
+    SPARK_HISTORY_OPTS=&quot;-Dspark.history.fs.logDirectory=hdfs://lin:8020/myhistory&quot;
+</code></pre>
+<p>启动（进入 spark解压包的 sbin目录下）：<br>
+./start-history-server.sh</p>
+<pre><code># cat 输入的信息（日志文件）。 即可查看是否启动成功
+# WebUI默认是 ：http://192.168.0.108:18080/
+</code></pre>
+<p>测试：<br>
+浏览器中访问History WebUI： http://192.168.0.108:18080/<br>
+发现啥也没有： 这是正常的，因为我们还没运行 spark context主程序脚本。<br>
+---------------------------------------------------------------------<br>
+运行spark-context主程序脚本：<br>
+spark-submit script/myspark.py<br>
+# 这个脚本是随便写的，没什么意义。 不过里面有个我们常用的一个注意事项！！！<br>
+# 我的这个脚本的 context 用完，被我 stop了<br>
+# 所以我们访问不到它的运行状态的 Spark Context 的 WebUI</p>
+<pre><code>    # 但是我们刚才辛辛苦苦配置Spark history 服务，并启动了它。
+    # 所以 context的信息，被写入了我们刚才配置的 Spark history 中
+    # 所以 我们再次访问 Spark history WebUI 即可看到有内容被写入进来。
+---------------------------------------------------------------------
+再次访问History WebUI： http://192.168.0.108:18080/
+你就会发现，里面有内容了(spark history服务已经为我们干活了)~~~~   
+</code></pre>
+<h1 id="免密码登录">免密码登录</h1>
+<p>环境Ubuntu(CentOS应该也可，很少用)<br>
+免密码登录设置：<br>
+cd ~<br>
+ssh-keygen -t rsa -P &quot;&quot;<br>
+cat .ssh/id_rsa.pub &gt;&gt; .ssh/authorized_keys<br>
+chmod 600 .ssh/authorized_keys<br>
+注意几种情况：<br>
+你如果是root用户，那么你需要切换到 /root/ 执行上面的命令<br>
+如果是普通用户， 那么你需要切换到 /home/xxx/ 执行上面的命令</p>
+<pre><code>这个要特别注意一下，有时候用 sudo -s ,路径是没有自动切换的。
+需要我们自己手动切换一下 &quot;家&quot; 路径
+</code></pre>
+<h1 id="自定义脚本启动服务">自定义脚本启动服务</h1>
+<p>下面内容仅供个人方便， shell不熟，用py脚本了, 你随意。<br>
+vi start.py: (此脚本用于启动上面配置的 HDFS,YARN,SparkHistory 和 Jupyter Notebook)<br>
+import os<br>
+import subprocess as sub</p>
+<pre><code>###### 启动  HDFS + YARN ###############
+hadoop_path = os.environ['HADOOP_HOME']
+hadoop_sbin = os.path.join(hadoop_path, 'sbin')
+
+os.chdir(hadoop_sbin)
+sub.run('./start-dfs.sh')
+sub.run('./start-yarn.sh')
+
+###### 启动 SparkHistory ##############
+spark_path = os.environ['SPARK_HOME']
+spark_sbin = os.path.join(spark_path, 'sbin')
+os.chdir(spark_sbin)
+sub.run('./start-history-server.sh')
+
+###### 启动  Jupyter Notebook ###############
+# home_path = os.environ['HOME']
+home_path = '/home/lin'
+
+os.chdir(home_path)
+sub.run('jupyter notebook --allow-root --ip 0.0.0.0'.split())
+</code></pre>
+<p>之后每次重启，就不用进入每个目录去启动了。直接一条命令：<br>
+sudo python start.py<br>
+nohup hive --service metastore &amp;<br>
+查看本脚本启动相关的WebUI：<br>
+HDFS:            http://192.168.0.108:50070/<br>
+YARN:            http://192.168.0.108:8088/<br>
+SparkHistory:    http://192.168.0.108:18080/<br>
+另附其他 WebUI：<br>
+spark:           http://192.168.0.108:4040/<br>
+standalone启动指定的端口(如果你使用的 standalone方式，而不是local,可能用到如下端口):<br>
+pyspark --master spark://lin:7077</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => Seq2Seq+Attention+Transformer(简)]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/">
+        </link>
+        <updated>2020-09-29T04:13:05.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="数据预处理tf20-keras-preprocessing">数据预处理（TF20-Keras-Preprocessing）</h1>
+<h3 id="我们自己的普通数据集常用">我们自己的普通数据集（常用）</h3>
+<p>主要使用tensorflow.keras.preprocessing这个库中的（image, text，sequence）这三个模块。<br>
+text： 可以用来 （统计词频，分字，word_2_id, id_2_word等操作。）<br>
+sequence 可以（给句子做结构化操作（填充0，裁剪长度））<br>
+from tensorflow.keras.preprocessing.text import Tokenizer    # 主干，句子编码<br>
+from tensorflow.keras.preprocessing.sequence import pad_sequences # 辅助，填充，剪枝</p>
+<pre><code>q1 = '欢 迎 你 你 你'
+q2 = '我 很 好'
+q_list = [q1,q2]    # 需要特别注意，因为此API对英文友好，所以，我们必须把句子用 空格 隔开输入
+
+token = Tokenizer(
+    num_words=2, # num_words代表设置过滤num_words-1个词频， 例如num_words=2，
+                 # 那么过滤掉2-1=1个词频， 所以一会你会看到下面词频为1的都被过滤掉了
+)  # 这里面参数很多，还有标点符号过滤器等
+token.fit_on_texts(q_list)  # 把原始句子集合，放进去拟合一下（封装成一个类）
+
+print(token.document_count) # 2    # 句子个数
+print(token.word_index)  # {'你': 1, '欢': 2, '迎': 3, '我': 4, '很': 5, '好': 6}   # word_2_id
+print(token.index_word)  # {1: '你', 2: '欢', 3: '迎', 4: '我', 5: '很', 6: '好'}   # id_2_word
+print(token.word_counts) # OrderedDict([('欢', 1), ('迎', 1), ('你', 3), ('我', 1), ('很', 1), ('好', 1)])  # 统计词频
+
+seq = token.texts_to_sequences(q_list) # 先把所有的输入，变成一一变成编码化
+print(seq) # [[1, 1, 1], []]     # 会不会好奇？数据怎么没了？因为我们上面设置了过滤词频为1的都过滤了
+
+pad_seq = pad_sequences(
+        seq,                # 输入编码化后的 句子
+        maxlen=2,           # 统一句子最大长度
+        padding='pre',      # 不足的补0， 从前面补0， （也可以用 post，代表后面）
+        truncating='pre'    # 多余的长度裁剪，从前面裁剪
+    )
+print(pad_seq)     # 打印一下我们填充后的句子形状。
+# [
+#   [1 1],      # 如你所愿,最大长度为2，[1,1,1] 已经裁剪成了 [1,1]
+#   [0 0],      # 如你所愿，之前[] ，已经都填满了0
+# ]
+</code></pre>
+<p>虽然我们用不到 image这个模块数据增强模块，但是我把了解的API也写出来。<br>
+train_datagen = keras.preprocessing.image.ImageDataGenerator( # 数据增强生成器（定义）<br>
+rescale=1. / 255,         # 数据归一化<br>
+rotation_range = 40,      #  -40-40  随机角度 （数据增强）<br>
+width_shift_range = 0.2,  # 宽度位移（0-20%随机选个比例去平移） （数据增强）<br>
+height_shift_range = 0.2, # 高度位移（同上）   （数据增强）<br>
+shear_range=0.2,          # 图片剪切（0.2）    （数据增强）<br>
+zoom_range=0.2,           # 图片缩放（0.2）    （数据增强）<br>
+horizontal_flip=True,     # 图片随机水平反转    （数据增强）<br>
+fill_mode='nearest',      # 图片填充像素（放大后失帧）用附近像素值来填充 （数据增强）<br>
+)</p>
+<pre><code># train_generator = train_datagen.flow_from_dataframe()  # 如果你用Pandas，你可以选这个
+train_generator = train_datagen.flow_from_directory(     # 从文件中读取（Kaggle）
+    train_dir,                       # 图片目录
+    target_size = (height, width),   # 图片读取进来后缩放大小
+    batch_size = batch_size,         # 就是批次
+    seed=6,                          # 随机化种子
+    shuffle=True,                    # 样本随机打散训练，增强模型泛化能力
+    class_mode='categorical',        # label格式，是否需要one_hot， 是
+)
+...
+...
+train_num = train_generator.samples  # 打印样本形状
+
+history = model.fit_generator(       # 注意我们上面是用的数据生成器，所以这要用 fit_generator
+    train_generator,
+    steps_per_epoch=train_num//batch_size, # 每个epoch多少 step(因为数据增强API是生成器方式，所以需要自己手动计算一下)
+    epochs=epochs,
+    validation_data=valid_generator,  # 如果你有验证集，你也可以用这个。否则可以不用
+    validation_steps=valid_num//batch_size # 同上
+)
+</code></pre>
+<h1 id="seq2seq">Seq2Seq</h1>
+<h3 id="思想">思想</h3>
+<pre><code>语言不同，那么我们可以搭建桥梁。 
+即使我们表面上不相同。 但是我们映射到这个桥梁上的结果是几乎类似的。
+</code></pre>
+<h3 id="样本句子长度统一">样本句子长度统一</h3>
+<p>为什么每个句子的长度需要统一？<br>
+因为，每个句子for循环操作会很耗算力， 而转化为矩阵/向量化操作，会节约太多算力。<br>
+因为矩阵运算严格要求样本的形状，所以每个句子的长度需要一致<br>
+如何做到句子长度统一？<br>
+填0， 对应TF操作就是padding， 不过TF20 的keras预处理包中已经有 成品的数据统一化操作。<br>
+并且还具有 word_2_id，词向量编码操作。</p>
+<h3 id="组成">组成</h3>
+<ol>
+<li>编码器 （输入每条样本句子的每个单词， 编码器的最后一个RNN单元，浓缩了整个句子的信息）</li>
+<li>中间向量 （作为中间特征桥梁， 用来保存，输入进来的整个句子）</li>
+<li>解码器 （中间向量作为解码器第一个RNN单元的输入，而每个单元的输出y,作为下一个单元的输入）<br>
+其中解码器部分的输出y会用 softmax 对 词库（词典）求多分类概率。<br>
+然后求损失（MSE或者CrossEntropy）<br>
+注意了： softmax求出的概率该如何选择，这是个问题:<br>
+假如: 每个单元的输出y的概率都取最大值, 那么可能一步错，步步错。 太极端了（贪心搜索）<br>
+接下来，聊一聊一周 集束搜索的算法 BeamSearch</li>
+</ol>
+<h3 id="beamsearch">BeamSearch</h3>
+<p>由于贪心搜索（只取概率的一个最大值，的结果不尽人意。所以 BeamSearch来啦）<br>
+BeamSearch的主要思想:<br>
+只取一个太冒险了，所以:     BeamSearch 取每个经过softmax输出概率集合的 Top-N个<br>
+Top-N: 的 N 代表你保留几个概率   （举一反三理解: 贪心算法就是 Top-1）<br>
+假如我们取Top-3个<br>
+那么你一个RNN节点的预测y将会保留3个概率值， 并将这3个概率值作为 下一个节点的输入。<br>
+具体流程看:下图 (可能有点丑)<br>
+然后，我们会选择出:        3 个 &quot;红线&quot; 最优路径。<br>
+最终: 我们通过单独的语言模型，来从这 3 个 &quot;红线&quot; 较优路径中，选出一个 最优路径。<br>
+<img src="/img/bVbyAZs" alt="clipboard.png" loading="lazy"></p>
+<h1 id="attention注意力机制">Attention(注意力机制)</h1>
+<h3 id="前情回顾">前情回顾</h3>
+<p>Seq2Seq 的 Encoder部分虽然用的是 高效的 LSTM，并且也很好的解决了，记忆的问题。<br>
+但是他不能很好的解决每个单词的权重分配问题。<br>
+虽然: Encoder的所有单元都会通过LSTM的记忆传递， 输入进“中间桥梁向量”。<br>
+但是: 还是有&quot;偏心&quot;成分, 最后一个LSTM单元信息一定是最浓的。 （新鲜的，热乎的）<br>
+所以: 你第1个LSTM单元的信息，或者说前面的LSTM单元的信息，这些记忆到最后可能会被稀释。<br>
+为了解决上面的问题, Attention就出来帮忙了~~~</p>
+<h3 id="attentioin原理">Attentioin原理</h3>
+<p>我觉得墨迹半天不如自己画一张图~~~ （只会mspaint画图）<br>
+<img src="/img/bVbyBuW" alt="clipboard.png" loading="lazy"><br>
+上图中计算权重那里&quot;通过一个函数，可以是求相似度&quot;， 我简写了。 其实有两种常用的方式：<br>
+Bahdanau注意力:<br>
+weight = FC层( tanh ( FC层(Encoder的每个输出y) + FC层(Decoder的一个H) ) )<br>
+luong注意力:<br>
+weight = Encoder的每个输出y @ W随机权重矩阵 @ Decoder的一个H    # @是TF20的矩阵乘法操作符<br>
+无论使用上面哪种: 都要套一层 Softmax<br>
+weight = softmax(weight, axis=1)<br>
+注意力向量C = sum( weight * Encoder的每个输出y , axis=1)   # 加权求和，最终得到一个向量<br>
+Decoder的下一个输入 = concat( 注意力向量C, 上一个预测y4 )</p>
+<h1 id="transformer">Transformer</h1>
+<p>第一印象挑明： 他是一种无RNN的一种特殊的 Seq2Seq 模型。</p>
+<p>RNN-LSTM-GRU虽然这些NN的主要特色就是&quot;时间序列&quot;。（缺点：慢，记忆弥散）<br>
+但是我们上面说了，要想取得好的效果。那么需要加Attention。<br>
+于是有人想到了，既然Attention效果这么好，为什么不直接用Attention呢？<br>
+Attention效果虽好，关联性强，但是它不能保证时间序列模式。<br>
+于是后来出现了 Transformer。（既能保证记忆注意力，又能保证时间序列）。具体如下！</p>
+<h3 id="transformer整体结构组成">Transformer整体结构组成</h3>
+<figure data-type="image" tabindex="1"><img src="/img/bVbA3uH" alt="image.png" loading="lazy"></figure>
+<h3 id="self-attention">Self-Attention</h3>
+<p>self-attention原理就是各种链式矩阵乘法（并行计算，可用GPU加速）<br>
+self-attention计算过程如下：（假设输入句子切分单词为：矩阵X = [&quot;早&quot;,&quot;上&quot;,&quot;好&quot;]）<br>
+矩阵X @ 权重矩阵Q（Q1，Q2，Q3）=&gt; Q矩阵（Q1，Q2，Q3）<br>
+矩阵X @ 权重矩阵K（Q1，Q2，Q3）=&gt; K矩阵（Q1，Q2，Q3）<br>
+矩阵X @ 权重矩阵V（Q1，Q2，Q3）=&gt; V矩阵（Q1，Q2，Q3）</p>
+<pre><code>α = softmax( (Q矩阵 @ K矩阵) / q^0.5 )
+self_attention = α @ V矩阵
+# 单词1 = Q1*K1*V1 + Q1*K2*V2 + Q1*k3*V3
+# 用自己的Q，查别人的KV，加权求和，最终得出的就是自己（自身单词的注意力）
+</code></pre>
+<h3 id="multi-head-self-attention">Multi-Head Self-Attention</h3>
+<p>Multi-Head Attention 对 Self-Attention 对了如下扩展：<br>
+self-attention:             一组 Q矩阵，K矩阵，V矩阵<br>
+Multi-Head Self-Attention:  多组 Q矩阵，K矩阵，V矩阵<br>
+扩张为多头注意力的过程：<br>
+Q @ W ====&gt; [Q1, Q2, Q3]<br>
+K @ W ====&gt; [K1, K2, K3]<br>
+V @ W ====&gt; [V1, V2, V3]</p>
+<pre><code>可理解为，多个卷积核的意思能提取不同特征的意思。
+</code></pre>
+<h3 id="position-encoder">Position Encoder</h3>
+<p>上述的self-attention有个问题， 我们没有用到RNN等序列NN，那么矩阵相乘的过程中。<br>
+单词的计算顺序可能是不同的。<br>
+那么如何保证让他们位置有条不紊？<br>
+可以使用位置编码，融入到Embedding，形成带有时间序列性质的模型。<br>
+可自行查找计算位置编码的博文。</p>
+<h3 id="传送门">传送门</h3>
+<p>至于Transformer，现在官方已经有TF20和Pytorch的库了。<br>
+传送门如下。<br>
+<a href="https://github.com/huggingface/transformers">https://github.com/huggingface/transformers</a><br>
+Transformer延申的各种模型，像Bert等也有可调用的API<br>
+<a href="https://huggingface.co/transformers/">https://huggingface.co/transformers/</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => Pytorch与Tersorflow2.0简单对比]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-pytorch-yu-tersorflow20-jian-dan-dui-bi/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-pytorch-yu-tersorflow20-jian-dan-dui-bi/">
+        </link>
+        <updated>2020-09-29T04:12:32.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<p>目前一些模型API尚未迁移到TF20中。 eg: CRF，Seq2Seq等<br>
+如果退回TF10，有些伤。<br>
+倒不如转至Torch。<br>
+Pytorch的大部分思想和TF20大致相似。</p>
+<p>至于安装，GPU我前面说过TF20。这里不赘述。<br>
+官档安装：<a href="https://pytorch.org/get-started/locally/#start-locally">https://pytorch.org/get-started/locally/#start-locally</a></p>
+<h3 id="注意">注意</h3>
+<p>本文几乎通篇以代码案例 和 注释标注 的方式解释API。(模型的训练效果不做考虑。只看语法)<br>
+你如果懂Tensorflow2.0（Stable），那么你看本文一定不费劲。<br>
+Torch和TF20 很像！！！<br>
+因此一些地方，我会列出 TF20 与 Torch的细节对比。</p>
+<h1 id="开门案例1-mnist">开门案例1-MNIST</h1>
+<h3 id="模块导入">模块导入</h3>
+<pre><code>import torch
+from torch import nn, optim
+from torchvision import datasets, transforms
+from torch.utils.data import DataLoader
+</code></pre>
+<h3 id="数据预处理">数据预处理</h3>
+<pre><code>data_preprocess = transforms.Compose([  # 顶预定数据处理函数，类似map()里的函数句柄
+    transforms.Resize(28,28),           # 变形
+    transforms.ToTensor(),              # numpy 转 Tensor
+])
+
+trian_dataset = datasets.MNIST(         # TF20在keras.datasets中,未归一化（0-255）
+    '.',                                # 下载至当前目录， （图片0-1，已经被归一化了）
+    train=True,                         # train=True， 代表直接给你切出 训练集
+    download=True,                      # True，若未下载，则先下载
+    transform=data_preprocess,          # 指定数据预处理函数。第一行我们指定的
+)
+
+test_dataset = datasets.MNIST(
+    '.', 
+    train=False, # False代表测试集       # 就说下这里， False代表 给你切出测试集
+    download=True,
+    transform=data_preprocess,
+)
+
+train = DataLoader(     # 对应TF20中的 tf.data.Dataset对数据二次预处理（分批，乱序）
+    trian_dataset,      # 把上面第一次预处理的数据集 加载进来
+    batch_size=16,      # mini-batch
+    shuffle=True,       # 乱序，增强模型泛化能力
+)
+
+test = DataLoader(
+    test_dataset,
+    batch_size=16,
+    shuffle=True,
+)
+</code></pre>
+<h3 id="mnist模型定义-训练代码">MNIST模型（定义-训练代码）</h3>
+<pre><code># 模型定义部分
+class MyModel(nn.Module):             # TF20是 tk.models.Model
+    def __init__(self):               # TF20 也是 __init__()
+        super().__init__()
+
+        self.model = nn.Sequential(   # tk.models.Sequential , 并且 TF里面 需要加一个 []
+            nn.Linear(28*28, 256),    # tk.layers.Dense(256)
+            nn.ReLU(),                # tk.layers.Relu()
+
+            nn.Linear(256, 128),      # tk.layers.Dense(128)
+            nn.ReLU(),               
+
+            nn.Linear(128, 10),       # tk.layers.Dense(10)            
+        ) 
+    def forward(self, x):  # TF20是 __call__()
+        x = x.view( x.size(0), 28*28 )      # x.view ==&gt; tf.reshape   x.size ==&gt; x.shape[0]
+        y_predict = self.model(x)
+
+        return y_predict
+# -------------------------------华丽分割线---------------------------------     
+# 模型训练部分
+def main():
+    vis = visdom.Visdom()
+    model = MyModel()
+    loss_ = nn.CrossEntropyLoss()     # 会将 y_predict自动加一层 softmax
+    optimizer = optim.Adam(model.parameters())     # TF20: model.trainable_variables
+    
+    # visdom可视化
+    # 这步是初始化坐标点，下面loss会用这个直接更新
+    vis.line(
+        [0],                    # x坐标
+        [0],                    # y坐标
+        win='loss',             # 窗口名称
+        opts={'title': 'loss'}, # 窗口标题
+    )
+    
+    for epoch in range(10):   # epochs
+        for step, (x, y_true) in enumerate(train):
+            y_predict = model(x)
+            loss = loss_(y_predict, y_true)
+            optimizer.zero_grad()           #  优化器清零 
+            loss.backward()                 #  梯度计算
+            optimizer.step()                #  梯度下降更新 tp.gradient(loss, variables)。 
+            
+            # 在上面的定义的基础上更新追加画点-连成线
+            vis.line(
+                [loss.item()],
+                [step],
+                win='loss',
+                update='append', # 追加画点，而不是更新覆盖
+            )
+        print(loss.item())                  #  .item()  =&gt; 相当于 tensorflow 的 numpy()
+        
+        if epoch % 2 == 0:
+            total_correct_samples = 0       # 用于记录（预测正确的样本的 总数量）
+            total_samples = 0               # 用于记录（样本的 总数量）
+
+            for x_test, y_test in test:
+                y_pred = model(x_test)
+                y_final_pred = y_pred.argmax(dim=1)     # TF20的坐标轴参数是 axis
+                
+                 # 每一批是 batch_size=16，我们要把它们都加在一起
+                total_correct_samples += torch.eq(y_final_pred, y_test).float().sum().item()
+                
+                # 这里提一下 eq() 和 equal() 的返回值的区别， 自己看，我们通常用 eq
+                # print( torch.equal( torch.Tensor([[1,2,3]]), torch.Tensor([[4,5,6]] ) ) ) 
+                #结果:  False
+                # print( torch.eq( torch.Tensor([[1,2,3]]), torch.Tensor([[4,5,6]] ) ) ) 
+                #结果:  tensor([[0, 0, 0]], dtype=torch.uint8)
+
+                per_sample = x_test.size(0)   # 再说一次， size(0) 相当于TF xx.shape[0]
+                # 获取每批次样本数量, 虽然我们知道是 16
+                # 但是最后一个batch_size 可能不是16，所以要准确获取。
+                total_samples += per_sample
+
+            acc = total_correct_samples / total_samples
+            print(f'epoch: {epoch}, loss: {loss}, acc: {acc}')   
+            
+            # 测试部分
+            vis.line(
+                [acc],
+                [step],
+                win='acc',
+                update='append', # 追加画点，而不是更新覆盖
+            )
+
+            x, label = iter(test).next()
+            target_predict = model(x).argmax(dim=1)
+            
+            # 画出测试集图片
+            viz.images(x, nrow=16, win=&quot;test_x&quot;, opts={'title': &quot;test_x&quot;}) 
+            vis.text(    # 显示预测标签文本
+                str(target_predict.detach().numpy() ),
+                win = 'target_predict',
+                opts = {&quot;title&quot;: target_predict}
+            )
+            vis.text(    # 显示真值文本
+                str(label.detach().numpy() ),
+                win = 'target_true',
+                opts = {&quot;target_true&quot;: target_predict}
+            )
+main()
+</code></pre>
+<h3 id="模型可视化visdom">模型可视化（visdom)</h3>
+<h5 id="安装-和-运行-和-使用">安装 和 运行 和 使用</h5>
+<pre><code>安装
+    pip install visdom
+运行
+    python -m visdom.server  （第一次可能会有点慢）
+    
+# 语法和Tensorboard很像
+
+使用
+    import visdom
+    见上代码 vis.xxxxx
+</code></pre>
+<h1 id="案例2-cifar10cnn">案例2-CIFAR10+CNN</h1>
+<h3 id="说明">说明</h3>
+<p>模块导入和数据预处理部分和案例1的 MNIST一模一样。<br>
+只要稍稍修改 datasets.MNIST ==&gt;  datasets.CIFAR10 即可， 简单的不忍直视~~</p>
+<h3 id="代码如下">代码如下：</h3>
+<p>模型定义部分：<br>
+class MyModel(nn.Module):        # 温馨提示， 这是 Mmodule, 不是model<br>
+def <strong>init</strong>(self):<br>
+&quot;&quot;&quot;<br>
+先注明一下：<br>
+TF中输入图片形状为       (样本数, 高，宽，图片通道)<br>
+PyTorch中输入图片形状为  (样本数, 图片通道，高，宽)<br>
+&quot;&quot;&quot;</p>
+<pre><code>        super().__init__()
+        self.conv = nn.Sequential( # 再强调一遍，没有 []
+            nn.Conv2d(
+                in_channels=3,    # 对应TF  图片通道数（或者上一层通道）
+                out_channels=8,   # 对应TF  filters, 卷积核数量
+                kernel_size=3,    # 卷积核大小
+                stride=1,         # 步长, TF 是 strides，  特别注意
+                padding=0,        # no padding, 默认
+            ),
+            nn.ReLU(),
+            nn.MaxPool2d(
+                kernel_size=3,    # 滑动窗口大小
+                stride=None,      # 默认为None， 意为和 kernel_size相同大小
+            ),
+
+            nn.Conv2d(
+                in_channels=8,    # 对应TF  图片通道数（或者上一层通道）
+                out_channels=16,   # 对应TF  filters, 卷积核数量
+                kernel_size=3,    # 卷积核大小
+                stride=1,         # 步长, TF 是 strides，  特别注意
+                padding=0,        # no padding, 默认
+            ),
+            nn.ReLU(),
+            nn.MaxPool2d(
+                kernel_size=2,    # 滑动窗口大小
+                stride=None,      # 默认为None， 意为和 kernel_size相同大小
+            ),
+        )
+        self.dense = nn.Sequential(
+            nn.Linear(16*4*4, 128),    # 对应TF Dense
+            nn.Linear(128, 64),
+            nn.Linear(64, 10),
+        )
+    def forward(self, x):
+        conv_output = self.conv(x)
+        # (16, 16, 4.4)
+        conv_output_reshape = conv_output.view(-1, 16*4*4)
+        dense_output = self.dense(conv_output_reshape)
+
+        return dense_output
+</code></pre>
+<p>模型训练（模型调用+模型训练的定义）<br>
+def main():<br>
+vis = visdom.Visdom()</p>
+<pre><code>    epochs = 100
+
+    device = torch.device('cuda')  # 预定义 GPU 槽位（一会往里面塞 模型和数据。）
+
+    model = MyModel().to(device)   # 模型转为 GPU 计算
+    
+    # CrossEntropyLoss 会自动把下面的 dense_output ，也就是y_predict 加一层 softmax
+    loss_ = nn.CrossEntropyLoss().to(device)  
+    optimizer = optim.Adam( model.parameters() )
+
+    for epoch in range(epochs):
+        for step, (x_train, y_train) in enumerate(train):
+            x_train, y_train = x_train.to(device), y_train.to(device)
+            dense_output = model(x_train)
+
+            loss = loss_(dense_output, y_train)
+
+            optimizer.zero_grad()   # 上一个例子提到过，梯度清零
+            loss.backward()         # 反向传播， 并将梯度累加到 optimizer中
+            optimizer.step()        # 相当于做了 w = w - lr * 梯度
+
+        print(loss.item())          # item() 意思就是 tensor转numpy,TF中的 API是 xx.numpy()
+
+        sample_correct_numbers = 0
+        sample_total_numbers = 0
+
+        with torch.no_grad():   # 测试部分不需要计算梯度，因此可以包裹在上下文中。
+            for x_test, y_test in test:
+                x_test, y_test = x_test.to(device), y_test.to(device)
+                
+                # softmax 的 y_predict  与  y_test的 one-hot做交叉熵
+                y_predict = model(x_test).argmax(dim=1) 
+                sample_correct_numbers += torch.eq(y_predict, y_test).float().sum().item()
+                sample_total_numbers += x_test.size(0)  # 每批样本的总数加在一起
+            acc = sample_correct_numbers / sample_total_numbers
+            print(acc)
+
+main()
+</code></pre>
+<h1 id="案例3cifar10resnet-18">案例3：CIFAR10+ResNet-18</h1>
+<p>###结构图体系：<br>
+<img src="/img/bVbyS1X" alt="image.png" loading="lazy"><br>
+上述结构说明：<br>
+1conv + (2+2+2+2)*2 + 1 fc = 18层<br>
+1conv + (3+4+6+3)*2 + 1 fc = 34层<br>
+1conv + (3+4+6+3)*3 + 1 fc = 50层<br>
+1conv + (3+4+23+3)*3 + 1 fc = 101层<br>
+1conv + (3+8+36+3)*3 + 1 fc = 152层</p>
+<h3 id="代码实现">代码实现</h3>
+<p>模块导入<br>
+import cv2<br>
+import torch<br>
+from torch import nn, optim<br>
+from torchvision import datasets, transforms<br>
+from torch.utils.data import DataLoader<br>
+import visdom<br>
+import torch.nn.functional as F<br>
+数据导入预处理<br>
+data_preprocess = transforms.Compose([<br>
+transforms.Resize(32,32),<br>
+transforms.ToTensor(),<br>
+transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))<br>
+])</p>
+<pre><code>train_dataset = datasets.CIFAR10(
+    '.',
+    train=True,
+    download=True,
+    transform=data_preprocess,
+)
+
+
+test_dataset = datasets.CIFAR10(
+    '.',
+    train=False, # False代表测试集
+    download=True,
+    transform=data_preprocess,
+)
+
+
+train = DataLoader(
+    train_dataset,
+    batch_size=16,
+    shuffle=True,
+)
+
+test = DataLoader(
+    test_dataset,
+    batch_size=16,
+    shuffle=True,
+)
+</code></pre>
+<p>基础块定义（BasicBlock）：<br>
+class BasicBlock(nn.Module):<br>
+&quot;&quot;&quot;单个残差块 2个卷积+2个BN&quot;&quot;&quot;<br>
+def <strong>init</strong>(self, input_channel, output_channel, stride=1):<br>
+super().<strong>init</strong>()<br>
+self.major = nn.Sequential(<br>
+# 第一个Conv的步长为指定步长，允许降采样，允许输出输出通道不一致<br>
+nn.Conv2d(input_channel,output_channel,kernel_size=3,stride=stride, padding=1),<br>
+nn.BatchNorm2d(output_channel),<br>
+nn.ReLU(inplace=True),<br>
+# 第二个Conv的步长为定长1， 输入输出通道不变（缓冲输出）<br>
+nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=1, padding=1),<br>
+nn.BatchNorm2d(output_channel),<br>
+# 第二个Conv就不用ReLU了， 因为一会需要和 x加在一起，最后最一层大的Relu<br>
+)<br>
+# 若输入通道==输出通道，且步长为1，意味着图片未被降采样，则残差网络课直接为普通网络</p>
+<pre><code>        self.shortcut = nn.Sequential()
+        # 若输入输出通道不匹配，这时需要将图片做同样的变换，才能加在一起。
+        if input_channel != output_channel or stride != 1:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(
+                    input_channel,
+                    output_channel,
+                    kernel_size=(1,1),
+                    stride = stride
+                ),
+                nn.BatchNorm2d(output_channel)
+            )            
+
+    def forward(self, x):
+        major_out = self.major(x)        # 主干网络的输出
+        shotcut_out = self.shortcut(x)   # 残差网络的输出
+        # 上面这两个网络是平行的关系，  因为 它们的输出不是链式的， 而是  都是同样的 x。
+
+        # 拼接主干网络+残差网络，F 相当于TF20的 tf.nn 里面单独有各种 loss函数
+        return F.relu(major_out + shotcut_out)  # 最后在拼接后的网络外面加一层relu 
+</code></pre>
+<p>ResNet+ResBlock定义：<br>
+class ResNet(nn.Module):<br>
+def <strong>init</strong>(self, layers):  # layers用来接受，用户想要指定 ResNet的形状<br>
+super().<strong>init</strong>()</p>
+<pre><code>        self.conv1 = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True),
+        )        
+
+        self.res_net = nn.Sequential(
+            *self.ResBlock(32,64, layers[0],stride=2),    # 16
+            *self.ResBlock(64,128, layers[1],stride=2),   # 8
+            *self.ResBlock(128,256, layers[2],stride=2),  # 4
+            *self.ResBlock(256,512, layers[3],stride=2),  # 2
+        )
+        # 因为我们一会需要展平，里面填&quot;通道*宽度*高度&quot;, &quot;输出通道&quot;
+        self.dense = nn.Linear(512 * 2 * 2, 10)  
+        
+    def forward(self, x):
+        out = self.conv1(x)
+        out = self.res_net(out)
+
+        out = out.view(x.size(0), -1)# 卷积展平操作 ， torch中没有flatten所以我们就得手工
+        out = self.dense(out)
+        return out
+
+    def ResBlock(self, input_channel, output_channel, block_nums=2, stride=2):
+        # 自定义规定，第一个block缩小的(对应通道翻倍)，其余block大小不变
+        # 通道翻倍，步长*2，特征减半
+        all_block = [BasicBlock(input_channel, output_channel,stride=stride)]   
+
+        for x in range(1,block_nums):
+            all_block.append(BasicBlock(output_channel, output_channel,stride=1))
+        return all_block
+
+# resnet = ResNet(layers=[2,2,2,2])
+# out = resnet(torch.randn(4,3,32,32))
+# print(out.shape)
+</code></pre>
+<p>模型训练：<br>
+def main():<br>
+vis = visdom.Visdom()</p>
+<pre><code>    epochs = 5
+
+    device = torch.device('cuda')
+
+    model = ResNet(layers=[2,2,2,2]).to(device) 
+    
+    # 会自动把下面的 dense_output ，也就是y_predict 加一层 softmax，y_true做one-hot
+    loss_ = nn.CrossEntropyLoss().to(device)  
+    optimizer = optim.Adam( model.parameters(), lr=0.0001)
+
+    for epoch in range(epochs):
+        total_loss = 0.0
+        for step, (x_train, y_train) in enumerate(train):
+            x_train, y_train = x_train.to(device), y_train.to(device)
+            dense_output = model(x_train)
+
+            loss = loss_(dense_output, y_train)
+
+            optimizer.zero_grad()   # 上一个例子提到过，梯度清零
+            loss.backward()         # 反向传播， 并将梯度累加到 optimizer中
+            optimizer.step()        # 相当于做了 w = w - lr * 梯度
+            total_loss += loss.item() # item()就是 tensor转numpy, TF中的 API是 xx.numpy()
+            if step % 50 == 49:
+                print('epoch:',epoch, 'loss:', total_loss / step) 
+
+        sample_correct_numbers = 0
+        sample_total_numbers = 0
+
+        with torch.no_grad():   # 测试部分不需要计算梯度，因此可以包裹在上下文中。
+            for x_test, y_test in test:
+                x_test, y_test = x_test.to(device), y_test.to(device)
+                # softmax 的 y_predict  与  y_test的 one-hot做交叉熵
+                y_predict = model(x_test).argmax(dim=1) 
+                sample_correct_numbers += torch.eq(y_predict, y_test).float().sum().item()
+                sample_total_numbers += x_test.size(0)  # 每批样本的总数加在一起
+            acc = sample_correct_numbers / sample_total_numbers
+            print(acc)
+    torch.save(model, 'model.pkl')  # 保存整个模型
+main()
+</code></pre>
+<p>测试数据预处理(我随便在网上下载下来的 1 张图片)：<br>
+# 这是Cifar-10数据的标准标签<br>
+label = ['airplane','automobile','bird','cat','deer','dog','frog','horse','ship','truck']</p>
+<pre><code>plane = cv2.imread('plane.jpg')              # 我用的opencv
+plane = cv2.cvtColor(plane, cv2.COLOR_BGR2RGB) # opencv读的数据格式是BGR，所以转为RGB
+
+plane = (plane - 127.5) / 127.5    # 二话不说，保持模型输入数据的概率分布，先做归一化
+plane = cv2.resize(plane, (32,32)) # 图片缩小到32x32,和模型的输入保持一致
+plane = torch.Tensor(plane)        # 转换成 tensor
+plane = plane.view(1,32,32,3)      # 增加一个维度
+plane = plane.repeat(16,1,1,1)     # 我就用一张图片，为了满足模型的形状16，我复制了16次     
+plane = plane.permute([0,3,1,2])   # 虽然torch也有 像TF那样的transpose，但是只能操作2D
+
+device = torch.device('cuda')      # 先定义一个cuda设备对象
+plane = plane.to(device)           # 我们训练集用的cuda， 所以预测数据也要转为cuda
+</code></pre>
+<p>正式输入模型预测：<br>
+model = torch.load('model.pkl')    # 读取出 我们训练到最后整个模型<br>
+# 说明一下，如果你的预测是另一个脚本中，class ResNet 的代码定义部分也要复制过来</p>
+<pre><code>out = model(plane)                 # 预测结果，形状为[16,10] 16个样本，10个预测概率，
+label_indexes = out.argmax(dim=1)  # 取10个概率最大值的索引。 （1轴），形状为 [16,1]
+print(label_indexes)
+for i in label_indexes:            # i为每个样本预测的最大概率值 的 索引位置。
+    print(label[i])                # 拿着预测标签的索引  去 真实标签中找到真实标签</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[AI => Tensorflow2.0语法 - keras_API的使用(三)]]></title>
         <id>https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-keras_api-de-shi-yong-san/</id>
@@ -375,1369 +2230,6 @@ xxxxxxxx:7474    # 若是阿里云，需要放通防火墙7474 和 7687<br>
 <p>密码忘记了？？<br>
 进入 xx/data/dbms<br>
 删除 auth 文件，重启服务</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => CNN之kernel_size/strides/padding/same]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-cnn-zhi-kernel_sizestridespaddingsame/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-cnn-zhi-kernel_sizestridespaddingsame/">
-        </link>
-        <updated>2020-09-29T04:07:02.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<p>先强调一点：<br>
-涉及到参数，都是针对Tensorflow来讲的。</p>
-<p>本文主要说一些CNN最常用的几个参数。<br>
-以及各种组合情况下卷积之后计算形状的规律公式。<br>
-filters       (必填， 这个本文不说)<br>
-kernel_size  （必填）<br>
-strides         (选填， 默认为 (1,1) )<br>
-padding         （选填，默认为 valid）<br>
-这里先提一下，通用公式： (宽高都用这个公式，我只列出了高度的)<br>
-h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
-也许你看起来没什么问题，但是Tensorflow中的API可不告诉你padding是几。<br>
-而是提供给你2个可选参数：<br>
-padding='valid'     (默认参数)  # 代表不做padding，滑动不能越界，多余就裁剪。<br>
-padding='same'                 # same我会在下面展开说明。</p>
-<h1 id="无same情况">无same情况</h1>
-<h3 id="strides-1">strides = 1</h3>
-<p>你完全可以按照上面的通用公式计算，但是通常情况下我会用另一个简便的公式：<br>
-h图片输出 = h图片输入 - h卷积核 + 1</p>
-<h3 id="strides-1-2">strides != 1</h3>
-<p>这个就得使用上面的通用公式了：<br>
-h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1</p>
-<h1 id="有same情况">有same情况</h1>
-<p>加了same，情况就比较复杂一些了。<br>
-same 就是 让你在不同的 strides滑动情况下，帮你把原图片虚拟补全。<br>
-使得filter在图片中完全滑动，(而不至于，最后剩下一点越界滑不到给无情的裁剪掉)。</p>
-<h3 id="strides-1重点">strides = 1（重点）</h3>
-<p>strides=1的情况下，如果你使用了 same。<br>
-那么same会帮你补充 padding, 使得你滑动后的特征形状与滑动之前的形状 &quot;保持一致&quot;。<br>
-补充的padding大小为: (敲黑板)：<br>
-padding = h图片输入  %  h卷积核            # 看清楚，是取模运算<br>
-举个例子，验证一下：<br>
-假如:<br>
-图片（输入） = 7 x 7,<br>
-kernel_size = (5,5),<br>
-strides = 1。<br>
-（通过我们上面给出的公式，你先求 padding = 7 % 5） ，很显然是2。</p>
-<pre><code>我们再用最开始讲的通用公式验证一遍：
-    h输出长度 = (h输入 - h卷积核 + 2 * padding) / 1 + 1 = 7-5 + 2*2 + 1 = 7
-    巧了，我们的输入长度也是 7。
-    
-所以综上所述： padding = h图片输入  %  h卷积核。 
-可以使得：输入形状 与卷积后的输出形状一致
-</code></pre>
-<h3 id="strides-1重点-2">strides != 1（重点）</h3>
-<p>当步长strides为多步时，如果你使用了 same。<br>
-敲黑板：那么same会帮你补充 padding,  并且卷积后的特征图缩小为原来的 strides倍。<br>
-补充的padding大小为: (敲黑板)：<br>
-padding = h图片输入  %  h卷积核            # 看清楚，是取模运算<br>
-我为了演示， 我突来灵感，随便找了一个 五子棋棋盘（笑了）， 见下图。<br>
-<img src="/img/bVbyNdl" alt="image.png" loading="lazy"></p>
-<h1 id="小技巧有无same都适用">小技巧（有无same都适用）</h1>
-<p>当你预期想要把特征形状卷积之后形状大小&quot;成倍缩小&quot;时，你可以 &quot;同时&quot; 设置：<br>
-kernel_size == strides == (n,n)  # n就是缩小的倍数</p>
-<pre><code>说明，只要你把 kernel_size 和 strides 设置为相等，设置为n。那么图像一定会缩小n倍。
-
-举个栗子： n设为3
-    kernel_size = (3,3) 
-    strides = (3,3)
-    那么: 你卷积出来的特征尺寸，一定比上一层缩小3倍。
-</code></pre>
-<h1 id="结束语聊一下pooling2d">结束语（聊一下Pooling2D）</h1>
-<p>pooling的通用公式和 CNN中的是一模一样的。<br>
-Tensorflow 中 xxxPooling API参数如下：<br>
-pool_size （选填，默认为 (2, 2) ）<br>
-strides   （选填，默认为 None）   （这里你会疑问，None是什么鬼？？？）<br>
-我也不知道，API参数也没给说明。当我跳进源码，我发现如下代码，瞬间豁然开朗！<br>
-if strides is None:<br>
-strides = pool_size        （这应该就不用我解释了吧~）<br>
-padding   （选填，默认为 valid， 通常没必要用 same ）</p>
-<p>我们上面说过小技巧：<br>
-卷积层中：     kernel_size == strides == (n,n)  # n就是缩小的倍数<br>
-池化层也同理： pool_size == strides == (n,n)    # n就是缩小的倍数</p>
-<pre><code>又因为刚才又说了 ，  池化层中 strides 默认值等于 pool_size 的长度。
-
-所以: 我们只设置一个  pool_size = (n,n)。 即可直接让原图缩小n倍。
-
-所以: 池化层通常用来做降采样。  (起到变换形状的作用，无权重参数更新)</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => CNN-RNN（Ng）]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-cnn-rnnng/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-cnn-rnnng/">
-        </link>
-        <updated>2020-09-29T04:05:43.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<p>看Andrew Ng视频，总结的学习心得。<br>
-虽然本篇文章可能不是那么细致入微，甚至可能有了解偏差。<br>
-但是，我喜欢用更直白的方式去理解知识。<br>
-上一篇文章传送门： https://segmentfault.com/a/1190000020588580</p>
-<h1 id="端到端">端到端</h1>
-<h3 id="首先聊一个面试经历">首先聊一个面试经历</h3>
-<p>我最开始接触的是ML （但只限于Sklearn的简单应用，工程化的内容当时一点都不了解。）<br>
-后来有幸了解到DL （这个了解比较多）<br>
-我面的是普通Python岗， 因为我的小项目中涉及到 （聊天机器人）。所以第二个面试官揪着这个聊了聊。<br>
-与面试官交谈时，我也直接挑明了，模型是Github找的，当时自己爬了些问答对，处理后放入模型自己训练的。<br>
-面试官一顿(特征提取，语义）等各种 ML-NLP工程化的过程，把我直接问懵了。。</p>
-<p>怎么提取特征（问号脸，难道是TF-IDF，分词之类的？？）？？？？？<br>
-我也不知道说啥，以仅有的能力，和他聊聊（LSTM、Embedding, Seq2Seq的 Encoder-Vector-Decoder）。。</p>
-<p>面试官说：“你说了这些， 那你特征工程是怎么做的？？？”<br>
-我感觉已经没有任何反驳的能力了。。。接下来的事情，我不说，大家也应该清楚了。</p>
-<h3 id="反思">反思</h3>
-<p>我回来后也反思过， 做了什么特征工程？？<br>
-我看视频中 也是，数据简单预处理下，然后分词，词频过滤，构建词典<br>
-然后，直接就是构建NN层（包括Embedding层）。</p>
-<p>直到最后了解了&quot;端到端这个概念&quot; 与 传统ML的区别。<br>
-才清楚， 当时面试的场景是怎么个情况。。。</p>
-<h3 id="正式开篇端到端">正式开篇端到端</h3>
-<p>传统ML：  原数据 -&gt; 数据特征工程(各种复杂的人工处理) ---&gt; 模型<br>
-端到端DL：原数据 -----------------------------------------------------&gt; 模型</p>
-<p>端到端：（一步到位）：<br>
-传统的ML做的中间层人工&quot;手动&quot;特征工程处理出来的特征。<br>
-这些特征，端到端的NN都可能&quot;自动学习&quot;的到。</p>
-<pre><code>这也可能是当时为什么面试官一直追问我&quot;特征如何处理&quot;的原因吧。也肯能他另有目的QAQ...
-或者我们真的不在一个频道上。。。但是交流的过程真的使我受益匪浅，有了更广阔的视野（3Q！）
-</code></pre>
-<p>强调一点：<br>
-虽然端到端 模型很便捷。但是需要大量的数据，才能训练出好的效果。</p>
-<h1 id="cnn-卷积神经网络">CNN （卷积神经网络）</h1>
-<h2 id="构成">构成</h2>
-<pre><code>卷积层（激活函数） + 池化层    + 全连接层
-Convolution       + Pooling   + Dense
-</code></pre>
-<h3 id="至于一些术语">至于一些术语:</h3>
-<pre><code>有人喜欢把: 卷积层 + 池化层   作为一层网络 （因为池化层无训练训练，后面会提到）
-也有人喜欢把:  卷积层 和 池化层 各自单独算一个层（也是没问题的。Tensorflow的API就是这样设计的）
-</code></pre>
-<h2 id="卷积层convolution-layer">卷积层（Convolution Layer）</h2>
-<h3 id="卷积过程">卷积过程</h3>
-<pre><code>卷积计算过程就不说了。没有案例图。
-但你可以理解为: 两个 正方体 的 对应位置的元素 （相乘再相加）的结果。。。 （互相关，，，）
-</code></pre>
-<h3 id="卷积的输出计算">卷积的输出计算</h3>
-<p>输出图像大小计算公式：<br>
-h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
-w图片输出 = （w图片输入 - w卷积核 + 2padding） / strides + 1</p>
-<pre><code>首先声明: 这个式子由于不一定能够整除， 因此除不尽的情况下，向下取整, 也叫地板除
-因为有个原则: 卷积核滑动的时候(通常是，步长&gt;1的情况下) 如果越界了一部分。则舍弃掉
-</code></pre>
-<p>根据上面的公式，求一个输出图像大小的例子(此处，不做paddding， 并且步长为1)<br>
-eg: 输入8x8 的图像 ,  并使用3x3的卷积核<br>
-输出图像高度为:  h图片输出 = (8-3 + 2x0) / 1 + 1 = 6<br>
-输出图像宽度为:  w图片输出 = (8-3 + 2x0) / 1 + 1 = 6<br>
-所以输出图像为:  6x6</p>
-<pre><code>很明显: 卷积一次，图像变小了。 如果再卷积几次， 图像就看不到了。。。
-
-所以: 我们需要解决这个问题
-原则上: 增加 padding 能解决步长为1时，卷积后的图片缩放问题。
-</code></pre>
-<p>假如我们希望输出图像的大小 等于 输出图像的大小，而我们想要求padding需要设置为多少。<br>
-一般这种场景适用于 步长strides = 1,  所以参考开始的公式，可写出如下公式：<br>
-因为: w 和 h是一样的公式，此处只写出一个h,来推导：<br>
-h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
-化简:<br>
-padding =（ h图片输出 - h图片输入 + h卷积核 - 1 ） / 2<br>
-因为我们希望的条件: h图片输出 等于 h图片输入， 所以可继续化简：<br>
-padding =（ h卷积核 - 1 ） / 2</p>
-<p>所以步长为1的情况下卷积, 并且想让图片不变形，你的padding的取值，就需要受到 卷积核大小的影响。<br>
-现在常用的卷积核大多都是 1x1、 3x3、 5x3 。所以看上面化简好的公式：<br>
-padding =（ h卷积核 - 1 ） / 2     &lt;=============   1x1, 3x3, 5x5<br>
-奇数-1总等于偶数。<br>
-所以不用担心除不尽的情况<br>
-还需要注意一下: 填充padding一般是环形填充， 假如padding=1, 那么上下左右 都会添加一层。<br>
-当然: tensorflow的padding是可以设置形状的</p>
-<h3 id="padding的种类tensorflow">padding的种类（tensorflow）</h3>
-<p>valid:<br>
-不填充<br>
-same:<br>
-自动去填充，使得输入图像 与 输出图像 的大小相等</p>
-<h3 id="温馨提示关于三通道卷积-和-多个卷积核的区别">温馨提示：关于三通道卷积 和 多个卷积核的区别</h3>
-<p>三通道卷积：<br>
-假如你只有一个卷积核<br>
-即使你图片是3通道的（三层）<br>
-即使你卷积核也是三通道的（三层）<br>
-但是: 卷积输出结果是依然是一个  m x n 的形状  (一层&quot;薄纸&quot;)<br>
-你的疑惑: 不是三层嘛？ 最后怎么变成一层了 ？？？<br>
-我的解释: 每滑动一次,3层通道，各自都会计算各自层的卷积，然后求总和，并填入一层&quot;薄纸&quot;的对应位置<br>
-多个卷积核：<br>
-上面说了: 1个卷积核，无论图片是什么形状的、有几个通道，卷积后输出的形状 是 一层薄纸: m x n</p>
-<pre><code>而如果你有多个卷积核: 那么你就会有多层薄纸摞起来。  就像 一个长方形 摞成了一个 长方体
-明确点:  假如你用了 6个卷积核, 那么你的输出就变成了   m x n x 6      (三维的一个长方体了)
-</code></pre>
-<p>上面说的：就是我最开始学的CNN时候经常理解不清楚的地方。我相信你也一样, qaq  ....<br>
-下面做个总结:<br>
-C个通道:  一点都不会影响输出维度。 注意我说的是维度。<br>
-假如你的输入是 m x n , 那么你的输出依然是  p x q   （注意维度即可，维度没变，二维)</p>
-<pre><code>f个卷积核: 会影响输出的维度。 输出的维度将会增加一个维度f
-    假如你的输入是 m x n  ，  那么你的输出依然是  p x q x f  (增加一个维度F，变成了)
-
-也许你当你学TF的时候会有另一个理解障碍:那就是TF数据格式（以图片为例）： 
-    通常TF数据格式是这样的：  [图片数量B,  图片高度H,  图片宽度W,  通道数C]
-    假如你使用 F 个卷积核做了卷积：
-    那么他的卷积结果的特征的形状就变变成： [B, H, W, F]
-    发现没输出结果和通道数C，没有关系的。 只和 卷积核的个数 f有关系。
-
-但是注意: 虽然结果和C没关系。但是 需要卷积核中具有 C的数量，还做唯独匹配。桥梁运算。
-    对应上例， 我们的卷积核的形状应该是这样的 :   [F, C, H, W]
-    注意一下： 这里面有 卷积核数量f， 也有通道数量C。
-</code></pre>
-<p>如果最后一步的卷积核形状不理解:<br>
-没关系。以后是TF20的天下。 对应API不需要你指定卷积核的形状。<br>
-因此，你没必要记住卷积核的形状。<br>
-你只需要 传递，卷积核的个数， 和 宽高 和 步长 即可。 当然这些都是独立的命名参数。<br>
-摘一小段Conv2D的源码:<br>
-def <strong>init</strong>(self,<br>
-filters,                # 你只需要传递这个参数， 卷积核的个数<br>
-kernel_size,            # 卷积核的宽高，假如 3x3 你只需写  [3,3] 即可<br>
-strides=(1, 1),         # 这是步长， 你不传，他也会给你填默认值, 步长为1<br>
-padding='valid',        # 这时 padding策略，前面说过，这个一般都会设为 &quot;same&quot;</p>
-<pre><code>或许你还有些疑问:
-    刚才上面不是提到了卷积核应该设置 通道数C么。
-    原则上是的。因为要和 输出的样本做卷积。要匹配才行。
-    但是在Tensorflow中。 特别是 Tenosrflow.Keras中，定义模型层
-    我们只需要把整个模型，从上到下连接起来。（就像先后排队一样）
-    而对于一些前后流动贯通的参数，比如刚才提到的通道C。
-    这些参数，Tensorflow会自动帮我们上下文识别管理。
-    
-    所以我们做的只是需要，把原始数据的形状设置好传 给第一层（给排头发数据）
-    至于你这些在中间层流动的参数，Tensorflow会自动帮你计算，你不用传。
-    虽然不用传，但你最好清楚每层是什么结构（当然这时后话，可能需要一些时间理解）
-    
-    到最后，我再给你设置一个输出形状，你能给我输出出来即可 （队尾接数据）
-    
-基本TF参数流动机制讲到这里，刚开始学的时候，也是各种苦思冥想，想不明白qaq...
-</code></pre>
-<h3 id="透过现象看本质卷积-线性">透过现象看本质（卷积 =&gt; 线性）</h3>
-<p>其实我们做的每一步 (每一个)卷积就相当于一个矩阵线性操作： x1 @ w1<br>
-之后，基于常理话， 我会还会给它一个偏差： b  变成   ===&gt;   x1 @ w1 + b</p>
-<p>我们说过，可能会给出很多个卷积核进行运算。<br>
-上面  x1 @ w1 + b    是每一个卷积核的卷积结果<br>
-我们还需要讲所有卷积核计算结果堆叠在一起： 记为  X @ W + b     # m x n x f<br>
-最后将堆叠在一起的结果，做一层非线性变换 relu ( X @ W + b )    # CNN 通常用 relu</p>
-<pre><code>eg： 现有图片 5 x 5 x 3 的图像 （暂时不考虑样本个数，就认为是一个样本）.
-     我们用的是 2 x 2 x  20 的卷积核 (步长为1，不做padding)
-     那么输出结果就是   (5-2+1) x (5-2+1) x 20  ===  4 x 4 x 20
-</code></pre>
-<p>忘记说了，还有一个公式，用来计算 每层卷积的权重参数量的个数的：<br>
-公式:  每层权重参数量(W) = 卷积核个数 x 卷积核高 x 卷积核宽 x 卷积核通道数<br>
-公式:  每层偏差数量(b) = 1 x 卷积核的个数        # 因为每个卷积核只有一个偏差b</p>
-<pre><code>温馨提示: 有太多人喜欢把卷积核个数 与 卷积核通道称作:&quot;输入/输出&quot;通道。
-        这样的称呼是没问题的， 但我在计算参数量的时候，不喜欢这样的称呼，易混淆。 
-
-前情回顾: 记不记得普通神经网络了。每个神经元节点，都有它们自己的参数。因此它们的参数量是巨大的
-回归正文: 而卷积核是共享的， 因为它是在一张图片上滑动的。（挨个服务）所以权重参数也是共享的。
-</code></pre>
-<h2 id="池化层-pooling-layer">池化层 (Pooling Layer)</h2>
-<p>卷积层(激活函数) =&gt; 池化层<br>
-池化层主要分两种： MaxPooling 和 AvgPooling</p>
-<h3 id="池化层输出图片形状计算公式">池化层输出图片形状计算公式：</h3>
-<p>声明： 池化层也有滑动窗口，并且输出形状计算公式，和 卷积的输出形状计算公式一样：<br>
-h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
-w图片输出 = （w图片输入 - w卷积核 + 2padding） / strides + 1</p>
-<p>因为池化层，的基本都是放在卷积层之后，因此池化层的通道数 也就顺理成章的 和 卷积层通道一样<br>
-举个例子:<br>
-卷积层数据形状为:  m x n x f<br>
-那么池化层形状同为: p x q x f</p>
-<pre><code>我想主要强调的是: 通道数不变，变得是 宽高。
-</code></pre>
-<h3 id="池化层-滑动窗口参数相关配置">池化层 滑动窗口参数相关配置</h3>
-<p>还是，把Tensorflow, 源码搬过来，标注一下:<br>
-def <strong>init</strong>(self,<br>
-pool_size=(2, 2),   # 滑动窗口大小 2x2<br>
-strides=None,       # 步长，通常设为2<br>
-padding='valid',    # Maxpooling 通常不用padding</p>
-<p>一般都是使用组合   pool_size=(2, 2)  和   stride = 2</p>
-<pre><code>所以，公式来了:
-                                                输入h         滑动窗口h
-    输出h = (输入h - 滑动窗口h) / stride + 1 = ----------  -   --------  + 1
-                                                stride         stride
-</code></pre>
-<p>通常我们把 pooling层作称作数据的降采样:<br>
-所以大多数经验者，都会把 滑动窗口 和 stride步长  设为相等大小。<br>
-所以带入上面公式：<br>
-输入h           1            输入h<br>
-输出h = (输入h - 滑动窗口h) / stride + 1 = ----------  -   -----  + 1 =  -------<br>
-stride          1             步长</p>
-<pre><code>简化一下: （当 pool_size 和  strides 设置相等大小时）：
-    输出 = 输入 / 步长
-
-    所以当我们: 
-        步长设为2时，  输出就是输出的一半。
-        步长设为3时，  输出就是输出的1/3。
-        ...
-</code></pre>
-<p>不知道有没有这样一个疑问：”为什么滑动窗口没有设置 窗口数量 （就像设置卷积核数量）“<br>
-再次说一下Tensorflow的原理。<br>
-因为Pooling的上一层基本完全是 Conv卷积层， 卷积层的 卷积核的个数已经设置好了。<br>
-卷积层对接池化层的时候， Tensorflow会自动判断，并设置:</p>
-<pre><code>池化层滑动窗口的个数===卷积核个数
-池化层通道个数的个数===卷积层通道个数===图片的原始通道个数
-</code></pre>
-<h3 id="maxpooling-最大池化常用">MaxPooling （最大池化，常用）</h3>
-<p>卷积操作：之前我们卷积不是拿着滑动窗口，对应元素相乘再相加么？<br>
-池化操作：池化层也是拿着滑动窗口一样滑，但是不做运算，而是只取每个窗口内最大值。放在一层&quot;薄纸&quot;上</p>
-<h3 id="avgpooling-平均池化不常用">AvgPooling （平均池化，不常用）</h3>
-<pre><code>一样滑动窗口，各种滑， 然后取每个窗口内的数据的&quot;平均值&quot;,  其他就不说了，同 MaxPooling
-</code></pre>
-<h3 id="额外提醒池化层的参数是否训练">额外提醒（池化层的参数是否训练）</h3>
-<pre><code>池化层的是&quot;没有&quot;参数可以训练的。所以，反向传播，也不为所动~~~
-</code></pre>
-<h2 id="全连接层-dense-layer">全连接层 （Dense Layer）</h2>
-<h3 id="什么是全连接层">什么是全连接层？？</h3>
-<p>你很熟悉的， 全连接层其实就是之前讲的普通的NN（神经网络），所以并没有什么好说的。<br>
-只是拼接在池化层之后罢了。<br>
-但其实还是有一些细节需要注意。尤其之前的东西没搞懂，那么这里的参数形状你会垮掉~~~</p>
-<h3 id="展平-及-参数">展平 及 参数</h3>
-<p>之前为了图方便，参数我都没怎么提到样本参数。<br>
-下面我要把样本参数也加进来一起唠唠了。我感觉讲这里，直接上例子比较直观。<br>
-好了，现在我们有个需求， 想要做一个10分类的任务：<br>
-卷积层-池化层: 这个照常做， 设置你还可以堆叠<br>
-卷积层1 + 池化层1 + 卷积层2 + 池化层2 ...<br>
-等堆叠的差不多了: (你自我感觉良好了。。。)，我们需要做一层展平处理！<br>
-展平处理（特意拿出来说）<br>
-假如你叠加到最后一层池化层数据形状是:(1000,4,4,8)==&gt; 1000个样本，宽高8 x 8, 输出通道为8<br>
-你展平后的形状为: (1000, 4<em>4</em>8) == (1000, 128)<br>
-展平操作第一种API:  tf.keras.Flatten()     # tensorflow2.0的Flatten被作为网络层使用<br>
-展平操作第一种API:  tf.reshape(x, [-1, 128])  # 手动变换， -1是补位计算的意思<br>
-然后在加全连接层，形状为: (1000, 50)        # 50代表输出，起到过渡作用<br>
-然后在加全连接层，形状为: (1000, 10)        # 最终，10代表输出，因为我们说了，要做10分类嘛<br>
-1. 其实你中间可以加很多全连接层，我这里只加了一层，控制最后一层全连接是你想要的输出就行。<br>
-2. 特别注意， 这里的每一层全连接计算，是需要有激活函数跟着的。<br>
-除了最后一层全连接，其他层的全连接都设置为 Relu 激活函数即可。<br>
-3. 因为我们做的是10分类（多分类自然应想到 softmax参数， 如果是其他业务，你也可以不加激活函数）<br>
-没做，也就是最后一层。我们要再添加一层激活函数 Softmax。</p>
-<h2 id="1-x-1-卷积的作用">1 x 1 卷积的作用</h2>
-<p>降采样（控制输出通道数量）：<br>
-假如,前一个卷积层参数为: (1000,32,32,256)<br>
-如果你下一层使用1x1x128的卷积，则对应参数为: (1000，32，32，128)  # 256通道变成了128通道</p>
-<h2 id="cnn文本分类也许你看完下面的rnn再回来看这个会更好">CNN文本分类（也许你看完下面的RNN再回来看这个会更好）</h2>
-<p>通常CNN大多数都是用来做CV工作。对于某些文本分类。CNN也可以完成。如下变通概念：</p>
-<ol>
-<li>句子的长度 看作 (图片的高度)</li>
-<li>embedding的维度， 看作 (图片的宽度)</li>
-<li>卷积核是铺满一行(或者多行)，然后沿着高度竖着滑下来的。 你也可以有多个卷积核<br>
-eg: 一个句子 10个词语，20dim， 这个句子的输入形状就是（10 x 20）<br>
-我们准备3个卷积核分别是（3x20),(2x20), (1x20）<br>
-每个卷积核竖着滑下来，最后按次序得到向量形状为（10，3）<br>
-你可以看作输出三通道（对应卷积核个数，这和之前讲的CNN原理一模一样）<br>
-最终提取出来这个（10，3）是，一个句子3个通道的特征信息。</li>
-<li>将10x3特征矩阵，通过maxpooling压缩成 （1x3)的特征矩阵</li>
-<li>放入Dense层，构建多输出单元的n分类模型。</li>
-</ol>
-<h1 id="resnet-残差网络-residual-networks">ResNet (残差网络 Residual Networks)</h1>
-<h3 id="问题引入">问题引入：</h3>
-<p>是否网络层数越多越好，虽然堆叠更多的网络，可以使得参数丰富，并且可以学到更多更好的特征。<br>
-但是实际效果并非如此，而是出现，过拟合等现象。</p>
-<p>ResNet作者 何凯明：有感而发：按理说模型是应该越丰富越好的。可是出现了过拟合这种现象。<br>
-最少，更深层的网络的效果，应该比浅层网络的效果好吧。不至于差了那么多。<br>
-因此，他将此问题转换为一个深度模型优化的问题。</p>
-<h3 id="resnet相关配置">ResNet相关配置</h3>
-<ol>
-<li>batch-size: 256</li>
-<li>optimizer: SGD+Momentum(0.9)</li>
-<li>learning_rate: 初始化为0.1， 验证集出现梯度不下降的情况下，learning_rate每次除以10衰减</li>
-<li>每一层卷积层之后，都做 Batch Normalization</li>
-<li>不使用 Dropout    （其实应该是用了 BN,所以就没有 Dropout）</li>
-</ol>
-<h1 id="rnn-循环神经网络">RNN (循环神经网络)</h1>
-<p>###直接引用 Andrew Ng的降解图<br>
-<img src="/img/bVbyy83" alt="clipboard.png" loading="lazy"><br>
-可以看到，上图中有一些输入和输出：慢慢捋清。</p>
-<ol>
-<li>第一个输入 x&lt;1&gt; 代表 （你分词后的每一个句子中的第一个单词）  x&lt;2&gt;就是第二个单词喽</li>
-<li>第二个输入 a&lt;0&gt; 代表  初始输入， （一般初始化为0矩阵）</li>
-<li>前面两个输入， 各会乘上各自的 权重矩阵，然后求和 得出  a&lt;1&gt;   (这是临时输出)</li>
-<li>a&lt;1&gt; 乘上 一个权重参数 得到输出一: y&lt;1&gt;   （这是终极输出一）    （这就是图中黑框顶部的输出分支）</li>
-<li>a&lt;1&gt; 乘上 又一个新权重参数后， 再加上 x&lt;2&gt; 乘以自己的权重参数得到  a&lt;2&gt;</li>
-<li>......你会发现 1-5步是个循环的过程， 到第5步， a&lt;1&gt; 就相当于 最开始a&lt;0&gt;的地位，作为下一层的输入</li>
-<li>题外话。其实每层的输出y1 会替代下一层的x作为下一层的输入。 （我会放到下面&quot;防坑解释&quot;中说）<br>
-然后将上述途中最后2行的公式化简，可得到如下形式：</li>
-</ol>
-<figure data-type="image" tabindex="1"><img src="/img/bVbyzaj" alt="clipboard.png" loading="lazy"></figure>
-<h3 id="防坑解释-rnn语言模型">防坑解释 (RNN语言模型)</h3>
-<p>如果你看过了上面的图，你会很清楚， 有多少个x, 就会输出多少个y。<br>
-上面第7点说过  : &quot;其实每层的输出y1 会替代下一层的x作为下一层的输入&quot;,  该如何理解这句话？？？<br>
-假如你有这样一段文本: &quot;我精通各种语言&quot;   =&gt; 分词后的结果会变成 &quot;我&quot;,&quot;精通&quot;,&quot;各种&quot;,&quot;语言&quot;<br>
-一般的问答对这种的句子，处理流程是: （这里只先说一个）：<br>
-那就是：在句子的末尾添加一个 <END> 标识符<br>
-所以句子变成了:  &quot;我&quot;,&quot;精通&quot;,&quot;各种&quot;,&quot;语言&quot;, &quot;END&quot;<br>
-这些单词都会预先转为 （One-Hot编码 或者Embedding编码）</p>
-<pre><code>x1(初始值0) =&gt; y1(我)       y1有一定概率输出 &quot;我&quot;， 下面所有的y同理，只是概率性。
-x2(y1) =&gt; y2(精通)          如此每一层嵌套下来，相当于条件概率  P(精通|我)
-x3(y2) =&gt; y3(各种)          P(各种|(我，精通))
-x4(y3) =&gt; y4(语言)          ...
-x5(y4) =&gt; y5(&lt;END&gt;)         ...
-</code></pre>
-<p>不知道看了上例，你会不会有下面一连串的问号脸？？：</p>
-<ol>
-<li>
-<p>为什么y1-y5 输出都是精准的文字？<br>
-答：我只是方便书写表示，其实每个输出的Y都是一个从词典选拔出来的词的概率。（多分类）</p>
-</li>
-<li>
-<p>不是说x1-x5每个x应该输入固定句子的每个单词么？？？为什么变成了输入y1-y5<br>
-答：的确是这样的，但是我们的 y1-y5 都是朝着预测x1-x5的方向前进的。（这也是我们要训练的目标）<br>
-所以: 可以近似把y1-y5等价于x1-x5。 所以用 y1-y5 替代了 x1-x5<br>
-这样: 也可以把前后单词串联起来，让整个模型具有很强的关联性。<br>
-比如: 你第一个y1就预测错了。那么之后的y很可能都预测错。（我的例子是：双色球概率）<br>
-但是: 假如我们预测对了。那说明我们的模型的效果，已经特别好了（双色球每个球都预测对了~）</p>
-</li>
-<li>
-<p>那我们就靠这x和y就能把前后语义都关联起来吗？？？<br>
-答： 当然不仅于此。 你别忘了我们还有贯穿横向的输入啊，如最开始RNN图的 a&lt;0&gt;. a&lt;1&gt; 这些</p>
-</li>
-<li>
-<p>既然你说y 是从词典选拔出来的词的概率属性。 那么这个概率怎么算？<br>
-答： 这问得太好了~~~<br>
-前面说了: 一般都会预先给数据做 One-Hot或 Embedding编码。<br>
-所以数据格式为: [0,0,....,1,...]   # 只有一个为1<br>
-基本上我们最后给输出都会套一层: softmax激活函数， softmax应该知道吧：e^x /(e<sup>x1+..+e</sup>x)<br>
-所以: softmax结果就是一个 和One-Hot形状一样的概率列表集合: [.....,最高概率,...]<br>
-softmax的结果（概率列表） :（代表着预测 在词典中每一个单词的可能性）</p>
-</li>
-<li>
-<p>那么损失函数怎么算呢？？<br>
-答：没错，损失函数也是我们最关注的。<br>
-前面:我们已经求出了softmax对应的结果列表 (....,最高概率，...)<br>
-损失函数: 我们使用的是交叉熵。<br>
-交叉熵知道吧:  -（ Σp<em>logq ）         # p为真实值One-hot, q为预测值<br>
-简单举个例子:<br>
-假如 softmax预测结果列表为 :[0.01,0.35, 0.09, 0.55]  # 温馨提示，softmax和为1<br>
-你的真实标签One-Hot列表为:  [0,   0,    0,    1]<br>
-那么交叉熵损失就等于: -(  0</em>log0.01 + 0<em>log0.35 + 0</em>log0.09 + 1*log0.55 ) = ...</p>
-<pre><code> 到此为止，我们第一层NN的输出的损失函数就已经计算完毕了。
- 而我们训练整个网络需要计算整体的损失函数。
- 所以，我们需要把上面的交叉熵损失求和， 优化损失。
-</code></pre>
-</li>
-</ol>
-<h3 id="梯度爆炸-梯度消失">梯度爆炸 &amp; 梯度消失</h3>
-<p>RNN 的梯度是累乘，所以NN层如果很多，可能会达到 指数级的梯度。<br>
-你应该听过一个小关于指数的小案例吧~~ (学如逆水行舟，不进则退~)<br>
-&gt;&gt;&gt; 1.01 ** 365<br>
-37.78343433288728        # 每天进步0.01 ，一年可以进步这些 （对应梯度爆炸）<br>
-&gt;&gt;&gt; 0.99 ** 365<br>
-0.025517964452291125     # 每天退步0.01 ， 一年可以沦落至此（对应梯度消失）<br>
-梯度爆炸：<br>
-就是上面例子的原理。 就不多说了。<br>
-解决方式：梯度裁剪<br>
-梯度消失：<br>
-同上例， 不好解决（于是LSTM网络出现， 和LSTM）</p>
-<h3 id="tensorflow20stable-api">Tensorflow2.0（Stable） API</h3>
-<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
-
-tk.layers.SimpleRNN(
-    units=单元层,            # units单元数，对应着你每个单词的个数
-    return_sequences=False   # 默认值就是False     
-)
-</code></pre>
-<h1 id="gru">GRU</h1>
-<p>GRU比RNN的每一层的多了一个 记忆信息(相当于RNN的 h)，这个记忆信息就像传送带一样，一直流通各层RNN<br>
-然后还多了2个门 (r门和U门)， 这2个门就是负责控制（是否从传送带上取记忆， 且取多少记忆）<br>
-####注明： GRU 只有一个 c(横向， 传送带) ， 没有h<br>
-简化版（只有U门）：<br>
-C新' = tanh( w @ [C旧, x新] + b )   # 根据传动带的旧信息， 生产出 传送带的新信息<br>
-u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用</p>
-<pre><code>C新 = u门 * C新' + (1-u门) * C旧    #  经过u门控单元的控制过滤后， 最终放到传送带的信息
-如果: u门为1，则传送带上全是新信息（旧的全忘掉）
-如果: u门为0，则传送带上全是旧信息（新的不要）
-
-强调一下: 我不方便写公式负号，于是用了 &quot;新&quot;,&quot;旧&quot; 代替
-新: 代表当前 t
-旧: 代表前一时刻 t-1
-</code></pre>
-<p>完整版（同时具有r门和u门）<br>
-添加这一行：<br>
-r门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差<br>
-C新' = tanh( w @ [r门 @ C旧, x新] + b )   # 修改这一行: C旧 <mark>变为</mark>=&gt;  r门 @ C旧</p>
-<pre><code>u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用
-C新 = u门 * C新' + (1-u门) * C旧    #  经过u门控单元的控制过滤后， 最终放到传送带的信息
-</code></pre>
-<h3 id="tensorflow20stable-api-2">Tensorflow2.0（Stable） API</h3>
-<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
-
-tk.layers.GRU(                    # 参数同上面RNN我就不解释了
-    units=64,            
-    return_sequences=False       # 这些参数看下面LSTM我会讲到
-)
-</code></pre>
-<h1 id="lstm">LSTM</h1>
-<p>LSTM和GRU很像，但是比GRU复杂。<br>
-LSTM结构包括: u门（更新门）+ f门（遗忘门）+ o门（输出门）</p>
-<h4 id="注明-lstm-不仅有个传送带c横向-他还有个rnn的-h-信息横向">注明： LSTM 不仅有个传送带C（横向） ， 他还有个RNN的  h 信息（横向）</h4>
-<pre><code>f门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差
-o门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差
-
-C新' = tanh( w @ [C旧, x新] + b )      # 注意，这里没有r门了
-
-u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用
-C新 = u门 * C新' + f门 * C旧        #  &quot;(1-u门)&quot;  换成了 f门
-h = o门 * tanh( C新 )
-</code></pre>
-<h3 id="tensorflow20stable-api-3">Tensorflow2.0（Stable） API</h3>
-<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
-
-keras.layers.LSTM(
-    units=64,
-    return_state=True                 # 占坑，下面剖析
-    return_sequences=False            # 占坑，下面源码剖析
-    recurrent_initializer='glorot_uniform',   # 均匀分布的权重参数初始化
-
-    # stateful=True, # API文档：若为True,则每一批样本的state的状态，都会继续赋予下一批样本
-)
-</code></pre>
-<p>return_state 和 return_sequences 这两个参数到底有什么用？？？<br>
-我的另一篇文章单独源码分析这两个参数：https://segmentfault.com/a/1190000020603328</p>
-<h1 id="总结对比-gru-和-lstm">总结对比 GRU 和 LSTM</h1>
-<pre><code>GRU有2个门:   u门 和 r门
-LSTM有3个门:  u门 和 f门 和 o门
-
-GRU有一个C:          # 就有一条传送带c, 他的前后单元信息仅靠这一条传送带来沟通（舍弃与保留）
-LSTM有一个C和一个h:  # 不仅有传送带c, 还有h， 他的前后单元信息 靠 c 和 h 联合沟通。
-
-
-再说一下每个门控单元: 不管你是什么门，  都是由 Sigmoid() 包裹着的。
-所以: 说是 0 和 1 ， 但严格意义上，只是无穷接近。但是微乎其微，所以我们理解为近似相等0和1
-</code></pre>
-<h1 id="rnn-lstm-gru拓展">RNN-LSTM-GRU拓展</h1>
-<h3 id="双向bidirection">双向（Bidirection）</h3>
-<p>首先说明:<br>
-双向模型，对于 RNN/LSTM/GRU  全部都适用<br>
-由于单向的模型，不能关联之后信息。比如：你只能根据之前的单词预测下一个单词。<br>
-而双向的模型，可以根据前后上下文的语境，来预测当前的下一个单词。<br>
-或者举一个更直白的例子（我自己认为）：<br>
-比如说: 你做英语完型填空题， 你是不是 需要 把空缺部分的 前面 和 后面 都得读一遍，才能填上。<br>
-单向与双向结构对比如下：<br>
-单向: 1 -&gt; 2 -&gt; 3 -&gt; 4<br>
-双向: 1 -&gt; 2 -&gt; 3 -&gt; 4<br>
-|<br>
-1 &lt;- 2 &lt;- 3 &lt;- 4</p>
-<pre><code>注意: 上下对齐，代表一层。
-</code></pre>
-<h3 id="tensorflow20stable-api-4">Tensorflow2.0（Stable） API</h3>
-<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
-
-tk.layers.Bidirectional(        # 就在上上面那些API的基础上,外面嵌套一个 这个层即可。
-    tk.layers.GRU(              
-        units=64,            
-        return_sequences=False
-    )
-),
-</code></pre>
-<h3 id="模型深层堆叠纵向堆叠">模型深层堆叠（纵向堆叠）</h3>
-<p>首先说明:<br>
-层叠模型对于 RNN/LSTM/GRU  同样全部都适用<br>
-之前单层单向模型是这种结构<br>
-1 -&gt; 2 -&gt; 3<br>
-计算公式是:  单元 = tanh ( W @ (x, h左) )</p>
-<p>而多层单向是这种结构（我们以2层为例）：</p>
-<pre><code>y1   y2   y3        输出层
-^    ^    ^
-|    |    |
-7 -&gt; 8 -&gt; 9         二层单元
-^    ^    ^
-|    |    |
-4 -&gt; 5 -&gt; 6         一层单元
-^    ^    ^
-|    |    |
-x1-&gt; x2 -&gt;x3        输入层
-你   好   啊
-
-计算公式是： （我写的可能只按自己的意思了~）
-    一层每个单元 = tanh ( W @ (x, h左) )     # 因为是第一层嘛：所以输入为 x 和 左边单元h 
-    二层每个单元 = tanh ( W @ (h下, h左) )   # 第二层就没有x了:而是下边单元h 和 左边单元h
-</code></pre>
-<h1 id="词嵌入word-embedding">词嵌入(Word Embedding)</h1>
-<h3 id="单词之间相似度计算">单词之间相似度计算</h3>
-<pre><code>                       c1 @ c2
-余弦定理，求 cosθ = ------------------
-                     ||c1|| * ||c2||
-           
-或者你可以使用欧氏距离。
-</code></pre>
-<h3 id="原始词嵌入并训练">原始词嵌入并训练</h3>
-<ol>
-<li>假如我们通过一个句子的一部分来预测，这个句子的最后一个单词。</li>
-<li>把词典的每个词做成One-Hot便是形式，记作矩阵 O</li>
-<li>随机高维权重矩阵， 记为 E</li>
-<li>E @ O 矩阵乘积后记为词向量 W<br>
-可见如下案例：<br>
-如果:  我们分词后词典总大小为1000<br>
-那么:  他的 One-Hot 矩阵形状为  [6, 1000] （假如我们这里通过句子6个词来预测最后一个词）<br>
-并且:  随机高维权重矩阵 形状为 [1000, 300]     （注意，这个300是维度，可自行调整选择）<br>
-注意:  上面权重矩阵是随机初始化的， 后面训练调节的。<br>
-最后:  E @ O 后得到词向量W 的形状为  [6, 300]</li>
-<li>送进NN(打成1000类) 作为输出</li>
-<li>加一层 Softmax （算出1000个单词的概率） 作为最终输出y_predict</li>
-<li>y_predict 与 y真正的单词标签（one-hot后的） 做交叉熵loss</li>
-<li>优化loss，开始训练。</li>
-</ol>
-<h3 id="word2vec-的-skip-grams不是太懂-pass">Word2Vec 的 skip-grams(不是太懂， Pass)</h3>
-<p>说下个人的理解，可能不对<br>
-skip-grams： 拿出中间 一个词，来预测若干（这是词距，自己给定）上下文的单词。<br>
-例子如下：<br>
-seq = 今天去吃饭</p>
-<pre><code>给定单词   标签值（y_true）
-去         今
-去         天
-去         吃
-去         饭
-</code></pre>
-<p>训练过程就是上面说过的小节 &quot;原始词嵌入并训练&quot;，你只需把 y_true改为 &quot;今&quot;,&quot;天&quot;,&quot;吃&quot;,&quot;饭&quot;训练即可。<br>
-Word2Vec 除了 skip-grams, 还有  CBOW 模型。 它的作用是 给定上下文，来预测中间的词。<br>
-据说效率等某种原因(softmax计算慢，因为分母巨大)，这两个都没看。（Pass~）</p>
-<h3 id="负采样negative-sampling">负采样（Negative Sampling）</h3>
-<p>解决Word2Vec 的 softmax计算慢。<br>
-负采样说明（假如我们有1000长度的词典）：<br>
-从上下文（指定词距）:   随机，选择一个正样本对，n个负样本对（5-10个即可）<br>
-主要机制: 将 Word2Vec的 softmax（1000分类） 换成 1000个 sigmoid做二分类。<br>
-因为: 是随机采样（假设，采样1个正样本 和 5个负样本）。<br>
-所以: 1000个 sigmoid二分类器，每次只用到 6 个对应分类器（1个正样本分类器，5个负样本分类器）<br>
-负采样，样本随机选择公式：<br>
-单个词频 ^ (3/4)<br>
------------------<br>
-Σ(所有词频 ^ (3/4))</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => TF20的LSTM与GRU(return_sequences与return_state)参数源码]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-tf20-de-lstm-yu-grureturn_sequences-yu-return_statecan-shu-yuan-ma/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-tf20-de-lstm-yu-grureturn_sequences-yu-return_statecan-shu-yuan-ma/">
-        </link>
-        <updated>2020-09-29T04:05:18.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<h3 id="温馨提示">温馨提示：</h3>
-<pre><code>本文只适用于: 了解LSTM 和 GRU的结构，但是不懂Tensorflow20中LSTM和GRU的参数的人)
-</code></pre>
-<h3 id="额外说明">额外说明</h3>
-<p>看源码不等于高大上。<br>
-当你各种博客翻烂，发现内容不是互相引用，就是相互&quot;借鉴&quot;。。。且绝望时。<br>
-你可能会翻翻文档，其实有些文档写的并不是很详细。<br>
-这时，看源码是你最好的理解方式。（LSTM 和 GRU 部分源码还是比较好看的）</p>
-<p>标题写不下了: TF20 ==&gt; Tensorflow2.0（Stable）<br>
-tk ===&gt; tensorflow.keras<br>
-LSTM 和 GRU 已经放在 tk.layers模块中。<br>
-return_sequences = True<br>
-return_state = True</p>
-<pre><code>这两个参数是使用率最高的两个了， 并且LSTM 和 GRU 中都有。
-那它们究竟是什么意思呢???
-来，开始吧！
-
-进入源码方式：
-    import tensorflow.keras as tk
-    tk.layers.GRU()
-    tk.layers.LSTM()
-    用pycharm ctrl+左键 点进源码即可~~~
-</code></pre>
-<h1 id="lstm源码">LSTM源码</h1>
-<p>我截取了部分主干源码：<br>
-...<br>
-...<br>
-states = [new_h, new_c]           # 很显然，第一个是横向状态h, 另一个是记忆细胞c</p>
-<pre><code>if self.return_sequences:         # 如果return_sequences设为True
-  output = outputs                    # 则输出值为所有LSTM单元的 输出y，注意还没return
-else:                             # 如果return_sequences设为False
-  output = last_output                # 则只输出LSTM最后一个单元的信息, 注意还没return
-
-if self.return_state:             # 如果return_state设为True
-  return [output] + list(states)      # 则最终返回 上面的output + [new_h, new_c]
-else:                             # 如果return_state设为False
-  return output                       # 则最终返回 只返回上面的output
-
-小技巧: 瞄准 return 关键词。 你就会非常清晰，它会返回什么了。 
-</code></pre>
-<h1 id="gru源码">GRU源码</h1>
-<pre><code>...
-...
-########  我们主要看这一部分 #########################################
-  last_output, outputs, runtime, states = self._defun_gru_call( 
-      inputs, initial_state, training, mask)
-#####################################################################          
-...
-...
-
-######### 下面不用看了， 这下面代码和  LSTM是一模一样的 ###################
-if self.return_sequences:
-  output = outputs
-else:
-  output = last_output
-
-if self.return_state:
-  return [output] + list(states)
-else:
-  return output
-</code></pre>
-<p>现在我们的寻找关键点只在于， states 是怎么得到的？？？<br>
-你继续点进去 &quot;self._defun_gru_call&quot; 这个函数的源码， 你会发现 states 就直接暴露在里面<br>
-states = [new_h]<br>
-return ..., states<br>
-现在源码几乎全部分析完毕。 我们回头思考总结一下：<br>
-LSTM 和 GRU 中的 return_sequences 和 return_state 部分的源码是一模一样的！！！<br>
-return_sequences: 只管理 output变量的赋值，（最后一个单元 或 全部单元）<br>
-return_state： 负责返回 output变量，并且按条件决定是否再一并多返回一个 states变量</p>
-<pre><code>进而我们把问题关注点转换到  output变量， 和 states变量：
-
-LSTM 和 GRU 的 output变量: 大致相似，不用管。
-LSTM 和 GRU 的 ststes变量：
-    LSTM的 states变量:  [H, C]    # 如果你了解LSTM的结构，看到这里你应该很清楚，LSTM有C和H
-    GRU的 states变量:   [H]       # 如果你了解GRU的结构，看到这里你应该很清楚，GRU就一个H
-</code></pre>
-<h1 id="最终使用层总结">最终使用层总结：</h1>
-<h3 id="lstm">LSTM:</h3>
-<p>有四种组合使用：</p>
-<ol>
-<li>
-<p>return_sequences = False 且 return_state = False (默认)<br>
-返回值: 只返回 最后一个 LSTM单元的输出Y</p>
-</li>
-<li>
-<p>return_sequences = True 且 return_state = False<br>
-返回值: 只返回 所有 LSTM单元的输出Y</p>
-</li>
-<li>
-<p>return_sequences = False 且 return_state = True<br>
-返回值: 返回最后一个LSTM单元的输出Y   和    C + H 两个（隐层信息）</p>
-</li>
-<li>
-<p>return_sequences = True  且 return_state = True<br>
-返回值: 返回所有LSTM单元的输出Y  和  C + H 两个（隐层信息）  (适用于Atention)</p>
-</li>
-</ol>
-<h3 id="gru">GRU：</h3>
-<p>有四种组合使用：</p>
-<ol>
-<li>
-<p>return_sequences = False 且 return_state = False (默认)<br>
-返回值: 同LSTM</p>
-</li>
-<li>
-<p>return_sequences = True 且 return_state = False<br>
-返回值: 同LSTM</p>
-</li>
-<li>
-<p>return_sequences = False 且 return_state = True<br>
-返回值: 返回 最后一个 LSTM单元的输出Y   和   一个H（隐层信息）</p>
-</li>
-<li>
-<p>return_sequences = True  且 return_state = True<br>
-返回值: 返回 所有 LSTM单元的输出Y  和 一个H（隐层信息）  (适用于Atention)</p>
-</li>
-</ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => DeepLearning+Metrics（Ng）]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-deeplearningmetricsng/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-deeplearningmetricsng/">
-        </link>
-        <updated>2020-09-29T04:04:47.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<p>看Andrew Ng视频，总结的学习心得。<br>
-虽然本篇文章可能不是那么细致入微，甚至可能有了解偏差。<br>
-但是，我喜欢用更直白的方式去理解知识。</p>
-<h1 id="数据划分">数据划分</h1>
-<h3 id="传统机器学习数据的划分">传统机器学习数据的划分</h3>
-<p>传统机器学习一般都是小规模数据（几万条）<br>
-那么可以  训练集：验证集：测试集 = 6:2:2<br>
-若是大规模深度学习一般都是大规模数据（几百万条）<br>
-训练集: 验证机：测试集 = 9:0.5:0.5<br>
-划分 验证集 可以过早的为我们预测 指标和精度</p>
-<h3 id="偏差-与-方差">偏差 与 方差</h3>
-<p>高偏差： 训练集和测试集 loss 都比较高   （比人预测的loss高很多） （欠拟合）<br>
-高方差： 训练集Loss低， 测试集 Loss高。  所以训练集和测试集 loss相差太大， 也成为（过拟合）</p>
-<h1 id="防止过拟合的几种方法">防止过拟合的几种方法</h1>
-<h3 id="损失函数-惩罚项系数-正则化regularization">损失函数 (惩罚项系数) 正则化（regularization）</h3>
-<p>可分两种 （L1正则化惩罚 和 L2正则化惩罚）下面只以 L2为例，L2用的也是比较多的）<br>
-正则化系数公式：<br>
-loss = ...<br>
-new_loss = loss + (λ/2m) * w^2<br>
-w = w - learning_rate * 梯度<br>
-上面公式的单调变换解释：<br>
-求梯度的时候 λ越大， new_loss越大， 求得的梯度越大（正比）<br>
-w 减去的值就越大。   w变得就越小。<br>
-w 越小， 一定程度上特征就衰减了许多。  就有效的放置了过拟合哦</p>
-<p>对应API（有两种方式）：<br>
-L1 = keras.regularizers.l2(0.01)   # TF2 当作 keras 的 Layers定义来使用<br>
-L1 = tf.nn.l2_loss(w_b)            # 看到里面传递 w和b了吧， 这种是偏手动方式实现的API</p>
-<p>如果你想使用手撕实现，下面有个例子（伪代码）：<br>
-for<br>
-with tf.GradientTape() as tape:<br>
-...<br>
-loss_reg = [tf.nn.l2_loss(w_b) for w_b in model.trainable_variables] # [w1,b1,w2,b2]<br>
-print(tf.reduce_sum(loss_reg))		# tf.Tensor(2.98585, shape=(), dtype=float32) # 就是这个形状<br>
-loss = loss + loss_reg</p>
-<h3 id="另一种正则化方式regularization-dropout">另一种正则化方式（regularization） -- DropOut</h3>
-<pre><code>&quot;随机&quot;剪枝， 略， TF框架一步到位
-</code></pre>
-<h3 id="还有一种防止过拟合的方式数据增强">还有一种防止过拟合的方式（数据增强）</h3>
-<p>防止过拟合的另一种方式，就是需要的大量的数据来支撑，那么数据就那么点，怎么办？<br>
-数据增强（ 其原理就是增大样本数量，小幅度翻转等） 某种程度上，就是增加了样本。</p>
-<h3 id="最后一种防止过拟合的方法-earlystopping">最后一种防止过拟合的方法 （earlystopping  ）</h3>
-<p>earlystopping  （tf.keras.callback模块中，有这个 callback函数，注释部分有解释）<br>
-callbacks = [<br>
-keras.callbacks.TensorBoard(logdir),<br>
-keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),<br>
-# 在这里<br>
-keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)<br>
-# 验证集，每次都会提升，如果提升不动了，小于这个min_delta阈值，则会耐性等待5次。<br>
-# 5次过后，要是还提升这么点。就提前结束。<br>
-]</p>
-<h1 id="数据预处理">数据预处理</h1>
-<h3 id="标准化-和-归一化能起到什么作用">标准化 和 归一化能起到什么作用：</h3>
-<pre><code>做了标准化 和 归一化 可以 让函数收敛的 更快速（梯度下降的快）
-参考 （圆形下降的快， 和 椭圆下降的慢）
-
-其次，在神经网络中,BN层还有额外的效果。每层网络的不同参数，可能会导致&quot;数据分布&quot;散乱、变形
-因此，BN可以有效 防止数据分布变形。 （其实说白了也是&quot;加速函数收敛&quot; ,加速NN训练）
-</code></pre>
-<h3 id="注意点">注意点</h3>
-<pre><code>训练集 和 测试集的样本特征 （&quot;要么都做处理，要么都不做处理&quot;）（就是相同待遇的意思。。。）
-专业点叫做 ：&quot;保证训练集 和 测试集 相同分布&quot;
-</code></pre>
-<h3 id="数据-随机分布有什么影响andrew-ng解释">数据 随机分布有什么影响（Andrew ng解释）？</h3>
-<p>假如训练集的数据分布 训练的目标是正中靶心。<br>
-而预测时，假如你的预测集数据分布 和 训练集数据分布的不同。<br>
-那么很可能会 预测集 预测的时候（是另一个靶心）。<br>
-所以你训练的再好，到预测集的靶子上  也是脱靶。。。<br>
-所以 训练集 和 测试集 的 相同分布很重要</p>
-<p>###数据预处理大体分2类：<br>
-1. 中心化处理<br>
-2. 缩放处理</p>
-<h3 id="zero-centered-中心化处理">zero-centered (中心化处理)</h3>
-<p>平移 --- 减去固定值<br>
-###scale (缩放处理)<br>
-归一化：除以  最大值-最小值<br>
-标准化：除以  标准差</p>
-<h3 id="下面的操作都是通过-中心化处理缩放处理-联合组成的">下面的操作都是通过  中心化处理+缩放处理 联合组成的</h3>
-<h1 id="normalization归一化-sklearn那里也提到过">normalization（归一化）  sklearn那里也提到过</h1>
-<p>目标：<br>
-将数据收敛到 [0,1]<br>
-公式<br>
-x - min(x)          # 中心化<br>
-------------------<br>
-max(x) - min(x)			# 缩放处理</p>
-<p>###StandardScaler（标准化）<br>
-目标：<br>
-将数据转化为标准 正态分布（均值为0，方差为1）<br>
-公式：<br>
-x - 平均值<br>
------------------<br>
-标准差</p>
-<h3 id="标准化-和-归一化-选哪个">标准化 和 归一化 选哪个？？？</h3>
-<p>视觉图片： 归一化<br>
-其他：   标准化较好</p>
-<h1 id="数据集不足怎么办">数据集不足怎么办？</h1>
-<p>我自己也遇到过这样的问题。<br>
-我之前做一个QA聊天机器人时。 数据是百度知道的爬的。<br>
-但是（用过的应该清楚。 百度知道有很多用户的垃圾回答，是用户刷分的。）<br>
-问了解决这一问题。我的解决思路是：通过Pandas, 筛选答案长度至最小。<br>
-但是这样。就可能筛选除了 大量大量的 原生数据<br>
-再加上，把（原数据中 &quot;有问无答&quot; 的问答对）过滤扔掉。<br>
-那么弄下来的源数据，几乎没剩多少了。。（我记得我当时弄了400W+问答对）<br>
-筛选到最后（问答长度 15个汉字， 筛选掉空回答）(只剩下 几万条了。。。)<br>
-后来，我急中生智。在网上找了一些 中文语料库（我用的青云中文语料库）<br>
-把它融合到 我自己的 语料库中。。。</p>
-<p>但是训练后的结果， 全是人家 青云语料库的 问答内容。。。<br>
-后来也没去继续深究了。。。</p>
-<h3 id="后来正好看到-ng-提到这一问题记录一下相应的应对措施">后来正好看到 Ng。提到这一问题，记录一下相应的应对措施!</h3>
-<p>训练集：青云语料+ 1/2 自己的语料<br>
-测试集: 1/4 自己的语料<br>
-验证集：1/4 自己的语料</p>
-<h1 id="随机初始化权重">随机初始化权重</h1>
-<h3 id="随机初始化认知">随机初始化认知</h3>
-<p>为什么不是初始化为0？？？<br>
-因为神经网络中， W初始化为0的话， 会导致反向传播后， 所有神经元会训练同一个网络。一点效果没有<br>
-为什么不初始化很大的值或者很小的值？？？<br>
-这是分情况来定的。<br>
-比如你用的 tanh 或者 sigmoid函数<br>
-由脑海中的图像可知（求导 或 斜率） ，当 初始值过大，或者过小。<br>
-都会可能导致，y直接落在 sigmoid的  顶部和底部（就是斜率水平，近乎为0）<br>
-落在了水平的梯度。这样的梯度，猴年马月也降不下去啊。。。。。<br>
-如果落在了 倾斜陡峭的梯度。 那么梯度下降的一定很快啦。</p>
-<h3 id="如果做了batchnormalization那么可使用-高斯-x-001">如果做了BatchNormalization，那么可使用 高斯 x 0.01</h3>
-<p>正态分布 * 拉低值<br>
-np.random.randn(2,2)  * 0.01			# 2,2是形状， 这个0.01 可以自己调节。 总之，小一点 最好， 但不要太小</p>
-<h3 id="如果使用了relu激活函数对应-初始化方法">如果使用了Relu激活函数，对应 初始化方法</h3>
-<pre><code>np.random.randn(shapex, shapey) *  np.sqrt( 2/shapex )	# 系数为2
-</code></pre>
-<h3 id="如果使用了tanh激活函数对应-初始化方法ng推荐-也叫-xavier">如果使用了Tanh激活函数，对应 初始化方法（NG推荐， 也叫 Xavier）</h3>
-<pre><code>np.random.randn(shapex, shapey) *  np.sqrt( 1/shapex ) # 系数为1
-</code></pre>
-<h1 id="激活函数">激活函数</h1>
-<h3 id="激活函数认知">激活函数认知</h3>
-<p>学习Andrew Ng课更深刻了解了激活函数。</p>
-<p>神经网络中，为什么我们需要激活函数，甚至需要非线性激活函数？<br>
-首先挑明，我们使用神经网络的目的，就是想训练出更多，更丰富的特征。<br>
-所以。 一直用线性激活函数，或者不用激活函数。会使得你整个网络训练到头，还是线性的。就没意思了。<br>
-它学不到丰富的特征的。</p>
-<pre><code>因为神经网络多层是需要拿前一层的结果作为下一层的 x，所以有了如下公式：
-	w3 (w2 (w1x+b) +b) +b
-展开后， 
-	w3 * w2 * w1 * x + ......   
-	很明显它依然是线性的。  
-	所以，无论你用多少层 神经网络。  到最后它依然是线性的。。。。
-	这样倒不如 一层网络也不用。
-	直接上个 逻辑回归模型，效果估计也是一样的。。。。。。
-</code></pre>
-<p>当然有一些场合也需要使用 线性激活函数，比如 房价预测。身高预测。（这些都是线性回归模型）<br>
-这些情况，就可以使用 线性激活函数了。</p>
-<pre><code>但是不妨想一想， 就像上面 身高预测这些。是线性回归，并且 y预测都是正数值。
-某种程度上，其实我们也可以使用 relu激活函数， （因为 relu的右半侧（就是大于0的部分） 也是线性的哦）
-</code></pre>
-<p>我们NN隐层就大多数都使用非线性激活函数。<br>
-隐层： relu 或者 leakly relu 或者 tanh<br>
-输出层： sigmoid  或者 softmax 或者 tanh  等等</p>
-<h3 id="sigmoid">sigmoid</h3>
-<p>公式<br>
-1<br>
----------<br>
-1 + e**(-x)</p>
-<pre><code>每个out: (0, 1)  
-
-二分类out之和为 1
-</code></pre>
-<p>对应API：<br>
-1. tf.sigmoid(y)<br>
-2. 或函数参数 xxxxx (activations='sigmoid')<br>
-3. tf.keras.activations.sigmoid()</p>
-<h3 id="softmax">softmax</h3>
-<pre><code>  e**x
----------------------------------
-e**(x1) + e**(x2) + ... + e**(xn)
-
-每个out: (0,1)
-
-多分类 out之和为 1
-</code></pre>
-<p>对应API：<br>
-1. tf.nn.softmax()<br>
-2. 函数参数 xxxxx (activations='softmax')<br>
-3. tf.keras.activations.softmax()</p>
-<p>softmax特点：<br>
-输出的是什么形状的张量，输出的就是什么形状的张量<br>
-也是有线性决策边界（线性 多 分类器）</p>
-<h3 id="tanh">tanh</h3>
-<p>coshx<br>
-e<strong>x - e</strong>(-x)<br>
--------------<br>
-2<br>
-sinhx<br>
-e<strong>x + e</strong>(-x)<br>
---------------<br>
-2<br>
-tanhx<br>
-e<strong>x - e</strong>(-x)<br>
--------------<br>
-e<strong>x + e</strong>(-x)</p>
-<pre><code>每个out: (0,1) * 2 -1  ===&gt;  (-1,1)
-
-LSTM
-</code></pre>
-<p>对应API：<br>
-1. tf.tanh(y)<br>
-2. 函数参数 xxxxx (activations='tanh')<br>
-3. tf.keras.activations.tanh()</p>
-<h3 id="relu">relu</h3>
-<p>公式：<br>
-y = 0 if x &lt; 0 else x    # 大于0，梯度为1<br>
-对应API<br>
-1. tf.nn.relu()<br>
-2. 或函数参数 xxxxx (activations='relu')<br>
-3. tf.keras.activations.relu()</p>
-<pre><code>leaky_relu: (小扩展)
-	y = kx if x &lt; 0 else x    
-	tf.nn.leaky_relu()
-</code></pre>
-<h1 id="损失函数">损失函数</h1>
-<h3 id="mse-均方误差">MSE （均方误差）</h3>
-<p>公式<br>
-Σ( (y-y_predict)**2 )<br>
---------------------<br>
-n<br>
-对应API<br>
-公式实现：<br>
-tf.reduce_mean( tf.square( y-y_predict ) )<br>
-tf.API:<br>
-tf.reduce_mean( tf.loss.MSE(y, y_predict) )</p>
-<h3 id="crossentropy-交叉熵">CrossEntropy （交叉熵）</h3>
-<p>熵公式：  -Σ（plogp）<br>
-交叉熵公式：-（ Σplogq ）     p为真实值One-hot, q为预测值<br>
-p: [1,0,0]<br>
-q: [0.9, 0,0.1]<br>
-H = -( 1<em>log0.9 + 0</em>log0 + 0*log0.1) = -log0.9 = -ln0.9 ≈ 0.1053....<br>
-tf的 tf.math.log相当于 ln<br>
-交叉熵API：<br>
-交叉熵越小（y与y-predict差距越小，预测较准确）<br>
-交叉熵越大（y与y_predict差距越大，交叉相乘累加后值大，说明预测错位了。。。所以交叉起来变大了）</p>
-<pre><code>tf.API: （方式1：直接是函数调用）
-	loss = tf.losses.categorical_crossentropy([1,0,0], [0.9, 0, 0.1],from_logits=True)  # 第一个参数y, 第二个参数 y_predict
-	loss = tf.reduce_mean(loss)
-
-tf.API: （方式2：用类的call调用 , 这次以 二分类交叉熵为例）
-	loss = tf.losses.BinaryCrossentropy(from_logits=True)( [1], [0.1] )  # 结果为2.+  。 因为 真实值是1类， 而预测值概率是0.1太小了。所以肯定预测错了。
-	loss = tf.reduce_mean(loss)
-    
-说明：categorical_crossentropy( ) # 第一个参数必须 one_hot, （第二个参数按理来说需要做 softmax，但是你传了 from_logigs=True，就不必softmax了）
-</code></pre>
-<h1 id="梯度">梯度</h1>
-<h3 id="sgdstochastic-gradent-descent">SGD（Stochastic Gradent Descent）:</h3>
-<p>解释 各种梯度下降的区别：<br>
-Mini-Batch Gradent Descent:<br>
-指定每次 mini-batch个 来做梯度下降 （就是每次指定多少个样本 来做GD的意思）<br>
-这种介于  1-全部样本之间的。 是最优的<br>
-Batch gradent descent:<br>
-mini-batch 为全部样本<br>
-Stochastic gradent descent:<br>
-mini-batch 为 1个样本<br>
-缺点： 每次 1个样本做SGD， 那么就失去了 向量化（矩阵乘代替循环）的 加速快感。。。。。</p>
-<p>减去梯度，代表朝着梯度方向走<br>
-w新 = w当前 - learning_rate * 梯度	<br>
-使用方式：<br>
-model.compile(..... ,optimizer=keras.optimizers.SGD(learning_rate=0.01))</p>
-<h3 id="再记录其他优化器之前-先补一个-指数加权平均-的知识">再记录其他优化器之前， 先补一个 指数加权平均 的知识</h3>
-<p>公式：<br>
-y = β * X之前 + （1-β）* X当前</p>
-<p>图形曲线表现：<br>
-β越小：（小到0.5） ：曲线越抖动频繁（锯齿 越厉害）（0.5左右已经，严重上下跳动了）<br>
-β越大：（大至1.0） ：曲线越光滑（无锯齿）<br>
-所以 β： 越大越好<br>
-（涉及到一个技术--偏差修正， 如果你不修正。 可能训练会稍微慢一些。无伤大雅）</p>
-<h3 id="momentum动量">Momentum（动量）</h3>
-<p>公式大概：<br>
-dw' =  β * dw-1 + ( 1-β ) * dw		# 用 dw-1 掰弯 dw<br>
-db' =  β * db-1 + ( 1-β ) * db		# 用 db-1 掰弯 db</p>
-<p>公式理解：<br>
-在原来的梯度基础上， 用 上一次的梯度方向， 把当前将要计算的梯度掰弯</p>
-<h3 id="rmsprop">RMSProp</h3>
-<pre><code>model.compile(..... ,optimizer=keras.optimizers.RMSprop(learning_rate=0.01, momentum=0.9))
-</code></pre>
-<h3 id="adam强烈推荐">Adam(强烈推荐)</h3>
-<p>TF-API:  默认原参数<br>
-model.compile(..... ,optimizer=keras.optimizers.Adam(<br>
-learning_rate=0.001,<br>
-beta_1=0.9,           # 学习率衰减参数<br>
-beta_2=0.999,<br>
-epsilon=1e-7,<br>
-),<br>
-)<br>
-其实这个API参数，我们只稍微调整一下 learning _ rate 即可，其他不用怎么。</p>
-<h3 id="学习率衰减">学习率衰减</h3>
-<p>其实大多数 优化器内都有 学习率衰减参数，例如：<br>
-SGD(decay)<br>
-Adam(beta_1)<br>
-当然你也可以自己实现（按照样本已训练的批次，动态衰减）<br>
-learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）</p>
-<pre><code>其实还有更多 可调节参数，就像Adam中的 那么多参数似。当然我压根也没想自己实现衰减。。
-
-可知 decay越小， 学习率衰减的越慢， 当衰减率为0时。  学习率压根就不衰减
-而 decay越大， 学习率衰减的越快， 当衰减率为1时。  那衰减的就太夸张了~~
-</code></pre>
-<h1 id="迁移学习-我想到一个词移花接木">迁移学习 （我想到一个词：移花接木）</h1>
-<h3 id="应用场景">应用场景</h3>
-<p>假如已经有现成的 狗类 识别的 神经网络模型<br>
-那么假如你现在想要 做一个 猫类的 识别</p>
-<p>你完全可以把 狗识别 网络模型拿过来<br>
-然后把最后 输出层 扔掉，自己加一个新输出层（当然中间你也可以加一些新的NN层）<br>
-然后 旁敲侧击，只在最后一层提供输入，只对 新的输出层（或者你额外加的NN）层训练。</p>
-<h3 id="应用条件">应用条件</h3>
-<p>当你迁移后的数据有特别特别多的时候， 那么你完全可以把 搬过来的 模型参数 从头到尾训练一遍。<br>
-就像你 狗模型， 前面的网络学到了很多  毛，特征。 （这猫也有嘛，所以正好可以用得上）<br>
-然后你 在狗模型的基础上 ，训练猫模型 （我不太了解猫~~~， 比如说可以新学到猫的胡须之类的新特征）<br>
-总结来说：  新模型 = NN层（狗）参数 + NN层（猫）参数 + 输出层（猫）参数<br>
-当然， 如果你迁移支持的数据，只有很少，根本不够强大的神经网络训练<br>
-那么，你就可以直接把，搬过来的模型参数固定住， 直接只在 最后输出层，提供输入，进行训练<br>
-总结来说：  新模型 = NN层（狗）参数 + 输出层（猫）参数</p>
-<p>迁移学习的主要目的思想：<br>
-当你 有很少的小数据集A， 但是你想训练成一个 NN 来 达到目的。<br>
-可想而知，少量数据集A 还不够 NN 塞牙缝的。。。</p>
-<pre><code>所以，你需要找一些其他类似的数据集B（量多的，好收集的）
-然后这些大量数据集B，足以 驰骋于 NN ， 得到一个模型。（并且带着 训练好的参数）
-
-数据集A说： &quot;
-	大哥，你训练好的网络借我用用呗。
-	你用了那么多数据，训练出的特征一定有我想要的。
-	我把整个模型拿过来，只改一下最后一层的输入。然后只训练最后一层的参数。
-	其他层的参数都用你的。
-&quot;。
-数据集B大哥说： &quot;可以&quot;
-</code></pre>
-<h3 id="迁移学习api-tensorflow20">迁移学习API （Tensorflow2.0）</h3>
-<p>温馨提示： TF20的Keras Layers 是可以 用切片语法 选取具体网络层的，举个例子：<br>
-# from tensorflow import keras<br>
-# cut_resnet = keras.applications.DenseNet121(  # 使用现有ResNet模型<br>
-#     include_top=False,  # 不要最后一层，而是使用我们自己定义的全连接层<br>
-#     pooling='avg',<br>
-#     weights='imagenet',  # 初始化权重（从imagenet训练好模型参数来初始化）<br>
-# )<br>
-# for layer in cut_resnet.layers[0:-3]:  # 部分可训练（fine-tune分割）<br>
-#     trainable=False             # 0 到 倒数第三层，参数不可训练<br>
-#<br>
-# new_model = keras.models.Sequential()<br>
-# new_model.add(cut_resnet)<br>
-# new_model.add(其他层)</p>
-<h3 id="迁移学习-适用场景">迁移学习 适用场景</h3>
-<ol>
-<li>统一使用领域（要么文本迁移要文本，  要门图像迁移到图像。）</li>
-<li>假如 A 迁移到 B （那么 A的样本最好远大于 B的样本）</li>
-<li>假如 A 迁移到 B （最好A的许多特征信息，B正好可以用得到。比如 猫狗，都有毛发，胡须，四条腿）</li>
-</ol>
-<h3 id="多任务学习了解用的少">多任务学习（了解，用的少）</h3>
-<p>直接感观：我认为就像（类的继承 ， 或者封装为一个函数， 这样的概念。。）<br>
-你想训练 预测 各种各样类别的图片。<br>
-你可以首先 用一个任务 训练一下 共有特征 的 NN。<br>
-然后其他任务 用这个 训练好的 共有的特征的 NN。<br>
-Ng提示： 你需要有庞大的神经网络支撑，不然效果不好。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => Tensorflow2.0 GPU管理与分布式]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/">
-        </link>
-        <updated>2020-09-29T04:04:06.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="nvidia命令">Nvidia命令</h1>
-<pre><code>nvidia-smi 	# 查看GPU占用情况
-watch -n 0.1  -x nvidia-smi 	# 动态实时0.1秒间隔，查看GPU占用情况。
-</code></pre>
-<h1 id="gpu管理">GPU管理</h1>
-<h3 id="为什么需要管理gpu">为什么需要管理GPU？</h3>
-<pre><code>默认TF程序运行会沾满耗尽GPU
-</code></pre>
-<h3 id="如何管理gpu">如何管理GPU</h3>
-<p>使用内存增长式 API<br>
-内存增长解释： 按需分配<br>
-# 查看物理GPU信息<br>
-gpus = tf.config.experimental.list_physical_devices('GPU')  # 获取所有物理GPU信息</p>
-<pre><code>tf.config.experimental.set_visible_devices(gpus[2])      # 只使用 第3个GPU， 默认不设置就是使用所有GPU
-
-for gpu in gpus:             
-	tf.config.experimental.set_memory_growth(gpu, True)   # 这行代码必须放在前面
-    
-print(len(gpus))
-</code></pre>
-<h1 id="gpu-逻辑切分-分配大小">GPU 逻辑切分 （分配大小）</h1>
-<p>就像划分CDE盘符一样，实际上还是一个整体的GPU<br>
-tf.config.experimental.set_virtual_device_configuration(<br>
-gpus[2],    # 拿第3块物理 GPU来切分<br>
-[<br>
-tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048), # 实例化第一个蛋糕，并分为2G<br>
-tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048), # 实例化第二个蛋糕，并分为2G<br>
-]<br>
-)</p>
-<h3 id="使用逻辑切分好的gpu">使用逻辑切分好的GPU</h3>
-<pre><code># 查看逻辑GPU
-logical_gpus = tf.config.experimental.list_logical_devices('GPU')  # 获取所有物理GPU信息
-print(len(logical_gpus))
-
-c = []
-for gpu in logical_gpus:
-	with tf.device(gpu.name):	# 指定GPU名字作为上下文环境，（将此GPU应用到上下文变量当中）
-		a = xxx
-		b = xxx
-		c.append( a @ b )   		# 矩阵乘法，应用到了CPU，遍历一次，切换一个GPU
-with tf.device('/CPU:0'): 		# 指定CPU名字作为上下文环境，（将此CPU应用到上下文变量当中）
-	tf.add_n(c)
-</code></pre>
-<h1 id="分布式策略">分布式策略</h1>
-<h3 id="mirroredstrategy">MirroredStrategy</h3>
-<p>镜像式策略：<br>
-0. 一台机器， 多GPU</p>
-<ol>
-<li>参数同步式，分布式训练</li>
-<li>同步的意思是， 每个GPU的不同的参数会 按次序同步处理。<br>
-主要机制：<br>
-数据集 分发 给 不同的 GPU处理 （参考多线程）</li>
-</ol>
-<h3 id="centralstoragestrategy">CentralStorageStrategy</h3>
-<pre><code>MirroredStrategy 变种
-注意这里：  
-	参数转变为 存储在一个设备上集中管理（可CPU，可GPU）
-	而计算，依然是在所有GPU上运行
-</code></pre>
-<h3 id="multiworkermirroredstrategy">MultiWorkerMirroredStrategy</h3>
-<pre><code>同 MirroredStrategy，只不过 可扩展为  在多台机器
-参数同步式
-</code></pre>
-<h3 id="parameterserverstrategy">ParameterServerStrategy</h3>
-<ol>
-<li>参数，异步分布</li>
-<li>机器分为 Parameter Server 和 Worker两类 (可理解为，生产者，消费者)<br>
-Parameter Serve： 负责管理，更新 参数和梯度<br>
-Worker:  负责计算，训练网络</li>
-<li>将输入数据转发给 多个 Worker<br>
-Woker流程：<br>
-3.1 Worker们， 训练后 将参数 push 回给 Server<br>
-3.2 Worker们， 训练后 将 Server的参数 pull 拉过来</li>
-</ol>
-<p>Server流程：<br>
-3.1 梯度聚合<br>
-3.2 梯度更新</p>
-<h3 id="总结同步式-vs-异步式">总结同步式 vs 异步式</h3>
-<p>同步式：<br>
-就像分布式爬虫一样， 同步式，相当于在 Server中 加了一个缓冲管道。<br>
-等所有GPU齐了，再全部聚合更新。<br>
-缺点：<br>
-有的机器计算快，有的机器计算慢，浪费时间  (短板效应，，拖后腿)<br>
-适用于：<br>
-一台机器，多个GPU， 避免过多网络IO通信<br>
-异步式：<br>
-缺点+ 也算是优点：<br>
-就像多线程对全局变量的不可控一样。可能参数错乱。<br>
-但是这样训练出的模型，更有泛化能力（更能容忍错误， 所以这也算是个小优点）</p>
-<pre><code>适用于：
-	多机器，多GPU
-</code></pre>
-<h1 id="分布式实例以mirroredstrategy为例其他也一样">分布式实例（以MirroredStrategy为例，其他也一样）</h1>
-<h3 id="keras中使用分布式">keras中使用分布式：</h3>
-<pre><code>strategy = tf.distribute.MirroredStrategy()
-with strategy.scope():               # 同样制造一个上下文
-	model = keras.models.Sequential([...])  # 模型定义部分放在上下文意味着，参数需要分布式管理
-	model.add()
-	...
-	...
-	model.add()
-	model.compile(...)						# compile 放在上下文中，意味着，训练环节，同样也需要分布式训练
-	# 至此结束
-</code></pre>
-<h3 id="estimator使用分布式">estimator使用分布式</h3>
-<p>原始，没有添加分布式的 estimator 代码<br>
-model = keras.Sequential([])<br>
-estimator = keras.estimator.model_to_estimator(model)<br>
-# 偷个懒，直接用Keras转过来的， 其实estimator 有很多内置模型（比如线性回归，逻辑回归）。和SKlearn用法差不多</p>
-<pre><code># 所以在训练时，把 model.fit替换为 estimator.train
-from sklearn.linear_model.base import make_dataset
-estimator.train(
-	input_fn= lambda: 自己处理数据的函数(参数),  # 此函数返回结果通常是 tf.data.Dataset对象()
-	max_steps=1000      # 最多训练1000步数
-)
-
-# 训练结果的精度值等指标，通常输出到一个文件中，  可通过 tensorflow_board 打开查看
-</code></pre>
-<p>使用 分布式的 estimator 代码： 只需按照上面便跟几行即可：<br>
-strategy = tf.distribute.MirroredStrategy()<br>
-config = tf.estimator.RunConfig(              # 主要加了这里<br>
-train_distribute=strategy<br>
-)<br>
-model = keras.Sequential([])<br>
-estimator = keras.estimator.model_to_estimator(model, config=config)<br>
-下面同上</p>
-<h3 id="自定义模型训练-的-分布式改造">自定义模型+训练 的 分布式改造</h3>
-<h1 id="分布式效果不好">分布式效果不好？？</h1>
-<ol>
-<li>可以考虑 把 batch _ size 增大</li>
-<li>可以尝试数据分布式<br>
-数据分布式代码：<br>
-strategy = tf.distribute.MirroredStrategy()<br>
-with strategy.scope():<br>
-...<br>
-train_dataset = strategy.experimental_distribute_dataset(train_dataset)<br>
-test_dataset = strategy.experimental_distribute_dataset(test_dataset)</li>
-</ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => Tensorflow2.0模型保存与部署]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/">
-        </link>
-        <updated>2020-09-29T04:03:37.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="模型保存">模型保存</h1>
-<p>tf1: checkpoint（主力）<br>
-tf2: keras(hdf5) 或 SavedModel(tf2.0) 推荐格式</p>
-<h1 id="模型部署-tflite">模型部署 TFLite</h1>
-<h3 id="tflite-converter">TFLite Converter</h3>
-<p>将上面的 hdf5 或 SavedModel 转化为 TFLite格式</p>
-<h3 id="tflite-interpreter">TFLite Interpreter</h3>
-<p>用来加载 TFLite Converte 转化后的模型 （支持 IOS Andriod） （支持C++等多种语言）</p>
-<h3 id="tflite-flatbuffer">TFLite  FlatBuffer</h3>
-<p>TFLite 是一种 FlatBuffer 格式<br>
-FlatBuffer： Google开源 跨平台数据序列化库</p>
-<h3 id="tflite-量化">TFLite 量化</h3>
-<p>量化： 参数从 float32 变为 int8。 （损失精度，提升速度）<br>
-模型可以降低为原来的  1/4</p>
-<h1 id="实战">实战</h1>
-<h3 id="保存模型">保存模型</h3>
-<p>tf2的模型保存，有两大派别：<br>
-方式1. keras的保存方式<br>
-方式2. saved _ model的保存方式</p>
-<p>方式1具体使用： 使用callback<br>
-keras.callbacks.ModelCheckpoint(<br>
-'xxx.h5',<br>
-save_best_only=True,<br>
-save_weights_only=False     # 默认就是False, 意为保存 模型+参数<br>
-)<br>
-方式2具体使用： 使用 tf.saved _ model()    将 keras转为 saved _ model<br>
-tf.saved_model.save(model, './文件夹名')		# 结果目录里面有个  saved_model.pd 有用</p>
-<h3 id="模型-转化为-lite格式">模型 转化为 Lite格式</h3>
-<p>keras格式的模型对应API：<br>
-keras_model = tf.lite.TFLiteConverter.from_keras_model(model)  # 普通<br>
-keras_tflite = keras_model.convert()</p>
-<pre><code>with open('keras目录', 'wb') as f:
-	f.write(keras_tflite)
-</code></pre>
-<p>saved _ model 格式的模型对应API：<br>
-saved_model = tf.lite.TFLiteConverter.from_saved_model('./原始模型保存目录')<br>
-saved_model_tflite = saved_model.convert()</p>
-<pre><code>with open('saved_model目录', 'wb') as f:
-	f.write(saved_model_tflite)
-</code></pre>
-<h3 id="tflite-interpreter继续操作lite">TFLite Interpreter继续操作Lite</h3>
-<pre><code>with open('keras目录', 'rb') as f:		# 读取 TFLite
-	keras_model = f.read()		  
-
-interpreter = tf.lite.Interpreter(
-	model_content=keras_model
-)
-interpreter.allocate_tersors()		#  给 TFLite中的所有 Tensor 分配内存
-</code></pre>
-<h3 id="模型量化-实操">模型量化 实操</h3>
-<p>其实就是在上面的基础上，中间部分加一行代码<br>
-keras_model = tf.lite.TFLiteConverter.from_keras_model(model)  # 普通<br>
-# 就在这里加<br>
-keras_model.optimizations = [ tf.lite.Optimize.OPTIMIZE_FOR_SIZE ]<br>
-keras_tflite = keras_model.convert()</p>
-<h3 id="模型转换转换为-js为例">模型转换（转换为 JS为例）</h3>
-<p>首先需要下载一个工具 tensorflowjs<br>
-pip install tensorflowjs -i https://pypi.douban.com/simple<br>
-注意一下， tensorflowjs目前最高只支持 tf1.14 。 所以你运行上述安装命令，你的tf会自动降级到 tf1.14......</p>
-<p>查看帮助文档，看看参数：<br>
-tensorflowjs_converter --help</p>
-<p>正式转换：(CMD or Shell命令行式转换方法)<br>
-（keras保存版）<br>
-tensorflowjs_converte <br>
---input_format keras <br>
---output_format  tfjs_layers_model <br>
-./xxx/xxx.h5 <br>
-./keras_to_tfjs_layers</p>
-<pre><code># 倒数第二个参数是 输入
-# 倒数第一个参数是 输出
-# 运行成功后， JS保存目录中 会有2个文件
-1. xx.bin		# 真正的模型
-2. xx.json		# 模型相关配置信息
-</code></pre>
-<p>（model _ saved保存版）<br>
-tensorflowjs_converte <br>
---input_format tf_saved_model <br>
---output_format  tfjs_graph_model <br>
-./xxx/xxx.h5 <br>
-./keras_to_tfjs_layers</p>
-<pre><code># 上面的 saved_model 版本 主要改了这两个参数:
-	--input_format tf_saved_model \
-	--output_format  tfjs_graph_model \
-</code></pre>
-<hr>
-<p>其次还有 代码式 转换方法：<br>
-import tensorflowjs as tfjs</p>
-<pre><code>model = ...
-
-tfjs.converters.save_keras_model(model,'新JS路径')
-tfjs.converters.convert_tf_saved_model(model,'新JS路径')
-</code></pre>
-<h3 id="js端调用">JS端调用</h3>
-<p>需要安装Node等启动服务。 Node也需要安装 tensorflowjs 模块。<br>
-使用方法，略。。。。。，</p>
 ]]></content>
     </entry>
 </feed>
