@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Tensorflow2.0 GPU管理与分布式 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Nvidia命令
+nvidia-smi 	# 查看GPU占用情况
+watch -n 0.1  -x nvidia-smi 	# 动态实时0.1秒间隔，查看GPU占用情况。
+
+GPU管理
+为什么需要管理GPU？
+默认TF程序运行会沾满耗尽GP..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Tensorflow2.0 GPU管理与分布式</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="nvidia命令">Nvidia命令</h1>
+<pre><code>nvidia-smi 	# 查看GPU占用情况
+watch -n 0.1  -x nvidia-smi 	# 动态实时0.1秒间隔，查看GPU占用情况。
+</code></pre>
+<h1 id="gpu管理">GPU管理</h1>
+<h3 id="为什么需要管理gpu">为什么需要管理GPU？</h3>
+<pre><code>默认TF程序运行会沾满耗尽GPU
+</code></pre>
+<h3 id="如何管理gpu">如何管理GPU</h3>
+<p>使用内存增长式 API<br>
+内存增长解释： 按需分配<br>
+# 查看物理GPU信息<br>
+gpus = tf.config.experimental.list_physical_devices('GPU')  # 获取所有物理GPU信息</p>
+<pre><code>tf.config.experimental.set_visible_devices(gpus[2])      # 只使用 第3个GPU， 默认不设置就是使用所有GPU
+
+for gpu in gpus:             
+	tf.config.experimental.set_memory_growth(gpu, True)   # 这行代码必须放在前面
+    
+print(len(gpus))
+</code></pre>
+<h1 id="gpu-逻辑切分-分配大小">GPU 逻辑切分 （分配大小）</h1>
+<p>就像划分CDE盘符一样，实际上还是一个整体的GPU<br>
+tf.config.experimental.set_virtual_device_configuration(<br>
+gpus[2],    # 拿第3块物理 GPU来切分<br>
+[<br>
+tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048), # 实例化第一个蛋糕，并分为2G<br>
+tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048), # 实例化第二个蛋糕，并分为2G<br>
+]<br>
+)</p>
+<h3 id="使用逻辑切分好的gpu">使用逻辑切分好的GPU</h3>
+<pre><code># 查看逻辑GPU
+logical_gpus = tf.config.experimental.list_logical_devices('GPU')  # 获取所有物理GPU信息
+print(len(logical_gpus))
+
+c = []
+for gpu in logical_gpus:
+	with tf.device(gpu.name):	# 指定GPU名字作为上下文环境，（将此GPU应用到上下文变量当中）
+		a = xxx
+		b = xxx
+		c.append( a @ b )   		# 矩阵乘法，应用到了CPU，遍历一次，切换一个GPU
+with tf.device('/CPU:0'): 		# 指定CPU名字作为上下文环境，（将此CPU应用到上下文变量当中）
+	tf.add_n(c)
+</code></pre>
+<h1 id="分布式策略">分布式策略</h1>
+<h3 id="mirroredstrategy">MirroredStrategy</h3>
+<p>镜像式策略：<br>
+0. 一台机器， 多GPU</p>
+<ol>
+<li>参数同步式，分布式训练</li>
+<li>同步的意思是， 每个GPU的不同的参数会 按次序同步处理。<br>
+主要机制：<br>
+数据集 分发 给 不同的 GPU处理 （参考多线程）</li>
+</ol>
+<h3 id="centralstoragestrategy">CentralStorageStrategy</h3>
+<pre><code>MirroredStrategy 变种
+注意这里：  
+	参数转变为 存储在一个设备上集中管理（可CPU，可GPU）
+	而计算，依然是在所有GPU上运行
+</code></pre>
+<h3 id="multiworkermirroredstrategy">MultiWorkerMirroredStrategy</h3>
+<pre><code>同 MirroredStrategy，只不过 可扩展为  在多台机器
+参数同步式
+</code></pre>
+<h3 id="parameterserverstrategy">ParameterServerStrategy</h3>
+<ol>
+<li>参数，异步分布</li>
+<li>机器分为 Parameter Server 和 Worker两类 (可理解为，生产者，消费者)<br>
+Parameter Serve： 负责管理，更新 参数和梯度<br>
+Worker:  负责计算，训练网络</li>
+<li>将输入数据转发给 多个 Worker<br>
+Woker流程：<br>
+3.1 Worker们， 训练后 将参数 push 回给 Server<br>
+3.2 Worker们， 训练后 将 Server的参数 pull 拉过来</li>
+</ol>
+<p>Server流程：<br>
+3.1 梯度聚合<br>
+3.2 梯度更新</p>
+<h3 id="总结同步式-vs-异步式">总结同步式 vs 异步式</h3>
+<p>同步式：<br>
+就像分布式爬虫一样， 同步式，相当于在 Server中 加了一个缓冲管道。<br>
+等所有GPU齐了，再全部聚合更新。<br>
+缺点：<br>
+有的机器计算快，有的机器计算慢，浪费时间  (短板效应，，拖后腿)<br>
+适用于：<br>
+一台机器，多个GPU， 避免过多网络IO通信<br>
+异步式：<br>
+缺点+ 也算是优点：<br>
+就像多线程对全局变量的不可控一样。可能参数错乱。<br>
+但是这样训练出的模型，更有泛化能力（更能容忍错误， 所以这也算是个小优点）</p>
+<pre><code>适用于：
+	多机器，多GPU
+</code></pre>
+<h1 id="分布式实例以mirroredstrategy为例其他也一样">分布式实例（以MirroredStrategy为例，其他也一样）</h1>
+<h3 id="keras中使用分布式">keras中使用分布式：</h3>
+<pre><code>strategy = tf.distribute.MirroredStrategy()
+with strategy.scope():               # 同样制造一个上下文
+	model = keras.models.Sequential([...])  # 模型定义部分放在上下文意味着，参数需要分布式管理
+	model.add()
+	...
+	...
+	model.add()
+	model.compile(...)						# compile 放在上下文中，意味着，训练环节，同样也需要分布式训练
+	# 至此结束
+</code></pre>
+<h3 id="estimator使用分布式">estimator使用分布式</h3>
+<p>原始，没有添加分布式的 estimator 代码<br>
+model = keras.Sequential([])<br>
+estimator = keras.estimator.model_to_estimator(model)<br>
+# 偷个懒，直接用Keras转过来的， 其实estimator 有很多内置模型（比如线性回归，逻辑回归）。和SKlearn用法差不多</p>
+<pre><code># 所以在训练时，把 model.fit替换为 estimator.train
+from sklearn.linear_model.base import make_dataset
+estimator.train(
+	input_fn= lambda: 自己处理数据的函数(参数),  # 此函数返回结果通常是 tf.data.Dataset对象()
+	max_steps=1000      # 最多训练1000步数
+)
+
+# 训练结果的精度值等指标，通常输出到一个文件中，  可通过 tensorflow_board 打开查看
+</code></pre>
+<p>使用 分布式的 estimator 代码： 只需按照上面便跟几行即可：<br>
+strategy = tf.distribute.MirroredStrategy()<br>
+config = tf.estimator.RunConfig(              # 主要加了这里<br>
+train_distribute=strategy<br>
+)<br>
+model = keras.Sequential([])<br>
+estimator = keras.estimator.model_to_estimator(model, config=config)<br>
+下面同上</p>
+<h3 id="自定义模型训练-的-分布式改造">自定义模型+训练 的 分布式改造</h3>
+<h1 id="分布式效果不好">分布式效果不好？？</h1>
+<ol>
+<li>可以考虑 把 batch _ size 增大</li>
+<li>可以尝试数据分布式<br>
+数据分布式代码：<br>
+strategy = tf.distribute.MirroredStrategy()<br>
+with strategy.scope():<br>
+...<br>
+train_dataset = strategy.experimental_distribute_dataset(train_dataset)<br>
+test_dataset = strategy.experimental_distribute_dataset(test_dataset)</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/">
+                  <h3 class="post-title">
+                    PY =&gt; Tensorflow2.0模型保存与部署
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

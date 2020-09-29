@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; NLP + ML | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="文本相似度：
+1. 欧氏距离  (反比)
+2. 余弦相似度  x1@x2 / ( |x1| * |x2| )   （正比）
+
+TF-IDF
+tf = 某单词 在所处句子中 出现的个数  （词频）
+
+idf (文档总数 / 含有该单词的文档数..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; NLP + ML</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="文本相似度">文本相似度：</h1>
+<pre><code>1. 欧氏距离  (反比)
+2. 余弦相似度  x1@x2 / ( |x1| * |x2| )   （正比）
+</code></pre>
+<h1 id="tf-idf">TF-IDF</h1>
+<pre><code>tf = 某单词 在所处句子中 出现的个数  （词频）
+
+idf (文档总数 / 含有该单词的文档数)
+	= 词频 * 每个单词的重要性
+	= 词频 * log(文档总数 / 含有该单词的文档数)    # 分母包含度越高，代表越不相似）
+</code></pre>
+<h1 id="chain-rule">Chain Rule</h1>
+<pre><code>P(A,B) = P(A}B) * P(B)
+	  = P(B|A) * P(A)
+
+P(A,B,C,D) = P(A) * P(B|A) * P(C|AB) * P(D|ABC)
+</code></pre>
+<h1 id="马尔可夫假设">马尔可夫假设：</h1>
+<pre><code>基于Chain Rule：
+	1st:  只依赖前一个条件    P(A,B,C,D) = P(A) * P(B|A) * P(C|B) * P(D|C)
+		对应 1-Gram
+		也叫 ：(unigram)
+
+	2st:  只依赖前两个条件    P(A,B,C,D) = P(A) * P(B|A) * P(C|AB) * P(D|BC)
+		对应 2-Gram
+		也叫 ：（bigram）
+	3st: 只依赖前三个条件
+		对应 3-Gram
+		也叫 :(trigram)
+如上语言模型都有一个问题：
+	那么假如预测一个词表中没有的单词，那么就Game Over了， 乘积直接预测为 0 了
+</code></pre>
+<h1 id="平滑处理">平滑处理</h1>
+<p>如果上面N-Gram。不想出现0，而是变为无穷小，那么需要 做平滑处理</p>
+<h3 id="拉普拉斯平滑">拉普拉斯平滑</h3>
+<p>add-one<br>
+(B|A)次数  +  1<br>
+P(B|A) =  ---------<br>
+A出现次数 + 词典大小（不包括重复的）<br>
+add-K<br>
+(B|A)次数  +  K<br>
+P(B|A) =  ---------------------------<br>
+A出现次数 + K * 词典大小（不包括重复的）<br>
+K 是一个超参数，需要不断优化<br>
+interpolation<br>
+仅有的数据集，句子 条件概率为0， 而 未来其他的数据集，可能有这个句子，产生超未来的情况<br>
+所以，interpolation就是解决这个情况的。<br>
+同时使用  unigram 和 bigram 和 trigram<br>
+公式：   λ1 * unigram + λ2 * bigram + λ3 * trigram<br>
+λ1 + λ2 + λ3 = 1</p>
+<h1 id="朴素贝叶斯">朴素贝叶斯</h1>
+<h3 id="贝叶斯">贝叶斯</h3>
+<pre><code>P(A|B) = P(B|A) * P(A)
+		--------------
+        P(B)
+
+p(垃圾|邮件内容 )
+
+= P(邮件内容 | 垃圾) * P(垃圾)			# 注意这个P（垃圾）就是先验概率， 垃圾文章占总文章的比例
+----------------------------------
+			P（邮件内容）
+
+
+同理另一方面（正常方）：
+p(正常|邮件内容 )
+
+= P(邮件内容 | 正常) * P(正常)       # 同样为先验概率
+----------------------------------
+			P（邮件内容）
+
+
+# 注意1， p(垃圾|邮件内容 )  和 p(正常|邮件内容 )  的 分母是可以约分的
+# 注意2， P(邮件内容 | 正常) 和  P(邮件内容 | 垃圾)  都是条件独立概率。
+		 可继续拆分为   P（单词1） | P（正常）    # 你需要首先计算出每个单词在正常内容里面的概率
+</code></pre>
+<h3 id="联合概率">联合概率</h3>
+<pre><code>P(X,Y) = P(x) * P(y|x) = P(y) * P(x|y)
+</code></pre>
+<h3 id="条件独立">条件独立</h3>
+<pre><code>P(x,y | z) = P(x|z) * P(y|z)
+</code></pre>
+<h3 id="先验概率">先验概率</h3>
+<pre><code>假如你要判断 一封邮件里面的句子，是否为垃圾信息。
+这时，你需要计算出  已有 垃圾邮件的概率  和 正常邮件的概率。
+</code></pre>
+<h1 id="准确率-精确率-召回率-f1-score">准确率 精确率 召回率 F1-Score</h1>
+<h3 id="准确率不可靠">准确率（不可靠）</h3>
+<pre><code>准确率 依赖于 （正、负）平衡的样本    99999个黑猫， 1个白猫，  你怎么预测，几乎都是黑猫（99999/100000）的概率
+</code></pre>
+<h3 id="精确率precision">精确率（precision）</h3>
+<p>标签+预测数据：<br>
+实际标签： T F T T F F<br>
+预测标签： T F T F T T<br>
+以正样本为例：<br>
+P(正) =  &quot;预测标签中有4个T&quot;， 与 &quot;实际标签&quot;对应位置匹配后，发现只有 &quot;2个T&quot;对应上了。<br>
+所以精确率为： 2/4</p>
+<h3 id="召回率recall">召回率(recall)</h3>
+<pre><code>R(负数) =  &quot;实际标签中有3个T&quot;， 与 &quot;预测标签&quot;对应位置匹配后，发现只有 &quot;2个T&quot;对应上了。
+所以召回率为： 2/3 
+</code></pre>
+<h3 id="后来又想了一种更好理解-精确率和召回率的方式">后来又想了一种更好理解 （精确率和召回率）的方式</h3>
+<p>目标，求小白鼠 “生病” 的 精确率 与 召回率</p>
+<pre><code>	  鼠1   鼠2   鼠3   鼠4   鼠5  鼠6
+
+实际	病    非    病    病    非   非
+
+预测	病    非    病    非    病   病
+</code></pre>
+<p>具体例子：<br>
+我 预测结果中有标出 4 个生病的， 与实际对比后， 上下对应之后 鼠1 和 鼠3，标对了，也就是预测对了2个<br>
+所以， P（精确） =   2 / 4  = 50%</p>
+<pre><code>实际标签有 3个有病的老鼠，  但是（看预测label）， 只有  鼠1 和 鼠3  对齐了，（也就是预测正确了）
+	所以， P（召回） = 2 / 3  =  66%      
+</code></pre>
+<p>上面的例子，是比较容易懂的，  如果不懂，可看下面讲我的复杂理解方式：<br>
+首先准备 &quot;真实label&quot; 和 &quot;预测label&quot;：<br>
+把这些 &quot;预测label&quot;  放到  &quot;实际 label&quot; 下面一行  一一对齐 位置匹配<br>
+例如（看看位置结构就行，下面用得到， 01随便写的不用理会） ：<br>
+真实label： 10011<br>
+预测label:    11001</p>
+<pre><code>精确率：（我预测的label中， 预测对了多少（对齐+交集） ， 可理解为预测的准不准）  （注意 &quot;中&quot;字， 谁带中，谁就做分母）
+	精确率主要以我的 &quot;预测label&quot; 为主，
+	（以谁为主，谁就做分母）
+	（以谁为主，就从谁开始看）（精确率以&quot;预测label&quot;为主，根据上面的结构，先从下面一行开始看）
+	
+	先从下面这行（也就是我们预测的label） 开始查找正例（也就是我们探索的目标--&quot;有病&quot;）
+			把有病的个数，作为分母，   
+	然后我们开始把上下2行的label一起对齐比较， 把上下都有 “有病” 的总个(列)数作为分子（就是交集的意思），
+		
+	最终精确率就是：  
+		分子
+		----
+		分母
+
+召回率：（所有实际label中，我预测到了多少（对齐+交集）， 可理解为预测的全不全） （注意 &quot;中&quot;字， 谁带中，谁就做分母）
+	和上面不同了， 召回率变成以主要以 &quot;实际label&quot; “有病”的个数 为主 
+	（以谁为主，谁就做分母）
+	（以谁为主，就从谁开始看）（精确率以&quot;预测label&quot;为主，根据上面的结构，先从下面一行开始看）
+
+	然后从上面这行（也就是实际的label） 开始查找正例（也就是我们探索的目标--&quot;有病&quot;）
+			把有病的个数，作为分母，   
+	然后我们开始把上下2行的label一起对齐比较， 把上下都有 “有病” 的总个(列)数作为分子（就是交集的意思），
+	最终精确率就是：  
+		分子
+		----
+		分母
+</code></pre>
+<h3 id="f1-score">F1-Score</h3>
+<p>上面说明了（P-R）是互斥关系。 所以作为指标，需要考虑二者。不是很方便。<br>
+那么有没有一个唯一的指标来 平衡二者呢？<br>
+有---它就是 F1-Score （调和平均值）<br>
+1		1			1			1<br>
+-- =  ---- * （----------  + ----------）<br>
+F1		2		precision		recall<br>
+2 *  precision * recall<br>
+F1 = ------------------------------<br>
+precision + recall<br>
+特点：</p>
+<ol>
+<li>有一个值低，另一个值特别高，结果 F1 Score也会特别的低 （或者两个值都低， f1 score也会很低）</li>
+<li>只有二者都非常高的话，F1 Score 才会非常的高</li>
+</ol>
+<h1 id="logistic-regression逻辑回归">Logistic Regression(逻辑回归)</h1>
+<pre><code>线性回归 + Sigmoid
+							1
+y_predict(类别为1) = --------------
+						1+ e^(wx+b) 
+                        
+							1          e^(wx+b)
+y_predict(类别为0) = 1- ------------ =  ----------------
+						1+ e^(wx+b)     1+ e^(wx+b)
+                        
+                        
+用1-0开关吧上面两个式子合在一起
+y_predict =   y_predict(类别为1)^(y)   + y_predict(类别为0)^(1-y)
+</code></pre>
+<p>两边加上 log，化简一下：</p>
+<pre><code>log (p(y_predict)) =  y * log y_predict类别为1 +  (1-y) * log (1-y_predict类别为0)
+# 上面求得是预测的概率。 我们它希望越大越好。 
+# 所以额外的整体外面需要加一个 负号 -
+# 加个负号，就反过来了。 我们就转而求  希望他越小越好。  (或者这里不用理解，最后加个负号，记住即可)
+log (p(y_predict)) = - ( y * log y_predict类别为1 +  (1-y) * log (1-y_predict类别为0) )
+
+# 注意，上面说的都是针对每一个样本的 （记住这行，下面最大似然用到）
+	log (p(每个样本)) =  - ( y * log y_predict类别为1 +  (1-y) * log (1-y_predict类别为0) )
+</code></pre>
+<h3 id="最大似然估计">最大似然估计：</h3>
+<pre><code>最大似然估计，就是 考虑所有样本满足&quot;独立分布&quot;：
+那么它们的 总概率可写为：
+	P（总） =  累乘( P（所有样本）)
+两边再取对数:
+	log P总 = log 累乘( P（每个样本）)
+累成转累加：
+	log P总 = Σ log ( P（每个样本）)
+log ( P（每个样本）)) 带进来：
+	log P总 = 最大似然估计 =  - Σ( y * log y_predict类别为1 +  (1-y) * log (1-y_predict类别为0) )
+</code></pre>
+<p>上面就是最大似然估计的公式了<br>
+当然，我们不会直接用最大似然当作损失函数，因为我们需要最大似然概率越大越好。</p>
+<p>而是把负号去掉，变成损失，让损失越小越好。  并且除以样本的总数，最后损失函数如下：<br>
+Σ( y * log y_predict类别为1 +  (1-y) * log (1-y_predict类别为0) )<br>
+loss =  ---------------------------------------------------------------------<br>
+m</p>
+<h3 id="逻辑回归是线性分类器">逻辑回归是线性分类器：</h3>
+<p>依据：看决策边界（decision boundary）<br>
+求决策边界<br>
+上面两个式子y_predict(类别为1) 和 y_predict(类别为0) 相等， 求出的表达式 就是决策边界（纯线性的）</p>
+<h3 id="当然除了sigmoid你也可以用-softmax做多分类">当然，除了Sigmoid，你也可以用 Softmax做多分类</h3>
+<h1 id="neural-network-神经网络">Neural Network (神经网络)</h1>
+<p>之前说过 逻辑回归 是  线性回归 + Sigmoid拼接而成。<br>
+那么现在：  每个逻辑回归 看作一个 神经单元<br>
+那么神经网络可以说是 多个 逻辑回归 摞起来的效果。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-sklearn/">
+                  <h3 class="post-title">
+                     PY =&gt; Sklearn
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

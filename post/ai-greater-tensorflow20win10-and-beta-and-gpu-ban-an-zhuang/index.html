@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; Tensorflow2.0（win10 &amp; Beta &amp; GPU版 ）安装 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+python &amp; cuda &amp; cudnn &amp; 显卡型 &amp; tensorflow 版本如果匹配不好，可能会踩坑。。
+本篇文章，讲述了 全套安装过程 与 我所踩过的坑。
+环境推荐
+我也不是一次成的，当时 ..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; Tensorflow2.0（win10 &amp; Beta &amp; GPU版 ）安装</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>python &amp; cuda &amp; cudnn &amp; 显卡型 &amp; tensorflow 版本如果匹配不好，可能会踩坑。。<br>
+本篇文章，讲述了 全套安装过程 与 我所踩过的坑。</p>
+<h1 id="环境推荐">环境推荐</h1>
+<p>我也不是一次成的，当时 tf-13rc问世时，弄了好久。<br>
+稍微提一下，python官网首页的python3.7是 win32的。<br>
+我之前重装系统偷懒下载的。用了很久才发现是32位的。。。。<br>
+Tensorflow必须是需要 win 64位的。 （终端下输入 python就能看到是多少位的  xx bit ）<br>
+注： 安装路径一律用 英文！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！</p>
+<p>最后成功的配套版本如下：<br>
+win10<br>
+gtx1050   (其他型号的，不保证，应该也能差不多)<br>
+python3.7 (感觉python问题并不是特别大。 建议 3.7)<br>
+cuda:     cuda_10.0.130_411.31_win10<br>
+cudnn:    cudnn-10.0-windows10-x64-v7.4.2.24<br>
+tensorflow-gpu==2.0.0-beta0</p>
+<h1 id="资源分享-baidunet">资源分享 （BaiduNet）</h1>
+<p>资源构成: CUDA + CUDNN + 4个vc环境 （vc环境干啥的，下面说）<br>
+我的网盘: https://pan.baidu.com/s/1Z6HaNUATvOjbyuCsUcshfw<br>
+提取码: 2qut</p>
+<p>下载后别乱点，按顺序看下面教程安装。 有依赖的。</p>
+<h1 id="安装cuda">安装CUDA</h1>
+<p>官链：https://developer.nvidia.com/cuda-downloads （如果你不想用我的工具包，可以自行CUDA官链）</p>
+<p>如果你直接去安装CUDA时，可能会抛error, 提示你，需要依赖 vs201+ 环境。<br>
+其实我们大可不必安装 那么大体积的vs， 而是安装 vc_redist 插件即可。</p>
+<p>安装环节：</p>
+<ol>
+<li>你可以看到我分享的资源中， 有4个 vc_redist。<br>
+下载下来， 防漏，从上到下挨个安装一遍。（瞬装很快，如果提示你已安装，不用管。全部安装一遍）</li>
+<li>然后安装 CUDA，双击安装即可 （选精简版即可）（记住安装路径，我记得好像是默认自动路径，忘了）</li>
+<li>一路下一步，即可安装成功<br>
+配置环节：
+<ol>
+<li>默认自动安装的路径如下：  （如果你选的自定义安装，你要记住你的路径）<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin</li>
+<li>将此路径配置到 环境变量 中</li>
+<li>关掉所有cmd, 重新打开cmd，输入 nvcc -V</li>
+<li>没报错说明安装成功。</li>
+</ol>
+</li>
+</ol>
+<h1 id="安装cudnn">安装CUDNN</h1>
+<p>官链：https://developer.nvidia.com/rdp/cudnn-download（如果你不想用我的工具包，可自行官链）<br>
+(官网下 CUDNN 貌似需要登录)</p>
+<p>操作环节：</p>
+<ol>
+<li>你可以看到我分享的资源中，有CUDNN，下载下来，解压（任意位置都可，记住就行）。</li>
+<li>解压后，进入解压的目录，你会看到有个cuda目录，进去！然后做如下操作！！！<br>
+2.1. 进入 bin 目录， 把里面的文件（应该就一个），复制到<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin<br>
+2.2  进入 include 目录，把里面的文件（应该就一个），复制到<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\include<br>
+2.3  进入 lib 目录, 再继续进入 x64 目录，把里面的文件（应该就一个），复制到<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\lib\x64<br>
+说一下： 上面3个路径，安装cuda提到的（精简版的默认路径， 你的和我的是一模一样的，直接复制）</li>
+<li>将此路径添加到环境变量 （同样是默认路径，直接拿去复制，配了就行）：<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\lib\x64</li>
+</ol>
+<h1 id="安装tensorflow">安装Tensorflow</h1>
+<p>每个人有每个人的习惯，建议用用虚拟环境安装东西。 我较熟练 virtualenv + virtualenvwrapper-win<br>
+当然，你直接装也是没问题的。</p>
+<p>安装tensorflow-gpu<mark>2.0.0-beta0:<br>
+pip install tensorflow-gpu</mark>2.0.0-beta0  -i http://pypi.douban.com/simple/  --trusted-host pypi.douban.com<br>
+如果你是anaconda（那么需要先打开anaconda prompt pip）(科学)：<br>
+pip install tensorflow-gpu==2.0.0-beta0</p>
+<p>安装 matplotlib (非必须，但 反正也是不离手的东西，直接装了吧)<br>
+pip install scipy matplotlib pandas sklearn -i http://pypi.douban.com/simple/  --trusted-host pypi.douban.com</p>
+<p>至此，全部安装完成，接下来测试。</p>
+<h1 id="测试安装-测试是否使用gpu">测试安装 &amp; 测试是否使用GPU</h1>
+<pre><code>import tensorflow as tf
+
+print(tf.__version__)
+print(tf.test.gpu_device_name())
+</code></pre>
+<p>就这3行代码，即可。 看打印结果：<br>
+2.0.0-beta0          # 这是版本信息<br>
+/device:GPU:0        # GPU字样就说明可以使用GPU了。</p>
+<h1 id="强迫症的挣扎">强迫症的挣扎</h1>
+<p>执行上面代码测试的时候，我这里是有一大串 warning的。 关于数据类型的 warning。其实无伤大雅。<br>
+不，很伤，我去github找了一下。其实就是你的 numpy版本太新了。 重装换一个 1.17以下版本 就行。<br>
+CMD直接 运行以下命令即可：<br>
+pip uninstall -y numpy &amp;&amp; pip install numpy==1.16.4<br>
+强迫症帮助者链接：https://github.com/tensorflow/tensorflow/issues/30427#issuecomment-515770145</p>
+<h1 id="结束语">结束语</h1>
+<p>我的机子早一阵买的了， GTX1050的， 每个人的显型都不同。<br>
+所以也许我给出的配套版本，不能满足所有人需求。<br>
+下面说一下我之前装的时候遇到的问题：</p>
+<ol>
+<li>记得安装路径尽量全部，用英文。</li>
+<li>cuda安不上，因为缺少 vs201+, （我上面说过了，安装我分享的那4个vc_redist小文件可代替安装 vs）</li>
+<li>如果在安装tensorflow时，提示你，没有找到相关模块：<br>
+3.1 可能是你的 python 和 pip 版本过低<br>
+3.2 可能是你的 python是32位的。  （不要偷懒去安装主页的python3.7，那个是32位的。必须用64位）</li>
+<li>如果在安装tensorflow 或者 import tensorflow 时，给你报了一大堆错误：<br>
+4.0 首先看错误能不能看懂<br>
+4.1 可能是我给的 配套版本。 并不能满足你的 机器，显型。 这时候你就得自己去找对应版本了<br>
+4.2 我之前弄的时候，我记得好像有 Nvidia显卡 &amp; cuda &amp; cudnn 的对照表。忘记录了。可自行寻找。</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-hmm-yu-crf-yu-viterbi/">
+                  <h3 class="post-title">
+                    PY =&gt; HMM 与 CRF 与 Viterbi
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

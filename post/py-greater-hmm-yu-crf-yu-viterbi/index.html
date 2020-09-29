@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; HMM 与 CRF 与 Viterbi | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="HMM(隐马尔可夫模型)
+初始权重矩阵 Π
+形状：np.zeros(tag_size)        # tag_size就是实体标签的总个数
+第一个字出现 认名实体标签的次数
+计算公式eg：q(人名) ------------------..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; HMM 与 CRF 与 Viterbi</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="hmm隐马尔可夫模型">HMM(隐马尔可夫模型)</h1>
+<p>初始权重矩阵 Π<br>
+形状：np.zeros(tag_size)        # tag_size就是实体标签的总个数<br>
+第一个字出现 认名实体标签的次数<br>
+计算公式eg：q(人名) ---------------------------------<br>
+5000个句子<br>
+转移矩阵（transition）<br>
+原理：前面的隐含状态 =&gt; 当前隐含状态<br>
+形状：np.zeros([tag_size, tag_size])  # tag_size就是实体标签的总个数  （正方形，寻路）</p>
+<pre><code>                当前实体标签 和 相邻后一个实体标签联合出现的次数
+计算公式eg：t =    --------------------------------------
+			          当前实体标签在5000个句子中出现的次数
+</code></pre>
+<p>发射矩阵 ( emission )<br>
+原理：当前隐含状态 =&gt; 当前预测标签（实体标签）                （矩形）<br>
+形状：np.zeros([tag_size, vocab_size])  # tag_size就是实体标签的总个数<br>
+当前实体标签 和 当前（lstm输出值y）联合出现的次数<br>
+计算公式eg：e =    -------------------------------------------------------<br>
+当前实体标签出现的次数<br>
+偏置：<br>
+防止乘0，或者防止 log0<br>
+取log:<br>
+乘法变加法， 防止小数被乘到最后变成了0</p>
+<p>HMM总体公式：<br>
+q = argmax( P(当前实体标签|上一时刻实体标签) * P(检测到的汉字 | 当前时刻实体标签)  )<br>
+朝朝所有实体标记，找到一个标记，使得 q最大即可。</p>
+<h1 id="crf条件随机场">CRF(条件随机场)</h1>
+<p>和HMM类似，CRF也有类似的结构（转移矩阵，发射矩阵）<br>
+假如当前为 Y<br>
+转移矩阵的：CRF组合形式，分簇的：<br>
+1. 第一簇：所有X， 当前时刻Y(t)， 上一时刻Y(t-1)<br>
+2. 第二簇：所有X， 当前时刻Y(t)， 上一时刻Y(t-1)  (注意，可理解为时间序列是滑动的。)<br>
+3. 第三簇：。。。</p>
+<pre><code>核心总结：
+	CRF： 转移矩阵 和 发射矩阵几乎和 HMM差不多。 
+      只不过CRF 每一簇（团）都用到了“所有的” lstm的输出Y
+	HMM:
+      没有簇， 每次用的只是 当前LSTM输出的 y(t)
+      
+最终：同样求的是 argmax ( P(Y|X ) )
+</code></pre>
+<h1 id="viterbi维特比算法">Viterbi(维特比算法)</h1>
+<pre><code>使用了动态规划解决 HMM 和 CRF的预测问题 （&quot;转移&quot; 时可找到全局最优） 
+（而 CRF ，HMM 只能找到局部最优）
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-nlp-ml/">
+                  <h3 class="post-title">
+                    PY =&gt; NLP + ML
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; CNN-RNN（Ng） | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+看Andrew Ng视频，总结的学习心得。
+虽然本篇文章可能不是那么细致入微，甚至可能有了解偏差。
+但是，我喜欢用更直白的方式去理解知识。
+上一篇文章传送门： https://segmentfault.com/a/1190000020..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; CNN-RNN（Ng）</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>看Andrew Ng视频，总结的学习心得。<br>
+虽然本篇文章可能不是那么细致入微，甚至可能有了解偏差。<br>
+但是，我喜欢用更直白的方式去理解知识。<br>
+上一篇文章传送门： https://segmentfault.com/a/1190000020588580</p>
+<h1 id="端到端">端到端</h1>
+<h3 id="首先聊一个面试经历">首先聊一个面试经历</h3>
+<p>我最开始接触的是ML （但只限于Sklearn的简单应用，工程化的内容当时一点都不了解。）<br>
+后来有幸了解到DL （这个了解比较多）<br>
+我面的是普通Python岗， 因为我的小项目中涉及到 （聊天机器人）。所以第二个面试官揪着这个聊了聊。<br>
+与面试官交谈时，我也直接挑明了，模型是Github找的，当时自己爬了些问答对，处理后放入模型自己训练的。<br>
+面试官一顿(特征提取，语义）等各种 ML-NLP工程化的过程，把我直接问懵了。。</p>
+<p>怎么提取特征（问号脸，难道是TF-IDF，分词之类的？？）？？？？？<br>
+我也不知道说啥，以仅有的能力，和他聊聊（LSTM、Embedding, Seq2Seq的 Encoder-Vector-Decoder）。。</p>
+<p>面试官说：“你说了这些， 那你特征工程是怎么做的？？？”<br>
+我感觉已经没有任何反驳的能力了。。。接下来的事情，我不说，大家也应该清楚了。</p>
+<h3 id="反思">反思</h3>
+<p>我回来后也反思过， 做了什么特征工程？？<br>
+我看视频中 也是，数据简单预处理下，然后分词，词频过滤，构建词典<br>
+然后，直接就是构建NN层（包括Embedding层）。</p>
+<p>直到最后了解了&quot;端到端这个概念&quot; 与 传统ML的区别。<br>
+才清楚， 当时面试的场景是怎么个情况。。。</p>
+<h3 id="正式开篇端到端">正式开篇端到端</h3>
+<p>传统ML：  原数据 -&gt; 数据特征工程(各种复杂的人工处理) ---&gt; 模型<br>
+端到端DL：原数据 -----------------------------------------------------&gt; 模型</p>
+<p>端到端：（一步到位）：<br>
+传统的ML做的中间层人工&quot;手动&quot;特征工程处理出来的特征。<br>
+这些特征，端到端的NN都可能&quot;自动学习&quot;的到。</p>
+<pre><code>这也可能是当时为什么面试官一直追问我&quot;特征如何处理&quot;的原因吧。也肯能他另有目的QAQ...
+或者我们真的不在一个频道上。。。但是交流的过程真的使我受益匪浅，有了更广阔的视野（3Q！）
+</code></pre>
+<p>强调一点：<br>
+虽然端到端 模型很便捷。但是需要大量的数据，才能训练出好的效果。</p>
+<h1 id="cnn-卷积神经网络">CNN （卷积神经网络）</h1>
+<h2 id="构成">构成</h2>
+<pre><code>卷积层（激活函数） + 池化层    + 全连接层
+Convolution       + Pooling   + Dense
+</code></pre>
+<h3 id="至于一些术语">至于一些术语:</h3>
+<pre><code>有人喜欢把: 卷积层 + 池化层   作为一层网络 （因为池化层无训练训练，后面会提到）
+也有人喜欢把:  卷积层 和 池化层 各自单独算一个层（也是没问题的。Tensorflow的API就是这样设计的）
+</code></pre>
+<h2 id="卷积层convolution-layer">卷积层（Convolution Layer）</h2>
+<h3 id="卷积过程">卷积过程</h3>
+<pre><code>卷积计算过程就不说了。没有案例图。
+但你可以理解为: 两个 正方体 的 对应位置的元素 （相乘再相加）的结果。。。 （互相关，，，）
+</code></pre>
+<h3 id="卷积的输出计算">卷积的输出计算</h3>
+<p>输出图像大小计算公式：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+w图片输出 = （w图片输入 - w卷积核 + 2padding） / strides + 1</p>
+<pre><code>首先声明: 这个式子由于不一定能够整除， 因此除不尽的情况下，向下取整, 也叫地板除
+因为有个原则: 卷积核滑动的时候(通常是，步长&gt;1的情况下) 如果越界了一部分。则舍弃掉
+</code></pre>
+<p>根据上面的公式，求一个输出图像大小的例子(此处，不做paddding， 并且步长为1)<br>
+eg: 输入8x8 的图像 ,  并使用3x3的卷积核<br>
+输出图像高度为:  h图片输出 = (8-3 + 2x0) / 1 + 1 = 6<br>
+输出图像宽度为:  w图片输出 = (8-3 + 2x0) / 1 + 1 = 6<br>
+所以输出图像为:  6x6</p>
+<pre><code>很明显: 卷积一次，图像变小了。 如果再卷积几次， 图像就看不到了。。。
+
+所以: 我们需要解决这个问题
+原则上: 增加 padding 能解决步长为1时，卷积后的图片缩放问题。
+</code></pre>
+<p>假如我们希望输出图像的大小 等于 输出图像的大小，而我们想要求padding需要设置为多少。<br>
+一般这种场景适用于 步长strides = 1,  所以参考开始的公式，可写出如下公式：<br>
+因为: w 和 h是一样的公式，此处只写出一个h,来推导：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+化简:<br>
+padding =（ h图片输出 - h图片输入 + h卷积核 - 1 ） / 2<br>
+因为我们希望的条件: h图片输出 等于 h图片输入， 所以可继续化简：<br>
+padding =（ h卷积核 - 1 ） / 2</p>
+<p>所以步长为1的情况下卷积, 并且想让图片不变形，你的padding的取值，就需要受到 卷积核大小的影响。<br>
+现在常用的卷积核大多都是 1x1、 3x3、 5x3 。所以看上面化简好的公式：<br>
+padding =（ h卷积核 - 1 ） / 2     &lt;=============   1x1, 3x3, 5x5<br>
+奇数-1总等于偶数。<br>
+所以不用担心除不尽的情况<br>
+还需要注意一下: 填充padding一般是环形填充， 假如padding=1, 那么上下左右 都会添加一层。<br>
+当然: tensorflow的padding是可以设置形状的</p>
+<h3 id="padding的种类tensorflow">padding的种类（tensorflow）</h3>
+<p>valid:<br>
+不填充<br>
+same:<br>
+自动去填充，使得输入图像 与 输出图像 的大小相等</p>
+<h3 id="温馨提示关于三通道卷积-和-多个卷积核的区别">温馨提示：关于三通道卷积 和 多个卷积核的区别</h3>
+<p>三通道卷积：<br>
+假如你只有一个卷积核<br>
+即使你图片是3通道的（三层）<br>
+即使你卷积核也是三通道的（三层）<br>
+但是: 卷积输出结果是依然是一个  m x n 的形状  (一层&quot;薄纸&quot;)<br>
+你的疑惑: 不是三层嘛？ 最后怎么变成一层了 ？？？<br>
+我的解释: 每滑动一次,3层通道，各自都会计算各自层的卷积，然后求总和，并填入一层&quot;薄纸&quot;的对应位置<br>
+多个卷积核：<br>
+上面说了: 1个卷积核，无论图片是什么形状的、有几个通道，卷积后输出的形状 是 一层薄纸: m x n</p>
+<pre><code>而如果你有多个卷积核: 那么你就会有多层薄纸摞起来。  就像 一个长方形 摞成了一个 长方体
+明确点:  假如你用了 6个卷积核, 那么你的输出就变成了   m x n x 6      (三维的一个长方体了)
+</code></pre>
+<p>上面说的：就是我最开始学的CNN时候经常理解不清楚的地方。我相信你也一样, qaq  ....<br>
+下面做个总结:<br>
+C个通道:  一点都不会影响输出维度。 注意我说的是维度。<br>
+假如你的输入是 m x n , 那么你的输出依然是  p x q   （注意维度即可，维度没变，二维)</p>
+<pre><code>f个卷积核: 会影响输出的维度。 输出的维度将会增加一个维度f
+    假如你的输入是 m x n  ，  那么你的输出依然是  p x q x f  (增加一个维度F，变成了)
+
+也许你当你学TF的时候会有另一个理解障碍:那就是TF数据格式（以图片为例）： 
+    通常TF数据格式是这样的：  [图片数量B,  图片高度H,  图片宽度W,  通道数C]
+    假如你使用 F 个卷积核做了卷积：
+    那么他的卷积结果的特征的形状就变变成： [B, H, W, F]
+    发现没输出结果和通道数C，没有关系的。 只和 卷积核的个数 f有关系。
+
+但是注意: 虽然结果和C没关系。但是 需要卷积核中具有 C的数量，还做唯独匹配。桥梁运算。
+    对应上例， 我们的卷积核的形状应该是这样的 :   [F, C, H, W]
+    注意一下： 这里面有 卷积核数量f， 也有通道数量C。
+</code></pre>
+<p>如果最后一步的卷积核形状不理解:<br>
+没关系。以后是TF20的天下。 对应API不需要你指定卷积核的形状。<br>
+因此，你没必要记住卷积核的形状。<br>
+你只需要 传递，卷积核的个数， 和 宽高 和 步长 即可。 当然这些都是独立的命名参数。<br>
+摘一小段Conv2D的源码:<br>
+def <strong>init</strong>(self,<br>
+filters,                # 你只需要传递这个参数， 卷积核的个数<br>
+kernel_size,            # 卷积核的宽高，假如 3x3 你只需写  [3,3] 即可<br>
+strides=(1, 1),         # 这是步长， 你不传，他也会给你填默认值, 步长为1<br>
+padding='valid',        # 这时 padding策略，前面说过，这个一般都会设为 &quot;same&quot;</p>
+<pre><code>或许你还有些疑问:
+    刚才上面不是提到了卷积核应该设置 通道数C么。
+    原则上是的。因为要和 输出的样本做卷积。要匹配才行。
+    但是在Tensorflow中。 特别是 Tenosrflow.Keras中，定义模型层
+    我们只需要把整个模型，从上到下连接起来。（就像先后排队一样）
+    而对于一些前后流动贯通的参数，比如刚才提到的通道C。
+    这些参数，Tensorflow会自动帮我们上下文识别管理。
+    
+    所以我们做的只是需要，把原始数据的形状设置好传 给第一层（给排头发数据）
+    至于你这些在中间层流动的参数，Tensorflow会自动帮你计算，你不用传。
+    虽然不用传，但你最好清楚每层是什么结构（当然这时后话，可能需要一些时间理解）
+    
+    到最后，我再给你设置一个输出形状，你能给我输出出来即可 （队尾接数据）
+    
+基本TF参数流动机制讲到这里，刚开始学的时候，也是各种苦思冥想，想不明白qaq...
+</code></pre>
+<h3 id="透过现象看本质卷积-线性">透过现象看本质（卷积 =&gt; 线性）</h3>
+<p>其实我们做的每一步 (每一个)卷积就相当于一个矩阵线性操作： x1 @ w1<br>
+之后，基于常理话， 我会还会给它一个偏差： b  变成   ===&gt;   x1 @ w1 + b</p>
+<p>我们说过，可能会给出很多个卷积核进行运算。<br>
+上面  x1 @ w1 + b    是每一个卷积核的卷积结果<br>
+我们还需要讲所有卷积核计算结果堆叠在一起： 记为  X @ W + b     # m x n x f<br>
+最后将堆叠在一起的结果，做一层非线性变换 relu ( X @ W + b )    # CNN 通常用 relu</p>
+<pre><code>eg： 现有图片 5 x 5 x 3 的图像 （暂时不考虑样本个数，就认为是一个样本）.
+     我们用的是 2 x 2 x  20 的卷积核 (步长为1，不做padding)
+     那么输出结果就是   (5-2+1) x (5-2+1) x 20  ===  4 x 4 x 20
+</code></pre>
+<p>忘记说了，还有一个公式，用来计算 每层卷积的权重参数量的个数的：<br>
+公式:  每层权重参数量(W) = 卷积核个数 x 卷积核高 x 卷积核宽 x 卷积核通道数<br>
+公式:  每层偏差数量(b) = 1 x 卷积核的个数        # 因为每个卷积核只有一个偏差b</p>
+<pre><code>温馨提示: 有太多人喜欢把卷积核个数 与 卷积核通道称作:&quot;输入/输出&quot;通道。
+        这样的称呼是没问题的， 但我在计算参数量的时候，不喜欢这样的称呼，易混淆。 
+
+前情回顾: 记不记得普通神经网络了。每个神经元节点，都有它们自己的参数。因此它们的参数量是巨大的
+回归正文: 而卷积核是共享的， 因为它是在一张图片上滑动的。（挨个服务）所以权重参数也是共享的。
+</code></pre>
+<h2 id="池化层-pooling-layer">池化层 (Pooling Layer)</h2>
+<p>卷积层(激活函数) =&gt; 池化层<br>
+池化层主要分两种： MaxPooling 和 AvgPooling</p>
+<h3 id="池化层输出图片形状计算公式">池化层输出图片形状计算公式：</h3>
+<p>声明： 池化层也有滑动窗口，并且输出形状计算公式，和 卷积的输出形状计算公式一样：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+w图片输出 = （w图片输入 - w卷积核 + 2padding） / strides + 1</p>
+<p>因为池化层，的基本都是放在卷积层之后，因此池化层的通道数 也就顺理成章的 和 卷积层通道一样<br>
+举个例子:<br>
+卷积层数据形状为:  m x n x f<br>
+那么池化层形状同为: p x q x f</p>
+<pre><code>我想主要强调的是: 通道数不变，变得是 宽高。
+</code></pre>
+<h3 id="池化层-滑动窗口参数相关配置">池化层 滑动窗口参数相关配置</h3>
+<p>还是，把Tensorflow, 源码搬过来，标注一下:<br>
+def <strong>init</strong>(self,<br>
+pool_size=(2, 2),   # 滑动窗口大小 2x2<br>
+strides=None,       # 步长，通常设为2<br>
+padding='valid',    # Maxpooling 通常不用padding</p>
+<p>一般都是使用组合   pool_size=(2, 2)  和   stride = 2</p>
+<pre><code>所以，公式来了:
+                                                输入h         滑动窗口h
+    输出h = (输入h - 滑动窗口h) / stride + 1 = ----------  -   --------  + 1
+                                                stride         stride
+</code></pre>
+<p>通常我们把 pooling层作称作数据的降采样:<br>
+所以大多数经验者，都会把 滑动窗口 和 stride步长  设为相等大小。<br>
+所以带入上面公式：<br>
+输入h           1            输入h<br>
+输出h = (输入h - 滑动窗口h) / stride + 1 = ----------  -   -----  + 1 =  -------<br>
+stride          1             步长</p>
+<pre><code>简化一下: （当 pool_size 和  strides 设置相等大小时）：
+    输出 = 输入 / 步长
+
+    所以当我们: 
+        步长设为2时，  输出就是输出的一半。
+        步长设为3时，  输出就是输出的1/3。
+        ...
+</code></pre>
+<p>不知道有没有这样一个疑问：”为什么滑动窗口没有设置 窗口数量 （就像设置卷积核数量）“<br>
+再次说一下Tensorflow的原理。<br>
+因为Pooling的上一层基本完全是 Conv卷积层， 卷积层的 卷积核的个数已经设置好了。<br>
+卷积层对接池化层的时候， Tensorflow会自动判断，并设置:</p>
+<pre><code>池化层滑动窗口的个数===卷积核个数
+池化层通道个数的个数===卷积层通道个数===图片的原始通道个数
+</code></pre>
+<h3 id="maxpooling-最大池化常用">MaxPooling （最大池化，常用）</h3>
+<p>卷积操作：之前我们卷积不是拿着滑动窗口，对应元素相乘再相加么？<br>
+池化操作：池化层也是拿着滑动窗口一样滑，但是不做运算，而是只取每个窗口内最大值。放在一层&quot;薄纸&quot;上</p>
+<h3 id="avgpooling-平均池化不常用">AvgPooling （平均池化，不常用）</h3>
+<pre><code>一样滑动窗口，各种滑， 然后取每个窗口内的数据的&quot;平均值&quot;,  其他就不说了，同 MaxPooling
+</code></pre>
+<h3 id="额外提醒池化层的参数是否训练">额外提醒（池化层的参数是否训练）</h3>
+<pre><code>池化层的是&quot;没有&quot;参数可以训练的。所以，反向传播，也不为所动~~~
+</code></pre>
+<h2 id="全连接层-dense-layer">全连接层 （Dense Layer）</h2>
+<h3 id="什么是全连接层">什么是全连接层？？</h3>
+<p>你很熟悉的， 全连接层其实就是之前讲的普通的NN（神经网络），所以并没有什么好说的。<br>
+只是拼接在池化层之后罢了。<br>
+但其实还是有一些细节需要注意。尤其之前的东西没搞懂，那么这里的参数形状你会垮掉~~~</p>
+<h3 id="展平-及-参数">展平 及 参数</h3>
+<p>之前为了图方便，参数我都没怎么提到样本参数。<br>
+下面我要把样本参数也加进来一起唠唠了。我感觉讲这里，直接上例子比较直观。<br>
+好了，现在我们有个需求， 想要做一个10分类的任务：<br>
+卷积层-池化层: 这个照常做， 设置你还可以堆叠<br>
+卷积层1 + 池化层1 + 卷积层2 + 池化层2 ...<br>
+等堆叠的差不多了: (你自我感觉良好了。。。)，我们需要做一层展平处理！<br>
+展平处理（特意拿出来说）<br>
+假如你叠加到最后一层池化层数据形状是:(1000,4,4,8)==&gt; 1000个样本，宽高8 x 8, 输出通道为8<br>
+你展平后的形状为: (1000, 4<em>4</em>8) == (1000, 128)<br>
+展平操作第一种API:  tf.keras.Flatten()     # tensorflow2.0的Flatten被作为网络层使用<br>
+展平操作第一种API:  tf.reshape(x, [-1, 128])  # 手动变换， -1是补位计算的意思<br>
+然后在加全连接层，形状为: (1000, 50)        # 50代表输出，起到过渡作用<br>
+然后在加全连接层，形状为: (1000, 10)        # 最终，10代表输出，因为我们说了，要做10分类嘛<br>
+1. 其实你中间可以加很多全连接层，我这里只加了一层，控制最后一层全连接是你想要的输出就行。<br>
+2. 特别注意， 这里的每一层全连接计算，是需要有激活函数跟着的。<br>
+除了最后一层全连接，其他层的全连接都设置为 Relu 激活函数即可。<br>
+3. 因为我们做的是10分类（多分类自然应想到 softmax参数， 如果是其他业务，你也可以不加激活函数）<br>
+没做，也就是最后一层。我们要再添加一层激活函数 Softmax。</p>
+<h2 id="1-x-1-卷积的作用">1 x 1 卷积的作用</h2>
+<p>降采样（控制输出通道数量）：<br>
+假如,前一个卷积层参数为: (1000,32,32,256)<br>
+如果你下一层使用1x1x128的卷积，则对应参数为: (1000，32，32，128)  # 256通道变成了128通道</p>
+<h2 id="cnn文本分类也许你看完下面的rnn再回来看这个会更好">CNN文本分类（也许你看完下面的RNN再回来看这个会更好）</h2>
+<p>通常CNN大多数都是用来做CV工作。对于某些文本分类。CNN也可以完成。如下变通概念：</p>
+<ol>
+<li>句子的长度 看作 (图片的高度)</li>
+<li>embedding的维度， 看作 (图片的宽度)</li>
+<li>卷积核是铺满一行(或者多行)，然后沿着高度竖着滑下来的。 你也可以有多个卷积核<br>
+eg: 一个句子 10个词语，20dim， 这个句子的输入形状就是（10 x 20）<br>
+我们准备3个卷积核分别是（3x20),(2x20), (1x20）<br>
+每个卷积核竖着滑下来，最后按次序得到向量形状为（10，3）<br>
+你可以看作输出三通道（对应卷积核个数，这和之前讲的CNN原理一模一样）<br>
+最终提取出来这个（10，3）是，一个句子3个通道的特征信息。</li>
+<li>将10x3特征矩阵，通过maxpooling压缩成 （1x3)的特征矩阵</li>
+<li>放入Dense层，构建多输出单元的n分类模型。</li>
+</ol>
+<h1 id="resnet-残差网络-residual-networks">ResNet (残差网络 Residual Networks)</h1>
+<h3 id="问题引入">问题引入：</h3>
+<p>是否网络层数越多越好，虽然堆叠更多的网络，可以使得参数丰富，并且可以学到更多更好的特征。<br>
+但是实际效果并非如此，而是出现，过拟合等现象。</p>
+<p>ResNet作者 何凯明：有感而发：按理说模型是应该越丰富越好的。可是出现了过拟合这种现象。<br>
+最少，更深层的网络的效果，应该比浅层网络的效果好吧。不至于差了那么多。<br>
+因此，他将此问题转换为一个深度模型优化的问题。</p>
+<h3 id="resnet相关配置">ResNet相关配置</h3>
+<ol>
+<li>batch-size: 256</li>
+<li>optimizer: SGD+Momentum(0.9)</li>
+<li>learning_rate: 初始化为0.1， 验证集出现梯度不下降的情况下，learning_rate每次除以10衰减</li>
+<li>每一层卷积层之后，都做 Batch Normalization</li>
+<li>不使用 Dropout    （其实应该是用了 BN,所以就没有 Dropout）</li>
+</ol>
+<h1 id="rnn-循环神经网络">RNN (循环神经网络)</h1>
+<p>###直接引用 Andrew Ng的降解图<br>
+<img src="/img/bVbyy83" alt="clipboard.png" loading="lazy"><br>
+可以看到，上图中有一些输入和输出：慢慢捋清。</p>
+<ol>
+<li>第一个输入 x&lt;1&gt; 代表 （你分词后的每一个句子中的第一个单词）  x&lt;2&gt;就是第二个单词喽</li>
+<li>第二个输入 a&lt;0&gt; 代表  初始输入， （一般初始化为0矩阵）</li>
+<li>前面两个输入， 各会乘上各自的 权重矩阵，然后求和 得出  a&lt;1&gt;   (这是临时输出)</li>
+<li>a&lt;1&gt; 乘上 一个权重参数 得到输出一: y&lt;1&gt;   （这是终极输出一）    （这就是图中黑框顶部的输出分支）</li>
+<li>a&lt;1&gt; 乘上 又一个新权重参数后， 再加上 x&lt;2&gt; 乘以自己的权重参数得到  a&lt;2&gt;</li>
+<li>......你会发现 1-5步是个循环的过程， 到第5步， a&lt;1&gt; 就相当于 最开始a&lt;0&gt;的地位，作为下一层的输入</li>
+<li>题外话。其实每层的输出y1 会替代下一层的x作为下一层的输入。 （我会放到下面&quot;防坑解释&quot;中说）<br>
+然后将上述途中最后2行的公式化简，可得到如下形式：</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="/img/bVbyzaj" alt="clipboard.png" loading="lazy"></figure>
+<h3 id="防坑解释-rnn语言模型">防坑解释 (RNN语言模型)</h3>
+<p>如果你看过了上面的图，你会很清楚， 有多少个x, 就会输出多少个y。<br>
+上面第7点说过  : &quot;其实每层的输出y1 会替代下一层的x作为下一层的输入&quot;,  该如何理解这句话？？？<br>
+假如你有这样一段文本: &quot;我精通各种语言&quot;   =&gt; 分词后的结果会变成 &quot;我&quot;,&quot;精通&quot;,&quot;各种&quot;,&quot;语言&quot;<br>
+一般的问答对这种的句子，处理流程是: （这里只先说一个）：<br>
+那就是：在句子的末尾添加一个 <END> 标识符<br>
+所以句子变成了:  &quot;我&quot;,&quot;精通&quot;,&quot;各种&quot;,&quot;语言&quot;, &quot;END&quot;<br>
+这些单词都会预先转为 （One-Hot编码 或者Embedding编码）</p>
+<pre><code>x1(初始值0) =&gt; y1(我)       y1有一定概率输出 &quot;我&quot;， 下面所有的y同理，只是概率性。
+x2(y1) =&gt; y2(精通)          如此每一层嵌套下来，相当于条件概率  P(精通|我)
+x3(y2) =&gt; y3(各种)          P(各种|(我，精通))
+x4(y3) =&gt; y4(语言)          ...
+x5(y4) =&gt; y5(&lt;END&gt;)         ...
+</code></pre>
+<p>不知道看了上例，你会不会有下面一连串的问号脸？？：</p>
+<ol>
+<li>
+<p>为什么y1-y5 输出都是精准的文字？<br>
+答：我只是方便书写表示，其实每个输出的Y都是一个从词典选拔出来的词的概率。（多分类）</p>
+</li>
+<li>
+<p>不是说x1-x5每个x应该输入固定句子的每个单词么？？？为什么变成了输入y1-y5<br>
+答：的确是这样的，但是我们的 y1-y5 都是朝着预测x1-x5的方向前进的。（这也是我们要训练的目标）<br>
+所以: 可以近似把y1-y5等价于x1-x5。 所以用 y1-y5 替代了 x1-x5<br>
+这样: 也可以把前后单词串联起来，让整个模型具有很强的关联性。<br>
+比如: 你第一个y1就预测错了。那么之后的y很可能都预测错。（我的例子是：双色球概率）<br>
+但是: 假如我们预测对了。那说明我们的模型的效果，已经特别好了（双色球每个球都预测对了~）</p>
+</li>
+<li>
+<p>那我们就靠这x和y就能把前后语义都关联起来吗？？？<br>
+答： 当然不仅于此。 你别忘了我们还有贯穿横向的输入啊，如最开始RNN图的 a&lt;0&gt;. a&lt;1&gt; 这些</p>
+</li>
+<li>
+<p>既然你说y 是从词典选拔出来的词的概率属性。 那么这个概率怎么算？<br>
+答： 这问得太好了~~~<br>
+前面说了: 一般都会预先给数据做 One-Hot或 Embedding编码。<br>
+所以数据格式为: [0,0,....,1,...]   # 只有一个为1<br>
+基本上我们最后给输出都会套一层: softmax激活函数， softmax应该知道吧：e^x /(e<sup>x1+..+e</sup>x)<br>
+所以: softmax结果就是一个 和One-Hot形状一样的概率列表集合: [.....,最高概率,...]<br>
+softmax的结果（概率列表） :（代表着预测 在词典中每一个单词的可能性）</p>
+</li>
+<li>
+<p>那么损失函数怎么算呢？？<br>
+答：没错，损失函数也是我们最关注的。<br>
+前面:我们已经求出了softmax对应的结果列表 (....,最高概率，...)<br>
+损失函数: 我们使用的是交叉熵。<br>
+交叉熵知道吧:  -（ Σp<em>logq ）         # p为真实值One-hot, q为预测值<br>
+简单举个例子:<br>
+假如 softmax预测结果列表为 :[0.01,0.35, 0.09, 0.55]  # 温馨提示，softmax和为1<br>
+你的真实标签One-Hot列表为:  [0,   0,    0,    1]<br>
+那么交叉熵损失就等于: -(  0</em>log0.01 + 0<em>log0.35 + 0</em>log0.09 + 1*log0.55 ) = ...</p>
+<pre><code> 到此为止，我们第一层NN的输出的损失函数就已经计算完毕了。
+ 而我们训练整个网络需要计算整体的损失函数。
+ 所以，我们需要把上面的交叉熵损失求和， 优化损失。
+</code></pre>
+</li>
+</ol>
+<h3 id="梯度爆炸-梯度消失">梯度爆炸 &amp; 梯度消失</h3>
+<p>RNN 的梯度是累乘，所以NN层如果很多，可能会达到 指数级的梯度。<br>
+你应该听过一个小关于指数的小案例吧~~ (学如逆水行舟，不进则退~)<br>
+&gt;&gt;&gt; 1.01 ** 365<br>
+37.78343433288728        # 每天进步0.01 ，一年可以进步这些 （对应梯度爆炸）<br>
+&gt;&gt;&gt; 0.99 ** 365<br>
+0.025517964452291125     # 每天退步0.01 ， 一年可以沦落至此（对应梯度消失）<br>
+梯度爆炸：<br>
+就是上面例子的原理。 就不多说了。<br>
+解决方式：梯度裁剪<br>
+梯度消失：<br>
+同上例， 不好解决（于是LSTM网络出现， 和LSTM）</p>
+<h3 id="tensorflow20stable-api">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+tk.layers.SimpleRNN(
+    units=单元层,            # units单元数，对应着你每个单词的个数
+    return_sequences=False   # 默认值就是False     
+)
+</code></pre>
+<h1 id="gru">GRU</h1>
+<p>GRU比RNN的每一层的多了一个 记忆信息(相当于RNN的 h)，这个记忆信息就像传送带一样，一直流通各层RNN<br>
+然后还多了2个门 (r门和U门)， 这2个门就是负责控制（是否从传送带上取记忆， 且取多少记忆）<br>
+####注明： GRU 只有一个 c(横向， 传送带) ， 没有h<br>
+简化版（只有U门）：<br>
+C新' = tanh( w @ [C旧, x新] + b )   # 根据传动带的旧信息， 生产出 传送带的新信息<br>
+u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用</p>
+<pre><code>C新 = u门 * C新' + (1-u门) * C旧    #  经过u门控单元的控制过滤后， 最终放到传送带的信息
+如果: u门为1，则传送带上全是新信息（旧的全忘掉）
+如果: u门为0，则传送带上全是旧信息（新的不要）
+
+强调一下: 我不方便写公式负号，于是用了 &quot;新&quot;,&quot;旧&quot; 代替
+新: 代表当前 t
+旧: 代表前一时刻 t-1
+</code></pre>
+<p>完整版（同时具有r门和u门）<br>
+添加这一行：<br>
+r门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差<br>
+C新' = tanh( w @ [r门 @ C旧, x新] + b )   # 修改这一行: C旧 <mark>变为</mark>=&gt;  r门 @ C旧</p>
+<pre><code>u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用
+C新 = u门 * C新' + (1-u门) * C旧    #  经过u门控单元的控制过滤后， 最终放到传送带的信息
+</code></pre>
+<h3 id="tensorflow20stable-api-2">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+tk.layers.GRU(                    # 参数同上面RNN我就不解释了
+    units=64,            
+    return_sequences=False       # 这些参数看下面LSTM我会讲到
+)
+</code></pre>
+<h1 id="lstm">LSTM</h1>
+<p>LSTM和GRU很像，但是比GRU复杂。<br>
+LSTM结构包括: u门（更新门）+ f门（遗忘门）+ o门（输出门）</p>
+<h4 id="注明-lstm-不仅有个传送带c横向-他还有个rnn的-h-信息横向">注明： LSTM 不仅有个传送带C（横向） ， 他还有个RNN的  h 信息（横向）</h4>
+<pre><code>f门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差
+o门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差
+
+C新' = tanh( w @ [C旧, x新] + b )      # 注意，这里没有r门了
+
+u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用
+C新 = u门 * C新' + f门 * C旧        #  &quot;(1-u门)&quot;  换成了 f门
+h = o门 * tanh( C新 )
+</code></pre>
+<h3 id="tensorflow20stable-api-3">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+keras.layers.LSTM(
+    units=64,
+    return_state=True                 # 占坑，下面剖析
+    return_sequences=False            # 占坑，下面源码剖析
+    recurrent_initializer='glorot_uniform',   # 均匀分布的权重参数初始化
+
+    # stateful=True, # API文档：若为True,则每一批样本的state的状态，都会继续赋予下一批样本
+)
+</code></pre>
+<p>return_state 和 return_sequences 这两个参数到底有什么用？？？<br>
+我的另一篇文章单独源码分析这两个参数：https://segmentfault.com/a/1190000020603328</p>
+<h1 id="总结对比-gru-和-lstm">总结对比 GRU 和 LSTM</h1>
+<pre><code>GRU有2个门:   u门 和 r门
+LSTM有3个门:  u门 和 f门 和 o门
+
+GRU有一个C:          # 就有一条传送带c, 他的前后单元信息仅靠这一条传送带来沟通（舍弃与保留）
+LSTM有一个C和一个h:  # 不仅有传送带c, 还有h， 他的前后单元信息 靠 c 和 h 联合沟通。
+
+
+再说一下每个门控单元: 不管你是什么门，  都是由 Sigmoid() 包裹着的。
+所以: 说是 0 和 1 ， 但严格意义上，只是无穷接近。但是微乎其微，所以我们理解为近似相等0和1
+</code></pre>
+<h1 id="rnn-lstm-gru拓展">RNN-LSTM-GRU拓展</h1>
+<h3 id="双向bidirection">双向（Bidirection）</h3>
+<p>首先说明:<br>
+双向模型，对于 RNN/LSTM/GRU  全部都适用<br>
+由于单向的模型，不能关联之后信息。比如：你只能根据之前的单词预测下一个单词。<br>
+而双向的模型，可以根据前后上下文的语境，来预测当前的下一个单词。<br>
+或者举一个更直白的例子（我自己认为）：<br>
+比如说: 你做英语完型填空题， 你是不是 需要 把空缺部分的 前面 和 后面 都得读一遍，才能填上。<br>
+单向与双向结构对比如下：<br>
+单向: 1 -&gt; 2 -&gt; 3 -&gt; 4<br>
+双向: 1 -&gt; 2 -&gt; 3 -&gt; 4<br>
+|<br>
+1 &lt;- 2 &lt;- 3 &lt;- 4</p>
+<pre><code>注意: 上下对齐，代表一层。
+</code></pre>
+<h3 id="tensorflow20stable-api-4">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+tk.layers.Bidirectional(        # 就在上上面那些API的基础上,外面嵌套一个 这个层即可。
+    tk.layers.GRU(              
+        units=64,            
+        return_sequences=False
+    )
+),
+</code></pre>
+<h3 id="模型深层堆叠纵向堆叠">模型深层堆叠（纵向堆叠）</h3>
+<p>首先说明:<br>
+层叠模型对于 RNN/LSTM/GRU  同样全部都适用<br>
+之前单层单向模型是这种结构<br>
+1 -&gt; 2 -&gt; 3<br>
+计算公式是:  单元 = tanh ( W @ (x, h左) )</p>
+<p>而多层单向是这种结构（我们以2层为例）：</p>
+<pre><code>y1   y2   y3        输出层
+^    ^    ^
+|    |    |
+7 -&gt; 8 -&gt; 9         二层单元
+^    ^    ^
+|    |    |
+4 -&gt; 5 -&gt; 6         一层单元
+^    ^    ^
+|    |    |
+x1-&gt; x2 -&gt;x3        输入层
+你   好   啊
+
+计算公式是： （我写的可能只按自己的意思了~）
+    一层每个单元 = tanh ( W @ (x, h左) )     # 因为是第一层嘛：所以输入为 x 和 左边单元h 
+    二层每个单元 = tanh ( W @ (h下, h左) )   # 第二层就没有x了:而是下边单元h 和 左边单元h
+</code></pre>
+<h1 id="词嵌入word-embedding">词嵌入(Word Embedding)</h1>
+<h3 id="单词之间相似度计算">单词之间相似度计算</h3>
+<pre><code>                       c1 @ c2
+余弦定理，求 cosθ = ------------------
+                     ||c1|| * ||c2||
+           
+或者你可以使用欧氏距离。
+</code></pre>
+<h3 id="原始词嵌入并训练">原始词嵌入并训练</h3>
+<ol>
+<li>假如我们通过一个句子的一部分来预测，这个句子的最后一个单词。</li>
+<li>把词典的每个词做成One-Hot便是形式，记作矩阵 O</li>
+<li>随机高维权重矩阵， 记为 E</li>
+<li>E @ O 矩阵乘积后记为词向量 W<br>
+可见如下案例：<br>
+如果:  我们分词后词典总大小为1000<br>
+那么:  他的 One-Hot 矩阵形状为  [6, 1000] （假如我们这里通过句子6个词来预测最后一个词）<br>
+并且:  随机高维权重矩阵 形状为 [1000, 300]     （注意，这个300是维度，可自行调整选择）<br>
+注意:  上面权重矩阵是随机初始化的， 后面训练调节的。<br>
+最后:  E @ O 后得到词向量W 的形状为  [6, 300]</li>
+<li>送进NN(打成1000类) 作为输出</li>
+<li>加一层 Softmax （算出1000个单词的概率） 作为最终输出y_predict</li>
+<li>y_predict 与 y真正的单词标签（one-hot后的） 做交叉熵loss</li>
+<li>优化loss，开始训练。</li>
+</ol>
+<h3 id="word2vec-的-skip-grams不是太懂-pass">Word2Vec 的 skip-grams(不是太懂， Pass)</h3>
+<p>说下个人的理解，可能不对<br>
+skip-grams： 拿出中间 一个词，来预测若干（这是词距，自己给定）上下文的单词。<br>
+例子如下：<br>
+seq = 今天去吃饭</p>
+<pre><code>给定单词   标签值（y_true）
+去         今
+去         天
+去         吃
+去         饭
+</code></pre>
+<p>训练过程就是上面说过的小节 &quot;原始词嵌入并训练&quot;，你只需把 y_true改为 &quot;今&quot;,&quot;天&quot;,&quot;吃&quot;,&quot;饭&quot;训练即可。<br>
+Word2Vec 除了 skip-grams, 还有  CBOW 模型。 它的作用是 给定上下文，来预测中间的词。<br>
+据说效率等某种原因(softmax计算慢，因为分母巨大)，这两个都没看。（Pass~）</p>
+<h3 id="负采样negative-sampling">负采样（Negative Sampling）</h3>
+<p>解决Word2Vec 的 softmax计算慢。<br>
+负采样说明（假如我们有1000长度的词典）：<br>
+从上下文（指定词距）:   随机，选择一个正样本对，n个负样本对（5-10个即可）<br>
+主要机制: 将 Word2Vec的 softmax（1000分类） 换成 1000个 sigmoid做二分类。<br>
+因为: 是随机采样（假设，采样1个正样本 和 5个负样本）。<br>
+所以: 1000个 sigmoid二分类器，每次只用到 6 个对应分类器（1个正样本分类器，5个负样本分类器）<br>
+负采样，样本随机选择公式：<br>
+单个词频 ^ (3/4)<br>
+-----------------<br>
+Σ(所有词频 ^ (3/4))</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-tf20-de-lstm-yu-grureturn_sequences-yu-return_statecan-shu-yuan-ma/">
+                  <h3 class="post-title">
+                    AI =&gt; TF20的LSTM与GRU(return_sequences与return_state)参数源码
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

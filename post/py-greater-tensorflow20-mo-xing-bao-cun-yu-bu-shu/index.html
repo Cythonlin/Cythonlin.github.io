@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Tensorflow2.0模型保存与部署 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="模型保存
+tf1: checkpoint（主力）
+tf2: keras(hdf5) 或 SavedModel(tf2.0) 推荐格式
+模型部署 TFLite
+TFLite Converter
+将上面的 hdf5 或 SavedModel 转..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Tensorflow2.0模型保存与部署</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="模型保存">模型保存</h1>
+<p>tf1: checkpoint（主力）<br>
+tf2: keras(hdf5) 或 SavedModel(tf2.0) 推荐格式</p>
+<h1 id="模型部署-tflite">模型部署 TFLite</h1>
+<h3 id="tflite-converter">TFLite Converter</h3>
+<p>将上面的 hdf5 或 SavedModel 转化为 TFLite格式</p>
+<h3 id="tflite-interpreter">TFLite Interpreter</h3>
+<p>用来加载 TFLite Converte 转化后的模型 （支持 IOS Andriod） （支持C++等多种语言）</p>
+<h3 id="tflite-flatbuffer">TFLite  FlatBuffer</h3>
+<p>TFLite 是一种 FlatBuffer 格式<br>
+FlatBuffer： Google开源 跨平台数据序列化库</p>
+<h3 id="tflite-量化">TFLite 量化</h3>
+<p>量化： 参数从 float32 变为 int8。 （损失精度，提升速度）<br>
+模型可以降低为原来的  1/4</p>
+<h1 id="实战">实战</h1>
+<h3 id="保存模型">保存模型</h3>
+<p>tf2的模型保存，有两大派别：<br>
+方式1. keras的保存方式<br>
+方式2. saved _ model的保存方式</p>
+<p>方式1具体使用： 使用callback<br>
+keras.callbacks.ModelCheckpoint(<br>
+'xxx.h5',<br>
+save_best_only=True,<br>
+save_weights_only=False     # 默认就是False, 意为保存 模型+参数<br>
+)<br>
+方式2具体使用： 使用 tf.saved _ model()    将 keras转为 saved _ model<br>
+tf.saved_model.save(model, './文件夹名')		# 结果目录里面有个  saved_model.pd 有用</p>
+<h3 id="模型-转化为-lite格式">模型 转化为 Lite格式</h3>
+<p>keras格式的模型对应API：<br>
+keras_model = tf.lite.TFLiteConverter.from_keras_model(model)  # 普通<br>
+keras_tflite = keras_model.convert()</p>
+<pre><code>with open('keras目录', 'wb') as f:
+	f.write(keras_tflite)
+</code></pre>
+<p>saved _ model 格式的模型对应API：<br>
+saved_model = tf.lite.TFLiteConverter.from_saved_model('./原始模型保存目录')<br>
+saved_model_tflite = saved_model.convert()</p>
+<pre><code>with open('saved_model目录', 'wb') as f:
+	f.write(saved_model_tflite)
+</code></pre>
+<h3 id="tflite-interpreter继续操作lite">TFLite Interpreter继续操作Lite</h3>
+<pre><code>with open('keras目录', 'rb') as f:		# 读取 TFLite
+	keras_model = f.read()		  
+
+interpreter = tf.lite.Interpreter(
+	model_content=keras_model
+)
+interpreter.allocate_tersors()		#  给 TFLite中的所有 Tensor 分配内存
+</code></pre>
+<h3 id="模型量化-实操">模型量化 实操</h3>
+<p>其实就是在上面的基础上，中间部分加一行代码<br>
+keras_model = tf.lite.TFLiteConverter.from_keras_model(model)  # 普通<br>
+# 就在这里加<br>
+keras_model.optimizations = [ tf.lite.Optimize.OPTIMIZE_FOR_SIZE ]<br>
+keras_tflite = keras_model.convert()</p>
+<h3 id="模型转换转换为-js为例">模型转换（转换为 JS为例）</h3>
+<p>首先需要下载一个工具 tensorflowjs<br>
+pip install tensorflowjs -i https://pypi.douban.com/simple<br>
+注意一下， tensorflowjs目前最高只支持 tf1.14 。 所以你运行上述安装命令，你的tf会自动降级到 tf1.14......</p>
+<p>查看帮助文档，看看参数：<br>
+tensorflowjs_converter --help</p>
+<p>正式转换：(CMD or Shell命令行式转换方法)<br>
+（keras保存版）<br>
+tensorflowjs_converte <br>
+--input_format keras <br>
+--output_format  tfjs_layers_model <br>
+./xxx/xxx.h5 <br>
+./keras_to_tfjs_layers</p>
+<pre><code># 倒数第二个参数是 输入
+# 倒数第一个参数是 输出
+# 运行成功后， JS保存目录中 会有2个文件
+1. xx.bin		# 真正的模型
+2. xx.json		# 模型相关配置信息
+</code></pre>
+<p>（model _ saved保存版）<br>
+tensorflowjs_converte <br>
+--input_format tf_saved_model <br>
+--output_format  tfjs_graph_model <br>
+./xxx/xxx.h5 <br>
+./keras_to_tfjs_layers</p>
+<pre><code># 上面的 saved_model 版本 主要改了这两个参数:
+	--input_format tf_saved_model \
+	--output_format  tfjs_graph_model \
+</code></pre>
+<hr>
+<p>其次还有 代码式 转换方法：<br>
+import tensorflowjs as tfjs</p>
+<pre><code>model = ...
+
+tfjs.converters.save_keras_model(model,'新JS路径')
+tfjs.converters.convert_tf_saved_model(model,'新JS路径')
+</code></pre>
+<h3 id="js端调用">JS端调用</h3>
+<p>需要安装Node等启动服务。 Node也需要安装 tensorflowjs 模块。<br>
+使用方法，略。。。。。，</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/">
+                  <h3 class="post-title">
+                    AI =&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

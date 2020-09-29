@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; 知识图谱之Neo4j-Cypher | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="CRUD
+创建
+普通无属性创建（默认给你创建一个ID）
+create (p:person)-[:eat]-&gt;(f:food)
+带有属性的创建（ {} ）
+create (p:person{name:'zhangsan'})-[:eat..." />
+    <meta name="keywords" content="KG" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; 知识图谱之Neo4j-Cypher</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="crud">CRUD</h1>
+<h3 id="创建">创建</h3>
+<p>普通无属性创建（默认给你创建一个ID）<br>
+create (p:person)-[:eat]-&gt;(f:food)<br>
+带有属性的创建（ {} ）<br>
+create (p:person{name:'zhangsan'})-[:eat]-&gt;(f:food{name:'apple'})</p>
+<p>给两个孤独的实体创建关系：<br>
+match<br>
+(a:animal),(c:color)<br>
+create    （如果这里改为 merge 则是 “有则查询，无则创建”）<br>
+(a)-[h:have]-&gt;(c) return h</p>
+<pre><code>对应查询：
+	match 
+		(a:animal),(c:color) 
+	return  a,c
+</code></pre>
+<h3 id="删除-delete">删除 (delete)</h3>
+<pre><code>match
+	(a:animal)-[h:have]-&gt;(c:color) 
+delete a,h,c
+</code></pre>
+<h3 id="更新修改set">更新修改（set）</h3>
+<pre><code>match
+	(f:food) 
+set f.age=20
+</code></pre>
+<h3 id="查询">查询</h3>
+<p>主体查询结构<br>
+match<br>
+(p:)-[:关系名]-[别名2:实体名]<br>
+return 别名1,别名2</p>
+<p>普通条件查询1（whree）<br>
+match<br>
+(n:User)<br>
+where<br>
+n.name='Tom'<br>
+return n<br>
+普通条件查询2：（ {} ）<br>
+match<br>
+(p:person{name:'zhangsan'})-[:eat{level:1}]-&gt;(f:food{name:'apple'})<br>
+return p,f<br>
+正则条件查询(~)<br>
+match<br>
+(n:User)<br>
+where<br>
+n.name=~'T.*'<br>
+return n<br>
+包含条件查询（contains）<br>
+match<br>
+(n:User)<br>
+where<br>
+n.name contains 'T'<br>
+return n</p>
+<p>多度查询<br>
+match (t:teacher)-[]-(s:student)-[]-(ss:score) return t,s,ss</p>
+<pre><code># 注意1： [] 里面不写，代表所有关系
+# 注意2： -  没有箭头，代表任意方向
+# 注意3： 别名不可以重复指定， 所以我设置了 ss
+
+多度关系： （通常是基于人脉来讲的）
+1度关系：我 -&gt; 你
+2度关系：我 -&gt; 你 -&gt; 他
+
+理解技巧： 算几度关系时，把自己（节点）捂住不看， 然后剩下几个人员节点，就是几度关系
+
+特别注意：
+    多度查关系时，比如你查 3度关系的结果。
+    neo4j的图可能会把， 2度关系也画出来，why? 因为他通过2度关系也可直接得出结果。
+    （可理解为 条条大路通罗马。）
+    ！！！但是最终有效的返回路径只是你最初想要的 3度。   （2度就不算了）
+</code></pre>
+<p>查询最短路径：<br>
+match (t:teacher), (s:student),<br>
+p=shortestpath( (t)-[*..]-(s) )<br>
+return p</p>
+<pre><code># 注意： p= 之前有个逗号 ，
+</code></pre>
+<p>查询所有最短路径：<br>
+match (t:teacher), (s:student),<br>
+p=allshortestpaths( (t)-[*..]-(s) )<br>
+return p</p>
+<pre><code># 注意1： 前面多个 all ，后面多个s
+# 注意2： 所有最短路径的都会列出来。 人人平等~
+</code></pre>
+<h1 id="索引">索引</h1>
+<h3 id="创建索引-create">创建索引 (create)</h3>
+<pre><code>create index on  :food(name)      
+
+# food为实体名，name为属性名， 同时注意这个 :    
+</code></pre>
+<h3 id="删除索引drop">删除索引（drop）</h3>
+<pre><code>drop index on  :food(name)
+</code></pre>
+<h1 id="约束">约束</h1>
+<h3 id="创建约束">创建约束</h3>
+<pre><code>create constraint on (gf:girlfriend) assert (gf.name) is unique
+</code></pre>
+<h3 id="删除约束">删除约束</h3>
+<pre><code>create constraint on (o:others) assert (o.name) is unique
+</code></pre>
+<h1 id="聚合">聚合</h1>
+<h3 id="统计个数count">统计个数（count）</h3>
+<pre><code>match ... return count(别名)        
+</code></pre>
+<h3 id="限制取多少条-limit">限制取多少条 （limit）</h3>
+<pre><code>match ... return 别名 limit 5    # 只取5条
+</code></pre>
+<h1 id="知识图谱流程">知识图谱流程</h1>
+<ol>
+<li>数据抓取</li>
+<li>知识模型设计</li>
+<li>NER （远程监督）</li>
+<li>关系抽取（Bootstrap）</li>
+<li>知识推理</li>
+<li>图谱存储（Neo4j Cypher）</li>
+<li>检索/问答/推荐</li>
+</ol>
+<h3 id="实体抽取">实体抽取</h3>
+<p>BILSTM+CRF</p>
+<h3 id="关系抽取">关系抽取</h3>
+<p>Bootstrap方法：<br>
+1. 构建种子实体： &quot;猫&quot;， &quot;老鼠&quot;。</p>
+<pre><code>2. 寻找包含 &quot;猫&quot;  &quot;老鼠&quot; 的 句子：
+    找到句子：&quot;猫和老鼠是好朋友&quot;  
+    可抽取关系: 和...是好朋友
+
+3. 拿着抽取的关系再次寻找新句子：
+    找到新句子：&quot;张三和里李四是好朋友&quot;
+    提取出新实体: &quot;张三&quot;, &quot;李四&quot;
+    
+4. 寻找包含 &quot;张三&quot;  &quot;李四&quot; 的 句子：
+    找到句子：&quot;张三经常和李四一起玩&quot;  
+    可抽取关系:  经常和... 一起玩
+
+5. 拿着抽取的关系再次寻找新句子：
+    找到新句子：&quot;王五和赵六是好朋友&quot;
+    提取出新实体: &quot;王五&quot;, &quot;赵六&quot;
+...
+...
+循环反复</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/FLS_eF6Eg/" class="tag">
+                    KG
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-ner-zhi-bio-zhuan-bioes/">
+                  <h3 class="post-title">
+                    AI =&gt; NER之BIO转BIOES
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

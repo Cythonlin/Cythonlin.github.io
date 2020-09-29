@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; AI笔记 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="激活函数
+sigmoid
+公式
+1
+---------
+1 + e**(-x)
+每个out: (0, 1)  
+
+二分类out之和为 1
+
+对应API：
+1. tf.sigmoid(y)
+2. 或函数参数 xxxxx (activation..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; AI笔记</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="激活函数">激活函数</h1>
+<h3 id="sigmoid">sigmoid</h3>
+<p>公式<br>
+1<br>
+---------<br>
+1 + e**(-x)</p>
+<pre><code>每个out: (0, 1)  
+
+二分类out之和为 1
+</code></pre>
+<p>对应API：<br>
+1. tf.sigmoid(y)<br>
+2. 或函数参数 xxxxx (activations='sigmoid')<br>
+3. tf.keras.activations.sigmoid()</p>
+<h3 id="softmax">softmax</h3>
+<pre><code>  e**x
+---------------------------------
+e**(x1) + e**(x2) + ... + e**(xn)
+
+每个out: (0,1)
+
+多分类 out之和为 1
+</code></pre>
+<p>对应API：<br>
+1. tf.nn.softmax()<br>
+2. 函数参数 xxxxx (activations='softmax')<br>
+3. tf.keras.activations.softmax()</p>
+<h3 id="tanh">tanh</h3>
+<p>coshx<br>
+e<strong>x - e</strong>(-x)<br>
+-------------<br>
+2<br>
+sinhx<br>
+e<strong>x + e</strong>(-x)<br>
+--------------<br>
+2<br>
+tanhx<br>
+e<strong>x - e</strong>(-x)<br>
+-------------<br>
+e<strong>x + e</strong>(-x)</p>
+<pre><code>每个out: (0,1) * 2 -1  ===&gt;  (-1,1)
+
+LSTM
+</code></pre>
+<p>对应API：<br>
+1. tf.tanh(y)<br>
+2. 函数参数 xxxxx (activations='tanh')<br>
+3. tf.keras.activations.tanh()</p>
+<h3 id="relu">relu</h3>
+<p>公式：<br>
+y = 0 if x &lt; 0 else x    # 大于0，梯度为1<br>
+对应API<br>
+1. tf.nn.relu()<br>
+2. 或函数参数 xxxxx (activations='relu')<br>
+3. tf.keras.activations.relu()</p>
+<pre><code>leaky_relu: (小扩展)
+	y = kx if x &lt; 0 else x    
+	tf.nn.leaky_relu()
+</code></pre>
+<h1 id="损失函数">损失函数</h1>
+<h3 id="mse-均方误差">MSE （均方误差）</h3>
+<p>公式<br>
+Σ( (y-y_predict)**2 )<br>
+--------------------<br>
+n<br>
+对应API<br>
+公式实现：<br>
+tf.reduce_mean( tf.square( y-y_predict ) )<br>
+tf.API:<br>
+tf.reduce_mean( tf.loss.MSE(y, y_predict) )</p>
+<h3 id="crossentropy-交叉熵">CrossEntropy （交叉熵）</h3>
+<p>熵公式：  -Σ（plogp）<br>
+交叉熵公式：-（ Σplogq ）     p为真实值One-hot, q为预测值<br>
+p: [1,0,0]<br>
+q: [0.9, 0,0.1]<br>
+H = -( 1<em>log0.9 + 0</em>log0 + 0*log0.1) = -log0.9 = -ln0.9 ≈ 0.1053....<br>
+tf的 tf.math.log相当于 ln<br>
+交叉熵API：<br>
+交叉熵越小（y与y-predict差距越小，预测较准确）<br>
+交叉熵越大（y与y_predict差距越大，交叉相乘累加后值大，说明预测错位了。。。所以交叉起来变大了）</p>
+<pre><code>tf.API: （方式1：直接是函数调用）
+	loss = tf.losses.categorical_crossentropy([1,0,0], [0.9, 0, 0.1],from_logits=True)  # 第一个参数y, 第二个参数 y_predict
+	loss = tf.reduce_mean(loss)
+
+tf.API: （方式2：用类的call调用 , 这次以 二分类交叉熵为例）
+	loss = tf.losses.BinaryCrossentropy(from_logits=True)( [1], [0.1] )  # 结果为2.+  。 因为 真实值是1类， 而预测值概率是0.1太小了。所以肯定预测错了。
+	loss = tf.reduce_mean(loss)
+    
+说明：categorical_crossentropy( ) # 第一个参数必须 one_hot, （第二个参数按理来说需要做 softmax，但是你传了 from_logigs=True，就不必softmax了）
+</code></pre>
+<h1 id="正则化惩罚">正则化惩罚</h1>
+<h3 id="l1">L1</h3>
+<pre><code>L1 = keras.regularizers.l1(0.01)
+</code></pre>
+<h3 id="l2">L2</h3>
+<p>使用方式1: (手撕方式)：<br>
+for<br>
+with tf.GradientTape() as tape:<br>
+...<br>
+...<br>
+loss_reg = [tf.nn.l2_loss(w_b) for w_b in model.trainable_variables] # [w1,b1,w2,b2]<br>
+print(tf.reduce_sum(loss_reg))		# tf.Tensor(2.98585, shape=(), dtype=float32) # 就是这个形状<br>
+loss = loss + loss_reg<br>
+使用方式2: (keras添加层方式)：<br>
+L2 = keras.regularizers.l2(0.01)<br>
+keras.layers.Dense(.....,  kernel_regularizer=l2)	# 为每层加上L2</p>
+<h1 id="梯度">梯度</h1>
+<h3 id="sgd">SGD:</h3>
+<p>减去梯度，代表朝着梯度方向走<br>
+w新 = w当前 - learning_rate * 梯度	<br>
+使用方式：<br>
+model.compile(..... ,optimizer=keras.optimizers.SGD(learning_rate=0.01))</p>
+<h3 id="momentum动量">Momentum（动量）</h3>
+<p>公式大概：<br>
+w新 = w当前 - learning_rate * (梯度 + w旧)<br>
+# 其中 （梯度+w旧）和为矢量和， 结果和为（平行四边形对角线法则）的方向</p>
+<p>公式换算还等价于（另一种思想）：<br>
+w新 = (w当前 - learning_rate * 梯度) - learning_rate * w旧<br>
+# 在直来直去梯度的基础上------------掰弯（就是减去了个东西，改变方向）</p>
+<h3 id="rmsprop">RMSProp</h3>
+<pre><code>model.compile(..... ,optimizer=keras.optimizers.RMSprop(learning_rate=0.01, momentum=0.9))
+</code></pre>
+<h3 id="adam推荐">Adam(推荐)</h3>
+<pre><code>model.compile(..... ,optimizer=keras.optimizers.Adam(learning_rate=0.01))
+</code></pre>
+<h1 id="rnn">RNN</h1>
+<p>###LSTM<br>
+3个门<br>
+有两个记忆信息（h c ）<br>
+###GRU<br>
+有两个门<br>
+只有一个记忆信息 c</p>
+<h1 id="nms非极大抑制">NMS（非极大抑制）</h1>
+<pre><code>候选假如有ABCD四个候选框！！！！！！
+1. 分类之后，取出最大概率候选框A。
+2. 将其余候选框，与这个最大的候选框，做 IOU   交集/并集 
+3. 如果交集/并集的 结果大于阈值，（筛选出了B，并删除）（这样操作是筛选出 最大概率的点  的  附近的点，并删除）
+   为什么要删除呢。 因为你有了这个最大概率的点，其他相似的点都是弟弟了。 可以扔了。
+4. 剩下的就是  CD了，  CD还是重复123操作。 选一个老大（大概率框框）
+
+通过阈值，我们可能会认为，  AB是同一层面的东西，  而 CD是预测了另一层面的东西。 所以每个层面选出一个老大即可。！
+</code></pre>
+<h1 id="r-cnn">R-CNN</h1>
+<pre><code>0. 处理图片（crop + wrap）
+1. 图片-&gt;SS(选择性搜索（随便画框）)-&gt;NN-&gt;候选区域（Fine-Tune） (1正样本：3负样本)
+2. SVM分类（准确率高）
+3. NMS筛选（IOU 交/并，筛选）
+4. BoundingBoxReg边框回归
+
+存在问题：
+	1. 神经网络 慢
+	 2. 图片  变形
+</code></pre>
+<h1 id="sppnet">SPPNet</h1>
+<p>图片映射<br>
+R-CNN是一大堆图片的 选择性搜索（画框）， 然后塞入 CNN， 得出特征向量。</p>
+<pre><code>SPP 是只把一张图片 塞入CNN 训练提取出 众多 &quot;特征向量&quot;。
+然后再选择性搜索（SS画框） 得出众多&quot;候选区域&quot;。
+然后将  &quot;候选区域&quot; 与 &quot;特征向量&quot; 一一映射。
+
+s = strides卷积 * strides池化
+
+左上角：
+	x特征 = x原图候选/s + 1
+	y同理
+右小角：
+	x特征 = x原图候选/s - 1
+	y同理
+
+注： 映射后的特征向量大小不固定
+所以这些特征向量 需要交给 SPP层处理
+</code></pre>
+<p>spatial pyramid pooling (空间金字塔池化层)</p>
+<pre><code>每个 候选区域 ，都会经过如下变换：   （256取决于 每个不同的CNN网络模型输出通道）
+	被分蛋糕为 4x4, 256通道  ====&gt;  (16， 256)
+	被分蛋糕为 2x2, 256通道  ====&gt;  (4， 256)
+	被分蛋糕为 1x1, 256通道  ====&gt;  (1， 256)
+	综上相加 ====&gt;  (21, 256)
+思想（分隔，再聚合）
+
+改善了R-CNN的什么？
+	因为统一用了SPP层格式化（切割），所以就不用了。
+</code></pre>
+<h1 id="fast-r-cnn-改进">Fast R-CNN 改进</h1>
+<pre><code>相比较于SPP，有如下改动：
+	1. 新增 ROI pooling层 
+	2. SVM 替换为 softmax( bounding box regresson  依然存在) 
+		=&gt; softmax输出为： N个类别+1个背景
+	3. ROIPooling:
+    	0. 同样先是 SS候选区域 和 CNN特征 的映射
+    	1. 4x4+2x2+1x1 替换成单个 MxN
+    	2. 如果和 fc 层输入不匹配，那么会自动划分（切割）成匹配的大小。
+      3. 舍弃少量精度，获取更大效率。
+	4. 损失函数？？
+ 	   分类部分=&gt; 交叉熵
+		  回归部分=&gt; MAE
+</code></pre>
+<h1 id="faster-r-cnn-改进">Faster R-CNN 改进</h1>
+<pre><code>相比较于Fast R-CNN，有如下改动：
+	1. 原图片 -&gt; CNN -&gt; 特征图
+	2.1 特征图经过RPN生成候选区域
+	2.2 候选区域 与 特征图 组合 输入到 =&gt; Roi Pooling
+		得到 每个 候选区域 的 特征图。
+</code></pre>
+<p>RPN网络：<br>
+特征图：<br>
+nxn的大小窗口去扫描特征图， 每个窗口映射到一个低维向量。<br>
+低维向量 =&gt; 输入到两个并行的 1x1 卷积中，得出两个结果：<br>
+1. reg窗口回归层； (用于修正位置)<br>
+2. cls窗口分类层： （表示前景，和 背景的概率）</p>
+<pre><code>每个从 CNN出来的 特征图有如下属性（可能有 M*N个特征图）：
+	9个Anchor: 尺度 ： {128，  256， 512}    长宽比： {1：1， 1：2， 2：1}
+	9个Anchor相当于（9个粗略的候选区域-&gt; 替代了之前用框框画出的区域）
+	RPN网络训练：
+		训练样本标记： 
+			求Anchor 与 ground_truth box的IOU:
+        			IOU&gt;0.7记为正样本，   0.3&lt;IOU&lt;0.7 标记为负样本
+					   IOU &lt; 0.3的全部删除
+		RPN: 损失	
+			二分类： 区别出来  （是否有物体 -&gt; 前景 or 背景）
+		   回归：  修正剩余优秀 Anchor的位置作为最终候选特折
+</code></pre>
+<p>Faster R-CNN正式训练：<br>
+和 Fast R-CNN一样：<br>
+1. 多分类 softmax(N+1)<br>
+2. bounding box 回归</p>
+<pre><code>优点：
+	提出RPN网络
+	端到端网络模型
+缺点：
+	训练参数过大
+	真实产品还是慢
+</code></pre>
+<h1 id="yolo">YOLO</h1>
+<pre><code>GoogleNet+4 Conv + 2 Dense
+</code></pre>
+<h1 id="ssd">SSD</h1>
+<pre><code>VGG-16: 300 * 300 
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-ci-xing-biao-da-quan/">
+                  <h3 class="post-title">
+                    GO =&gt; 谈一谈Goland/Pycharm/Idea全局搜索为何偶尔失灵的问题
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

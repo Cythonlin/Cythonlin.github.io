@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; TF20的LSTM与GRU(return_sequences与return_state)参数源码 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+温馨提示：
+本文只适用于: 了解LSTM 和 GRU的结构，但是不懂Tensorflow20中LSTM和GRU的参数的人)
+
+额外说明
+看源码不等于高大上。
+当你各种博客翻烂，发现内容不是互相引用，就是相互&quot;借鉴&quot;..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; TF20的LSTM与GRU(return_sequences与return_state)参数源码</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<h3 id="温馨提示">温馨提示：</h3>
+<pre><code>本文只适用于: 了解LSTM 和 GRU的结构，但是不懂Tensorflow20中LSTM和GRU的参数的人)
+</code></pre>
+<h3 id="额外说明">额外说明</h3>
+<p>看源码不等于高大上。<br>
+当你各种博客翻烂，发现内容不是互相引用，就是相互&quot;借鉴&quot;。。。且绝望时。<br>
+你可能会翻翻文档，其实有些文档写的并不是很详细。<br>
+这时，看源码是你最好的理解方式。（LSTM 和 GRU 部分源码还是比较好看的）</p>
+<p>标题写不下了: TF20 ==&gt; Tensorflow2.0（Stable）<br>
+tk ===&gt; tensorflow.keras<br>
+LSTM 和 GRU 已经放在 tk.layers模块中。<br>
+return_sequences = True<br>
+return_state = True</p>
+<pre><code>这两个参数是使用率最高的两个了， 并且LSTM 和 GRU 中都有。
+那它们究竟是什么意思呢???
+来，开始吧！
+
+进入源码方式：
+    import tensorflow.keras as tk
+    tk.layers.GRU()
+    tk.layers.LSTM()
+    用pycharm ctrl+左键 点进源码即可~~~
+</code></pre>
+<h1 id="lstm源码">LSTM源码</h1>
+<p>我截取了部分主干源码：<br>
+...<br>
+...<br>
+states = [new_h, new_c]           # 很显然，第一个是横向状态h, 另一个是记忆细胞c</p>
+<pre><code>if self.return_sequences:         # 如果return_sequences设为True
+  output = outputs                    # 则输出值为所有LSTM单元的 输出y，注意还没return
+else:                             # 如果return_sequences设为False
+  output = last_output                # 则只输出LSTM最后一个单元的信息, 注意还没return
+
+if self.return_state:             # 如果return_state设为True
+  return [output] + list(states)      # 则最终返回 上面的output + [new_h, new_c]
+else:                             # 如果return_state设为False
+  return output                       # 则最终返回 只返回上面的output
+
+小技巧: 瞄准 return 关键词。 你就会非常清晰，它会返回什么了。 
+</code></pre>
+<h1 id="gru源码">GRU源码</h1>
+<pre><code>...
+...
+########  我们主要看这一部分 #########################################
+  last_output, outputs, runtime, states = self._defun_gru_call( 
+      inputs, initial_state, training, mask)
+#####################################################################          
+...
+...
+
+######### 下面不用看了， 这下面代码和  LSTM是一模一样的 ###################
+if self.return_sequences:
+  output = outputs
+else:
+  output = last_output
+
+if self.return_state:
+  return [output] + list(states)
+else:
+  return output
+</code></pre>
+<p>现在我们的寻找关键点只在于， states 是怎么得到的？？？<br>
+你继续点进去 &quot;self._defun_gru_call&quot; 这个函数的源码， 你会发现 states 就直接暴露在里面<br>
+states = [new_h]<br>
+return ..., states<br>
+现在源码几乎全部分析完毕。 我们回头思考总结一下：<br>
+LSTM 和 GRU 中的 return_sequences 和 return_state 部分的源码是一模一样的！！！<br>
+return_sequences: 只管理 output变量的赋值，（最后一个单元 或 全部单元）<br>
+return_state： 负责返回 output变量，并且按条件决定是否再一并多返回一个 states变量</p>
+<pre><code>进而我们把问题关注点转换到  output变量， 和 states变量：
+
+LSTM 和 GRU 的 output变量: 大致相似，不用管。
+LSTM 和 GRU 的 ststes变量：
+    LSTM的 states变量:  [H, C]    # 如果你了解LSTM的结构，看到这里你应该很清楚，LSTM有C和H
+    GRU的 states变量:   [H]       # 如果你了解GRU的结构，看到这里你应该很清楚，GRU就一个H
+</code></pre>
+<h1 id="最终使用层总结">最终使用层总结：</h1>
+<h3 id="lstm">LSTM:</h3>
+<p>有四种组合使用：</p>
+<ol>
+<li>
+<p>return_sequences = False 且 return_state = False (默认)<br>
+返回值: 只返回 最后一个 LSTM单元的输出Y</p>
+</li>
+<li>
+<p>return_sequences = True 且 return_state = False<br>
+返回值: 只返回 所有 LSTM单元的输出Y</p>
+</li>
+<li>
+<p>return_sequences = False 且 return_state = True<br>
+返回值: 返回最后一个LSTM单元的输出Y   和    C + H 两个（隐层信息）</p>
+</li>
+<li>
+<p>return_sequences = True  且 return_state = True<br>
+返回值: 返回所有LSTM单元的输出Y  和  C + H 两个（隐层信息）  (适用于Atention)</p>
+</li>
+</ol>
+<h3 id="gru">GRU：</h3>
+<p>有四种组合使用：</p>
+<ol>
+<li>
+<p>return_sequences = False 且 return_state = False (默认)<br>
+返回值: 同LSTM</p>
+</li>
+<li>
+<p>return_sequences = True 且 return_state = False<br>
+返回值: 同LSTM</p>
+</li>
+<li>
+<p>return_sequences = False 且 return_state = True<br>
+返回值: 返回 最后一个 LSTM单元的输出Y   和   一个H（隐层信息）</p>
+</li>
+<li>
+<p>return_sequences = True  且 return_state = True<br>
+返回值: 返回 所有 LSTM单元的输出Y  和 一个H（隐层信息）  (适用于Atention)</p>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-deeplearningmetricsng/">
+                  <h3 class="post-title">
+                    AI =&gt; DeepLearning+Metrics（Ng）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; Tensorflow2.0（stable）降临 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+就在今天凌晨，TF20标准版，降临，可喜可贺。
+因此，我认为，值得记录。。。
+Github URL
+https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0
+&quot;..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; Tensorflow2.0（stable）降临</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>就在今天凌晨，TF20标准版，降临，可喜可贺。<br>
+因此，我认为，值得记录。。。</p>
+<h1 id="github-url">Github URL</h1>
+<p>https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0</p>
+<p>&quot;goldiegadde released this 19 hours ago&quot;  ~~ yeah</p>
+<h1 id="参考beta环境">参考Beta环境</h1>
+<p>我之前写过一篇2.0-GPU Beta环境， 你若连Tensorflow都每装过，那么移步：<br>
+传送门：https://segmentfault.com/a/1190000020304638</p>
+<h1 id="更新至tf20-gpu命令">更新至TF20-GPU命令</h1>
+<pre><code>pip install -U tensorflow-gpu -i https://pypi.douban.com/simple
+</code></pre>
+<h1 id="查看版本">查看版本</h1>
+<pre><code>&gt;&gt;&gt; import tensorflow as tf       # 运行后，会输出一段关于CUDA的 INFO
+&gt;&gt;&gt; tf.__version__
+'2.0.0'
+</code></pre>
+<h1 id="pycharm语法高亮问题">Pycharm语法高亮问题</h1>
+<p>Pycharm当前最高可用版是 v2版本。<br>
+但是TF20(Stable)是新出的， 所以Pycharm中是没有TF20语法高亮的。</p>
+<p>其实你可以等等。Pychram等更新到 v3版本（11月份左右， Pycharm出标准版）</p>
+<p>如果你等不及了，没问题。 给你个 v3预先版地址，自己下载。 绝对支持 TF20语法高亮，亲测！<br>
+Pycharm3.0+传送门：https://www.jetbrains.com/pycharm/nextversion/</p>
+<h3 id="强调导入问题">强调导入问题</h3>
+<p>TF2O 的 Keras 是这样导入的： （因为每次更新TF，Adam很容易找不到，所以以Adam导入为例）</p>
+<p>方式1：<br>
+import tensorflow as tf<br>
+import tensorflow.keras as tk<br>
+tk.optimizers.Adam()<br>
+方式2：<br>
+import tensorflow as tf<br>
+from tensorflow.keras import optimizers<br>
+optimizers.Adam()<br>
+语法高亮这个问题是我去Stack找的：<br>
+原标准回答传送门： https://stackoverflow.com/questions/58188704/unable-to-import-kerasfrom-tensorflow-2-0-in-pycharm/</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20win10-and-beta-and-gpu-ban-an-zhuang/">
+                  <h3 class="post-title">
+                    AI =&gt; Tensorflow2.0（win10 &amp; Beta &amp; GPU版 ）安装
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

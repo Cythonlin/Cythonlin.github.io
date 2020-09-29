@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T03:53:27.312Z</updated>
+    <updated>2020-09-29T04:12:23.853Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -10,799 +10,1734 @@
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
     <entry>
-        <title type="html"><![CDATA[GO => 谈一谈Goland/Pycharm/Idea全局搜索为何偶尔失灵的问题]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-ci-xing-biao-da-quan/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-ci-xing-biao-da-quan/">
+        <title type="html"><![CDATA[AI => Tensorflow2.0语法 - keras_API的使用(三)]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-keras_api-de-shi-yong-san/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-keras_api-de-shi-yong-san/">
         </link>
-        <updated>2020-09-29T03:51:40.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="众所周知">众所周知</h1>
-<p>JetBrains全家桶系列默认全局搜索快捷键为:<br>
-ctrl + shift + f</p>
-<h1 id="为何上述快捷键偶尔失灵">为何上述快捷键偶尔失灵?</h1>
-<p>不想看原因的可以直接跳到最后看2种解决办法</p>
-<h3 id="微软拼音切换简体繁体">微软拼音切换简体/繁体：</h3>
-<p>一直使用的是Win10自带的微软拼音（其他输入法没用过，应该类似）<br>
-ctrl + shift + f<br>
-这里切换简体/繁体有个条件：<br>
-只有你当前输入法状态为 “中文输入法”时， 切换简/繁（ctrl+shift+f）快捷键才会生效<br>
-如果当前输入法状态为 “英文输入法”时，  切换简/繁（ctrl+shift+f）快捷键 不起作用。<br>
-到这里应该可以想出pycharm/goland/...全局搜索为何失灵了吧~~</p>
-<h3 id="失灵原因">失灵原因</h3>
-<p>因为写代码时，输入法可能会 中/英 切换。<br>
-当前我们的输入法状态为 “中文” 时： ctrl+shift+f  的作用是切换 繁/简 输入法<br>
-当前我们的输入法状态为 “英文” 时： ctrl+shift+f  的作用就是我们想要的《全局搜索》</p>
-<h1 id="解决办法">解决办法</h1>
-<h3 id="解决办法1切换习惯">解决办法1（切换习惯）</h3>
-<p>根据失灵原因，我们想要使用JetBrains系列产品全局搜索时，我们可以注意自己的输入法是否是&quot;英文状态&quot;，若不是，则切换到英文状态：<br>
-shift             # 微软拼音切换 中/英 是 shift ，其他输入法不清楚<br>
-对我而言，这是习惯问题，不存在输入法冲突，如果没切换中/英这个习惯，可以按照如下改快捷键</p>
-<h3 id="解决办法2改快捷键">解决办法2（改快捷键）</h3>
-<p>如果执意要改快捷键，可以改快捷键 (因为我已经习惯了中/英输入法切换方式)，所以我是不改的。<br>
-按照如下配置流程走：<br>
-File -&gt;<br>
-Settings -&gt;<br>
-Keymap -&gt;<br>
-在搜索快捷键的输入框输入： find in path<br>
-双击 &quot;find in path&quot; -&gt;<br>
-Add Keyboard Shortcut（然后键盘按下你像设置的快捷键）<br>
-（我个人推荐是 ctrl+shift+|），因为这个快捷键未被占用 ~<br>
-ok -&gt;<br>
-ok</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Docker配置daemon.json的host选项失败]]></title>
-        <id>https://cythonlin.github.io/post/docker-pei-zhi-daemonjson-de-host-xuan-xiang-shi-bai/</id>
-        <link href="https://cythonlin.github.io/post/docker-pei-zhi-daemonjson-de-host-xuan-xiang-shi-bai/">
-        </link>
-        <updated>2020-09-29T03:50:10.000Z</updated>
-        <content type="html"><![CDATA[<p>当我配置Docker让外部连接的时候<br>
-我尝试创建 /etc/docker/daemon.json文件， 并写如下内容：<br>
-{<br>
-&quot;registry-mirrors&quot;: [&quot;https://rs3ab060.mirror.aliyuncs.com&quot;],<br>
-&quot;hosts&quot;: [&quot;unix:///var/run/docker.sock&quot;, &quot;tcp://0.0.0.0:6006&quot;]<br>
-}<br>
-然后，重启docker服务，一直失败。 根本无法启动。<br>
-经排查，是hosts这个配置项有问题。</p>
-<p>终极解决办法：<br>
-systemctl edit dockerd.service    # 复制这条命令执行，并写粘贴如下内容<br>
-[Service]<br>
-ExecStart=<br>
-ExecStart=/usr/bin/dockerd</p>
-<pre><code>ctrl + s 保存 
-ctrl + x 退出
-</code></pre>
-<p>很多问题stack,  github 解决不了的，我都会去qiita。（人家写的言简意赅，解决问题从不废话）</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => 音声分离]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-yin-sheng-fen-chi/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-yin-sheng-fen-chi/">
-        </link>
-        <updated>2020-09-29T03:48:02.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="环境安装">环境安装</h1>
-<p>自主安装 FFmpeg<br>
-pip install jupyter<br>
-pip install spleeter</p>
-<h1 id="思路">思路</h1>
-<p>spleeter工具可在command逐一分离,有些费劲。<br>
-并且文件名不许有空格和特殊字符。</p>
-<p>本想通过py脚本，批处理（os.system/os.subprocess）做些脚本操作。<br>
-但是 spleeter隐式搜索 FFmpeg。所以（os.system/os.subprocess）都搜不到FFmpeg<br>
-即使内/外添加环境变量也不行。</p>
-<p>后来没办法，想个歪的。</p>
-<p>用 jupyter notebook 的 !指令嵌套循环实现。</p>
-<h1 id="jupyter-notebook代码">Jupyter Notebook代码</h1>
-<pre><code>import re
-import os
-import shutil
-
-music_list = os.listdir('音乐')
-r1 = re.compile(r'(\(.*?\)|（.*?）|\[.*?\]|\s*?|【.*?】|《.*?》)')
-new_music_list = [r1.sub('',per_music) for per_music in music_list]
-
-%cd 音乐
-
-name_map = zip(music_list, new_music_list)
-for old_name,new_name in name_map:
-    try:
-        os.rename(old_name,new_name)
-    except:
-        pass
-        
-new_name_list = os.listdir('.')
-
-for filename in new_name_list:
-    if filename.endswith('jpg'):
-        continue
-    print(filename)
-    try:
-        !spleeter separate -i {filename} -p spleeter:2stems -o output
-    except:
-        pass
-</code></pre>
-<h3 id="分离好的音声都放在各自的歌曲的文件夹内">分离好的音/声都放在各自的歌曲的文件夹内</h3>
-<h3 id="为了听伴奏把所有伴奏放一起">为了听伴奏，把所有伴奏放一起</h3>
-<pre><code>music_list = os.listdir('音乐')
-
-# 方便复制， output 和 pretrained_models 移动了出来
-[shutil.copy(f'output/{music.rsplit(&quot;.&quot;,1)[0]}/accompaniment.wav', f'D:/music/acc/{music}') for music in music_list if music.rsplit(&quot;.&quot;,1)[1] != 'jpg' and music not in ['pretrained_models','output']]
-
-# 我只听伴奏，所以人声就免了。。
-# [os.rename(f'output/{music.rsplit(&quot;.&quot;,1)[0]}/vocals.wav', f'D:/music/voice/{music}') for music in music_list if music.rsplit(&quot;.&quot;,1)[1] != 'jpg' and music not in ['pretrained_models','output']]
-</code></pre>
-<h3 id="osrename-和-shutilmove使用区别">os.rename 和 shutil.move使用区别：</h3>
-<pre><code>shutil.move 是先复制后删除 （根本不是cut）(慢)
-os.rename 可以达到剪切的效果(神速) （也可以用来改名）
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => PY38]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-py38/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-py38/">
-        </link>
-        <updated>2020-09-29T03:47:37.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="说明">说明</h1>
-<p>本篇文章介绍Python3.8的一些较为好用的新特性</p>
-<h1 id="赋值表达式">赋值表达式</h1>
-<h3 id="语法格式">语法格式：</h3>
-<p>2种格式的区别就是，一个带括号，一个不用带括号<br>
-(a:=1)<br>
-a:=1<br>
-其实这两种格式结果是一样的，只是有些情况括号可以省略不写而已。</p>
-<h3 id="括号可省的情况">括号可省的情况</h3>
-<h3 id="一-序列类型中-括号可省">#一、序列类型中 括号可省</h3>
-<pre><code>[a:=1, 2]
-</code></pre>
-<h4 id="二-作为函数调用的参数-括号可省">二、作为函数调用的参数 括号可省</h4>
-<pre><code># 注意我说的是函数调用，函数定义的时候压根就不能用 := 表达式，更别提可不可省了
-print(g:=1)
-</code></pre>
-<h4 id="三-以后碰见再说了应该也没啥了">三、以后碰见再说了，应该也没啥了</h4>
-<h3 id="括号不可省的情况">括号不可省的情况</h3>
-<h4 id="一-在while-if-for语句的条件中虽可省但不要省">一、在while(), if(), for()语句的条件中（虽可省但不要省）</h4>
-<pre><code>while ((b:=1) == 2): # if， for 同理
-	print(2)
-print(b)
-# &gt;&gt; 1    
-</code></pre>
-<p>强调1  := 此运算符优先级比 == 还低，虽然可省，所以这里区分语义括号要加上<br>
-强调2  := 就算while 或者 if 条件不成立， b依然赋值成功</p>
-<h4 id="二-在-f-string-中括号不可省-某些情况可省虽可省但不要省">二、在 f-string 中，括号不可省 （某些情况可省，虽可省但不要省）</h4>
-<pre><code>f'{(p:=1)}'
-print(p)
-</code></pre>
-<p>假如新变量q是未定义的，不加括号就会出现如下情况（所以这样用就没意义了， f-string括号必须加）<br>
-f'{q:=1}'<br>
-print(p)<br>
-# NameError: name 's' is not defined</p>
-<h4 id="三-以后碰见再说了也没啥了">三、以后碰见再说了，也没啥了</h4>
-<h1 id="f-string新增功能">f-string新增功能</h1>
-<p>3.8之前这么用:<br>
-f'{loss}, {acc}'<br>
-#&gt;&gt; '0.0141, 0.98912'<br>
-3.8之后这么用:<br>
-f'{loss=}, {acc=}'<br>
-#&gt;&gt; 'loss=0.0141, acc=0.98912'</p>
-<p>还有个功能(自己看结果对比的效果把):<br>
-name = 'zhang'<br>
-f'{name}'      # 'zhang'<br>
-f'{name=}'     # &quot;name='zhang'&quot;      # 新增功能1<br>
-f'{name=!s}'    # 'name=zhang'       # 新增功能2</p>
-<h1 id="欧氏距离">欧氏距离</h1>
-<pre><code>import math
-math.dist([1,2,3,4],[5,6,7,8])
-</code></pre>
-<h1 id="f-string回顾36就已经出了一直在用">f-string回顾(3.6就已经出了，一直在用)</h1>
-<h3 id="方式0-提前说明方式6-和-方式7上档次-好用">方式0: 提前说明(方式6 和 方式7上档次, 好用)</h3>
-<h3 id="方式1变量替换">方式1：变量替换</h3>
-<pre><code>name = 'zhang'
-print( f'{name}' )
-#&gt;&gt; zhang
-</code></pre>
-<h3 id="方式2内嵌表达式计算">方式2：内嵌表达式计算</h3>
-<pre><code>name = 'zhang'
-print( f'{name.upper()}' )
-#&gt;&gt; ZHANG
-</code></pre>
-<h3 id="方式3一行写不下可以多行-f-注意不需要逗号分隔并且要用小括号扩起来">方式3：一行写不下，可以多行 f''  (注意，不需要逗号分隔)，并且要用小括号扩起来</h3>
-<pre><code>name = 'zhang'
-age = 18
-gender = 'man'
-a = (
-	f'name={name}   '
-	f'age={age}   '
-	f'gender={gender}   '
-)
-print(a)
-#&gt;&gt; name=zhang   age=18   gender=man   
-</code></pre>
-<h3 id="方式4转义">方式4：转义 {}</h3>
-<pre><code># 注意一下， 
-# f'{ ' 这种会报错的
-# 因为 { 在 f''语句里面已经不是字符串了， 而是语法符号
-# 如果我们想要  {} 这种字符串， 如下解决办法
-	# 用 { 来转义 {
-	# 用 } 来转义 }
-eg:
-	f'{{'
-	输出为&gt;&gt; '{'
-    
-	f'}}'
-	输出为 &gt;&gt; '}'
-</code></pre>
-<h3 id="方式5符号格式">方式5：符号格式</h3>
-<pre><code>正号：
-	import random
-	b = random.randint(0,5)
-	f'{b:+}'
-	#&gt;&gt; +0
-</code></pre>
-<h3 id="方式6日期符号格式特别好用适用于-timedatedatetime对象">方式6：日期符号格式（特别好用，适用于 time,date,datetime对象）</h3>
-<pre><code>from datetime import datetime
-e = datetime.now()
-
-# 年月日时分秒
-f'{e:%Y}' # '2020'  表示2020年 (注意是大写的Y)
-f'{e:%m}' # '09'    表示9月份 （自动补0）(注意是小写m)
-f'{e:%d}' # '02'    表示2号
-f'{e:%H}' # '21'    表示21点了 (24小时制)
-f'{e:%M}' # '43'    表示43分了 (注意是大写的M)
-f'{e:%S}' # '50'    表示50秒了 (注意是大写的S)
-
-# 默认组合格式(分隔符是固定的)
-f'{e:%F}' # '2020-09-02'   年-月-日,  分割符是固定的 '-'
-f'{e:%T}' # '21:58:39'     时:分:秒,  分割符是固定的 ':'  (大写的X一摸一样)
-
-# 基于上面2行自己组装一下,形成完整时间
-f'{e:%F %T}' # '2020-09-02 22:02:29'   上面2种组装一下
-
-# 星期几+ 每年的第几天 + 每年的第几周
-f'{e:%j}' # '246'   表示一年中的第 246 天, 个位数前面补0,至3位
-f'{e:%u}' # '3'     表示星期3  （星期日是7）
-f'{e:%W}' # '35'    表示一年中的第 35周, 个位数前面补0,至2位(注意是大写的W)
-</code></pre>
-<h3 id="方式7-精度占位符号后面不要有空格这个较难理解">方式7: 精度占位符号(:后面不要有空格)(这个较难理解)</h3>
-<p>情况一、:.n 代表只保留前n位 (并且四舍五入)(总体位数不算小数点所在的位数)<br>
-f&quot;{1234.5678:.6}&quot;     # .6  表示保留6位 (不算小数点, 整数+小数=6位)<br>
-#&gt;&gt; '1234.57'<br>
-情况二、:m 代表只在&quot;最前面&quot;扩充&quot;至&quot;m位(注意这个&quot;至&quot;字)<br>
-f&quot;{1234.5678:15}&quot;         # 扩充至15位(小数点也算位数) 默认用空白字符代替<br>
-#&gt;&gt; '      1234.5678'<br>
-情况三、:m前面带0， 补充空字符串 改为 &quot;补0&quot;<br>
-f&quot;{1234.5678:015}&quot;    # 0代表扩充的多余位数补0 (小数点也算位数)15代表最前面扩充至15位<br>
-#&gt;&gt; '0000001234.5678'<br>
-综合情况、:m.n 结合(只能是 m.n 这种顺序的格式)<br>
-f&quot;{1234.5678:015.6}&quot;    # 15就是上面说的m, 0就是m前面补的0, 6就是上面说的n<br>
-#&gt;&gt; '000000001234.57'</p>
-<pre><code># 重点解读上面这个综合语句(按照下面的顺序才能正确解析):
-1. 先看.后面的 n,  n是6,  则 整体(整数+小数)(不包括小数点)保留6位 ===&gt; '1234.57'
-2. 然后才看 m,  m是15,   则在最前面扩充&quot;至&quot;15位置(包括小数点的位数) ===&gt; '        1234.57'
-3. 最后把第2步的空白字符补0    =====&gt;  '000000001234.57'
-</code></pre>
-<p>情况四、:m.nf (推荐, 上面&quot;情况一&quot; 和 &quot;综合情况的延申版&quot;, 针对.n设计的, 多了个f,好用多了!)<br>
-'''加了f,  核心就是 .n规则变为  小数点后保留n位,其余没变  '''</p>
-<pre><code>eg1: .nf的情况  (这种是最常用的!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!)
-	f&quot;{1234.5678:.6f}&quot;       # 小数点后保留6位, 其余还是那样
-	#&gt;&gt; '1234.567800'        
-    
-eg2: m.nf的情况
-	f&quot;{1234.5678:015.6f}&quot;     # 还是前面&quot;综合情况&quot;, 先看n, n是6, 所以 &quot;小数点后&quot; 保留6位(四舍五入), 
-    						 # 然后从前面扩张整体位数 &quot;至&quot;15位, 空缺的补0即可
-	'00001234.567800'        
-</code></pre>
-<p>情况五: 百分位(作为训练acc, 也算比较常用)<br>
-&quot;&quot;&quot;<br>
-分析核心思想:<br>
-1. 先将原数扩大100倍(也就是小数点向后移2位),<br>
-2. 然后关注 .n  , 保留小数点后的n位(四舍五入)<br>
-3. 最后加个百分号%, 即可)<br>
-&quot;&quot;&quot;<br>
-f&quot;{1234.5678:.1%}&quot;<br>
-#&gt;&gt; '123456.8%'</p>
-<pre><code>f&quot;{1234.5678:.6%}&quot;
-#&gt;&gt; '123456.780000%'
-
-# 如果想带m,也可以,和上面集中情况,以及解析顺序一摸一样,m不太常用, 我这里就不列了</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[GO => JetBrains全家桶初始化默认配置]]></title>
-        <id>https://cythonlin.github.io/post/go-greater-jetbrains-quan-jia-tong-chu-shi-hua-mo-ren-pei-zhi/</id>
-        <link href="https://cythonlin.github.io/post/go-greater-jetbrains-quan-jia-tong-chu-shi-hua-mo-ren-pei-zhi/">
-        </link>
-        <updated>2020-09-29T03:47:03.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="声明">声明</h1>
-<p>我只用过 Pycharm 和 Goland且有效。<br>
-其他像 IDEA, WS 等血缘产品应该同样有效~~~~。</p>
-<h1 id="原因">原因</h1>
-<p>改语法提示组合键，改崩了。</p>
-<h1 id="恢复默认配置">恢复默认配置</h1>
-<pre><code>File -&gt; 
-    Manage IDE Settings -&gt; 
-        Restore Default Settings
-</code></pre>
-<h1 id="插曲">插曲</h1>
-<pre><code>&quot;找配置文件,并删除&quot; if &quot;你不嫌麻烦&quot; else &quot;老老实实按照上面做&quot;</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Sublime-Py插件]]></title>
-        <id>https://cythonlin.github.io/post/sublime-py-cha-jian/</id>
-        <link href="https://cythonlin.github.io/post/sublime-py-cha-jian/">
-        </link>
-        <updated>2020-09-29T03:45:37.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="sublime-py插件">Sublime-Py插件</h1>
-<pre><code>localizeMenu		# 汉化插件   帮助-&gt; language中就能找到
-autofilename		# 文件路径提示
-SublimeCodeIntel 	# 基本格式补全
-SublimeLinter		# 代码pep8格式检查
-Python PEP8 Autoformat 插件	# ctrl + shift + R   自动格式化
-anaconda 		# 真正的代码补全
-</code></pre>
-<p>去除白框：<br>
-Anaconda的settings里面配置<br>
-{&quot;anaconda_linting&quot;:false} 即可</p>
-<h1 id="vuestylus插件之前用的">Vue+Stylus插件（之前用的）</h1>
-<pre><code>Vuejs Snippets
-Vue Syntax Highlight
-VueFormatter
-Vuetify
-Stylus-Snippets
-Stylus</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => RabbitMQ/Pika使用记录]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-rabbitmqpika-shi-yong-ji-lu/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-rabbitmqpika-shi-yong-ji-lu/">
-        </link>
-        <updated>2020-09-29T03:44:38.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="安装">安装</h1>
-<pre><code>https://github.com/docker-library/docs/tree/master/rabbitmq
-docker run -d --hostname my-rabbit -p 5672:5672 --name some-rabbit rabbitmq:3
-</code></pre>
-<h1 id="无交换机">无交换机</h1>
-<p>基本机制：生产者 - 管道 - 消息队列 - 管道 - 消费者</p>
-<h4 id="consumepy">consume.py</h4>
-<pre><code>import pika
-import time
-def callback(channel, method, properties, body):
-   time.sleep(1)
-   print(channel,  body)
-   channel.basic_ack(delivery_tag=method.delivery_tag)
-
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
-    channel = connection.channel()
-    queue_name = 'myqueue'
-    channel.queue_declare(		# 声明队列
-        queue=queue_name,
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        exclusive=False,    # 只能一个连接使用，并且连接后，队列雄安是
-        auto_delete=False,  # 消费者不再使用队列时，自动删除队列
-    )
-    channel.basic_qos(prefetch_count=10) # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
-    channel.basic_consume(
-        queue_name,
-        callback,
-        auto_ack=False
-        # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
-            # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
-        # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
-    )
-    channel.start_consuming()
-</code></pre>
-<h4 id="productpy">product.py</h4>
-<pre><code>import pika
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
-    channel = connection.channel()
-    queue_name = 'myqueue'
-    channel.queue_declare(
-        queue=queue_name,
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        exclusive=False,    # 只能一个连接使用，并且连接后，队列雄安是
-        auto_delete=False,  # 消费者不再使用队列时，自动删除队列
-    )
-
-    for x in range(50):
-        channel.basic_publish(
-            exchange='',
-            routing_key=queue_name,
-            body=str(x),
-            properties=pika.BasicProperties(
-                delivery_mode=2     # 设为2表示，队列里面的 消息 的 持久化
-            )
-        ) 
-</code></pre>
-<h1 id="有交换机">有交换机</h1>
-<p>基本机制：生产者 - 管道 - routing_key - 交换机 - binding_key - 消息队列 - 管道 - 消费者<br>
-生产者不用连接队列，因为被交换机连接。 消费者必须连接队列。</p>
-<h3 id="直连交换机-direct-routing_key和-binding_key严格匹配">直连交换机 (direct - routing_key和 binding_key严格匹配)</h3>
-<p>注意情况，若binding_key 对应的队列是临时队列， 那么 需要先启动消费者，再启动生产者<br>
-如果先启动的是生产者，那么发出到交换机的数据 找不到匹配的消费者， 那么数据就会丢失，因为交换机是临时的</p>
-<h4 id="consumepy-2">consume.py</h4>
-<pre><code>import pika
-import time
-def callback(channel, method, properties, body):
-    time.sleep(1)
-    print(body)
-    channel.basic_ack(delivery_tag=method.delivery_tag)
-
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
-    channel = connection.channel()
-    exchange_name = 'direct'
-    channel.exchange_declare(
-        exchange_name,
-        exchange_type='direct',
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-    )
-    queue_name = 'queue'
-    channel.queue_declare(queue_name,exclusive=True)  # exclusive 代表当前连接独享队列，队列随着连接消失
-
-    binding_keys = ['debug', 'info', 'warning'] # product的routing_key要包含在这里面
-    for binding_key in binding_keys:
-        channel.queue_bind(
-            queue_name,    # 右连队列
-            exchange_name, # 左连交换机
-            routing_key=binding_key
-        )
-
-    channel.basic_qos(prefetch_count=10) # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
-    channel.basic_consume(
-        queue_name,
-        callback,
-        auto_ack=False
-        # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
-            # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
-        # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
-    )
-    channel.start_consuming()
-</code></pre>
-<h4 id="productpy-2">product.py</h4>
-<pre><code>import pika
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
-    channel = connection.channel()
-    exchange_name = 'direct'
-    channel.exchange_declare(
-        exchange_name,
-        exchange_type='direct',
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-    )
-    routing_key = 'debug'
-
-    for x in range(50):
-        channel.basic_publish(
-            exchange=exchange_name,
-            routing_key=routing_key,
-            body=str(x)
-        )
-</code></pre>
-<h3 id="主题交换机-topic-routing_key和-binding_key模糊匹配">主题交换机 (topic - routing_key和 binding_key模糊匹配)</h3>
-<p>基本机制： 和直连基本一样，topic - routing_key和 binding_key 模糊匹配成功后，才能正确通信<br>
-代码部分，只修改<br>
-exchange_name = 'topic'<br>
-exchange_type = 'direct'<br>
-其他基本一致， binding_key 改为模糊语法即可<br>
-语法格式：<br>
-* 匹配一个代词<br>
-# 匹配 0个或多个单词<br>
+        <updated>2020-09-29T04:12:09.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<p>keras接口大都实现了 _<em>call</em>_ 方法。<br>
+母类 _<em>call</em>_ 调用了 call()。<br>
+因此下面说的几乎所有模型/网络层 都可以在定义后，直接像函数一样调用。<br>
 eg:<br>
-a.b  可对应为 a.*<br>
-a.b.c 可对应为 a.#</p>
-<h3 id="扇形交换机-fanout-广播机制">扇形交换机 (fanout -- 广播机制)</h3>
-<p>基本机制：开启多个 消费者等待， 然后开启一个生产者，所有队列都会开始消费<br>
-简单来说，就是 一个提供数据， 多个队列消费此数据<br>
-资源从哪里开始分配，取决于 channel.basic_qos(prefetch_count=10) 的设置</p>
-<p>不依赖 routing_key 和 binding_key。<br>
-将 exchange_type 改为 fanout</p>
-<h4 id="consumepy-3">consume.py</h4>
-<pre><code>import pika
-import time
-
-def callback(channel, method, properties, body):
-    time.sleep(1)
-    print(body)
-    channel.basic_ack(delivery_tag=method.delivery_tag)
-
-def main():
-    with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
-        channel = connection.channel()
-        exchange_name = 'fanout'
-        channel.exchange_declare(
-            exchange_name,
-            # exchange_type='direct',
-            exchange_type='fanout',
-            durable=True,  # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        )
-        queue_name = 'queue'
-        channel.queue_declare(queue_name)  # exclusive 代表当前连接独享队列，队列随着连接消失
-        channel.queue_bind(
-            queue_name,  # 右连队列
-            exchange_name,  # 左连交换机, 注意，因为不依赖 routing_key 和 binding_key ，所以不用写routing_key参数
-        )
-        channel.basic_qos(prefetch_count=10)  # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
-        channel.basic_consume(
-            queue_name,
-            callback,
-            auto_ack=False
-            # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
-                # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
-            # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
-        )
-        channel.start_consuming()
-main()
+模型对象(参数)<br>
+网络层对象(参数)<br>
+我们还可以实现继承模板</p>
+<h1 id="导入">导入</h1>
+<pre><code>from tensorflow import keras
 </code></pre>
-<h4 id="productpy-3">product.py</h4>
-<pre><code>import pika
+<h1 id="metrics-统计平均">metrics (统计平均)</h1>
+<p>里面有各种度量值的接口<br>
+如：二分类、多分类交叉熵损失容器，MSE、MAE的损失值容器， Accuracy精确率容器等。<br>
+下面以Accuracy伪码为例：<br>
+acc_meter = keras.metrics.Accuracy() # 建立一个容器<br>
+for _ in epoches:<br>
+for _ in batches:<br>
+y = ...<br>
+y_predict = ...<br>
+acc_meter.update_state(y, y_predict) # 每次扔进去数据，容器都会自动计算accuracy，并储存</p>
+<pre><code>        if times % 100 == 0: # 一百次一输出, 设置一个阈值/阀门
+            print(acc_meter.result().numpy())   # 取出容器内所有储存的数据的，均值准确率
+    acc_meter。reset_states()    # 容器缓存清空， 下一epoch从头计数。
+</code></pre>
+<h1 id="激活函数损失函数优化器">激活函数+损失函数+优化器</h1>
+<p>导入方式：<br>
+keras.activations.relu()    # 激活函数：以relu为例，还有很多<br>
+keras.losses.categorical_crossentropy() # 损失函数：以交叉熵为例，还有很多<br>
+keras.optimizers.SGD()      # 优化器：以随机梯度下降优化器为例<br>
+keras.callbacks.EarlyStopping()  # 回调函数： 以‘按指定条件提前暂停训练’回调为例</p>
+<h1 id="sequential继承自model属于模型">Sequential(继承自Model)属于模型</h1>
+<h3 id="模型定义方式">模型定义方式</h3>
+<p>定义方式1：<br>
+model = keras.models.Sequential( [首层网络,第二层网络。。。] )<br>
+定义方式1：<br>
+model = keras.models.Sequential()<br>
+model.add(首层网络)<br>
+model.add(第二层网络)</p>
+<h3 id="模型相关回调配置">模型相关回调配置</h3>
+<pre><code>logdir = 'callbacks'
+if not os.path.exists(logdir):
+    os.mkdir(logdir)
+save_model_file = os.path.join(logdir, 'mymodel.h5')
 
-def main():
-    with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
-        channel = connection.channel()
-        exchange_name = 'fanout'
-        channel.exchange_declare(
-            exchange_name,
-            exchange_type='fanout',
-            durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        )
-        for x in range(50):
-            channel.basic_publish(
-                exchange=exchange_name,
-                routing_key='',
-                body=str(x)
-            )
-main()</code></pre>
+callbacks = [
+    keras.callbacks.TensorBoard(logdir),    # 写入tensorboard
+    keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),  # 模型保存
+    keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)  # 按条件终止模型训练
+    # 验证集，每次都会提升，如果提升不动了，提升小于这个min_delta阈值，则会耐心等待5次。
+    # 5次过后，要是还提升这么点。就提前结束。
+]
+# 代码写在这里，如何传递调用， 下面 “模型相关量度配置” 会提到
+</code></pre>
+<h3 id="模型相关量度配置损失优化器准确率等">模型相关量度配置：(（损失，优化器，准确率等)</h3>
+<p>说明，下面的各种量度属性，可通过字符串方式，也可通过上面讲的导入实例化对象方式。<br>
+model.compile(<br>
+loss=&quot;sparse_categorical_crossentropy&quot;,    # 损失函数，这是字符串方式<br>
+optimizer= keras.optimizers.SGD()          # 这是实例化对象的方式，这种方式可以传参<br>
+metrics=['accuracy']  # 这项会在fit()时打印出来<br>
+)  # compile() 操作，没有真正的训练。<br>
+model.fit(<br>
+x,y,<br>
+epochs=10,                              # 反复训练 10 轮<br>
+validation_data = (x_valid,y_valid),    # 把划分好的验证集放进来（fit时打印loss和val）<br>
+validation_freq = 5,                    # 训练5次，验证一次。  可不传，默认为1。<br>
+callbacks=callbacks,                    # 指定回调函数， 请衔接上面‘模型相关回调配置’</p>
+<pre><code>)   # fit()才是真正的训练 
+</code></pre>
+<h3 id="模型-验证测试">模型 验证&amp;测试</h3>
+<p>一般我们会把 数据先分成三部分（如果用相同的数据，起不到测试和验证效果，参考考试作弊思想）：</p>
+<ol>
+<li>训练集: （大批量，主体）</li>
+<li>测试集: （模型所有训练结束后， 才用到）</li>
+<li>验证集: （训练的过程种就用到）<br>
+说明1：（如何分离？）
+<ol>
+<li>它们的分离是需要（x,y）组合在一起的，如果手动实现，需要随机打散、zip等操作。</li>
+<li>但我们可以通过 scikit-learn库，的 train_test_split() 方法来实现 （2次分隔）</li>
+<li>可以使用 tf.split()来手动实现<br>
+具体分离案例：参考上一篇文章： https://segmentfault.com/a/1190000020447666</li>
+</ol>
+</li>
+</ol>
+<p>说明2：（为什么我们有了测试集，还需要验证集？）</p>
+<ol>
+<li>测试集是用来在最终，模型训练成型后（参数固定），进行测试，并且返回的是预测的结果值！！！！</li>
+<li>验证集是伴随着模型训练过程中而验证）<br>
+代码如下：<br>
+loss, accuracy = model.evaluate( (x_test, y_test) ) # 度量， 注意，返回的是精度指标等<br>
+target = model.predict( (x_test, y_test) )          # 测试， 注意，返回的是 预测的结果！</li>
+</ol>
+<h3 id="可用参数">可用参数</h3>
+<pre><code>model.trainable_variables    # 返回模型中所有可训练的变量
+# 使用场景： 就像我们之前说过的 gradient 中用到的 zip(求导结果, model.trainable_variables)
+</code></pre>
+<h1 id="自定义model">自定义Model</h1>
+<p>Model相当于母版， 你继承了它，并实现对应方法，同样也能简便实现模型的定义。</p>
+<h1 id="自定义layer">自定义Layer</h1>
+<p>同Model， Layer也相当于母版， 你继承了它，并实现对应方法，同样也能简便实现网络层的定义。</p>
+<h1 id="模型保存与加载">模型保存与加载</h1>
+<p>###方法1：之前callback说的<br>
+###方法2：只保存weight(模型不完全一致)<br>
+保存：<br>
+model = keras.Sequential([...])<br>
+...<br>
+model.fit()<br>
+model.save_weights('weights.ckpt')<br>
+加载：<br>
+假如在另一个文件中。（当然要把保存的权重要复制到本地目录）<br>
+model = keras.Sequential([...])    # 此模型构建必须和保存时候定义结构的一模一样的！<br>
+model.load_weights('weights.ckpt')<br>
+model.evaluate(...)<br>
+model.predict(...)</p>
+<p>###方法3：保存整个模型（模型完全一致）<br>
+保存：<br>
+model = keras.Sequential([...])<br>
+...<br>
+model.fit()<br>
+model.save('model.h5')    # 注意 这里变了，是 save<br>
+加载:（直接加载即可，不需要重新复原建模过程）<br>
+假如在另一个文件中。（当然要把保存的模型要复制到本地目录）<br>
+model = keras.models.load_model('model.h5')  # load_model是在 keras.models下<br>
+model.evaluate(...)<br>
+model.predict(...)<br>
+###方法4：导出可供其他语言使用（工业化）<br>
+保存： （使用tf.saved_model模块）<br>
+model = keras.Sequential([...])<br>
+...<br>
+model.fit()<br>
+tf.saved_model.save(model, '目录')<br>
+加载：（使用tf.saved_model模块）<br>
+model = tf.saved_model.load('目录')</p>
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[PY => Git常用命令/组合套路]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-git-chang-yong-ming-ling-zu-he-tao-lu/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-git-chang-yong-ming-ling-zu-he-tao-lu/">
+        <title type="html"><![CDATA[AI => 知识图谱之Neo4j-Cypher]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-zhi-shi-tu-pu-zhi-neo4j-cypher/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-zhi-shi-tu-pu-zhi-neo4j-cypher/">
         </link>
-        <updated>2020-09-29T03:43:46.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="全部配置个人信息本机所有仓库">全部配置个人信息（本机所有仓库）</h1>
-<pre><code>git config --global user.name  &quot;用户名 &quot;
-git config --global user.email &quot;邮箱&quot;
-</code></pre>
-<h1 id="查看个人信息">查看个人信息</h1>
-<pre><code>git config --list 
-</code></pre>
-<h1 id="生成ssh密钥">生成SSH密钥</h1>
-<pre><code>ssh-keygen
-pub_key - &gt; github
-</code></pre>
-<h1 id="新建仓库基操五部曲">新建仓库基操五部曲</h1>
-<pre><code>git init
-git add xxx（添加到缓存区）	  &lt;===互逆===&gt;  git reset HEAD （从缓存区拿回来）
-git commit -m '描述信息'
-git remote add origin git@github.com:hacker-lin/test.git		# 你的github 仓库克隆地址
-git push -u origin master
-</code></pre>
-<h1 id="开发分支操作n部曲">开发分支操作N部曲</h1>
-<p>假如线上有项目，你本地 没有 仓库，那么你就首先需要：<br>
-git clone xxx				# 第一次<br>
-cd 目录</p>
-<pre><code>git checkout -b new_bug    # 创建并切换到新分支
-echo new_bug&gt;new_bug		
-git add .
-git commit -m 'new_bug'
-
-git push -u origin new_bug  # 连接名 分支名 可通过（git remote， git branch）查看
-							# 这步的目的是，自己的分支写完也要push保存一下，防止丢失
-git checkout master       # 回到主分支
-git merge new_bug			# 把 new_bug分支合并到 master 分支
-git push					# 将合并完事的master重新推上去 （这样就完事一次产品的迭代）
-</code></pre>
-<p>假如线上有项目，你本地也有仓库，那么你就不需要git clone了<br>
-你只需要 git pull<br>
-git pull					# pull等价于 fetch + merge<br>
-git checkout -b new_bug01<br>
-echo new_bug01 &gt; new_bug01<br>
-git add .<br>
-git commit -m 'new_bug01'</p>
-<pre><code>git push -u origin new_bug01  # 这步的目的是，自己的分支写完也要push保存一下，防止丢失
-git checkout master        # 切换到master
-git merge new_bug01		    # 把 new_bug01分支合并进来（合并到master）
-git push					 # 将合并完事的master重新推上去 （这样就完成又一次产品的迭代）
-</code></pre>
-<h1 id="区域信息">区域信息</h1>
-<pre><code>git status  
-	# 未被git add的-（红色）
-	# 已经git add的-（绿色）
-	# 已经 git commit的-（无信息）
-git log		# 查看版本commit历史信息
-</code></pre>
-<h1 id="分支信息">分支信息</h1>
-<pre><code>git branch
-</code></pre>
-<h1 id="远程连接信息">远程连接信息</h1>
-<pre><code>git remote
-</code></pre>
-<h1 id="删除本地">删除本地</h1>
-<pre><code>rm xxxxx
-git rm xxxxx
-git commit -m '描述'</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => Anaconda-Jupyter相关配置]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-anaconda-jupyter-xiang-guan-pei-zhi/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-anaconda-jupyter-xiang-guan-pei-zhi/">
-        </link>
-        <updated>2020-09-29T03:43:12.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="conda虚拟环境命令">Conda虚拟环境命令</h1>
-<h3 id="查看所有虚拟环境2种结果一摸一样">查看所有虚拟环境（2种，结果一摸一样）</h3>
-<pre><code>conda info --e
-或
-conda env list
-</code></pre>
+        <updated>2020-09-29T04:11:21.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="crud">CRUD</h1>
 <h3 id="创建">创建</h3>
-<pre><code>conda create -n rs python=3.8.5
+<p>普通无属性创建（默认给你创建一个ID）<br>
+create (p:person)-[:eat]-&gt;(f:food)<br>
+带有属性的创建（ {} ）<br>
+create (p:person{name:'zhangsan'})-[:eat]-&gt;(f:food{name:'apple'})</p>
+<p>给两个孤独的实体创建关系：<br>
+match<br>
+(a:animal),(c:color)<br>
+create    （如果这里改为 merge 则是 “有则查询，无则创建”）<br>
+(a)-[h:have]-&gt;(c) return h</p>
+<pre><code>对应查询：
+	match 
+		(a:animal),(c:color) 
+	return  a,c
 </code></pre>
-<h3 id="激活">激活：</h3>
-<pre><code>conda activate rs
+<h3 id="删除-delete">删除 (delete)</h3>
+<pre><code>match
+	(a:animal)-[h:have]-&gt;(c:color) 
+delete a,h,c
 </code></pre>
-<h3 id="退出">退出：</h3>
-<pre><code>conda deactivate
+<h3 id="更新修改set">更新修改（set）</h3>
+<pre><code>match
+	(f:food) 
+set f.age=20
 </code></pre>
-<h3 id="删除虚拟环境">删除虚拟环境：</h3>
-<pre><code>conda remove -n rs --all
+<h3 id="查询">查询</h3>
+<p>主体查询结构<br>
+match<br>
+(p:)-[:关系名]-[别名2:实体名]<br>
+return 别名1,别名2</p>
+<p>普通条件查询1（whree）<br>
+match<br>
+(n:User)<br>
+where<br>
+n.name='Tom'<br>
+return n<br>
+普通条件查询2：（ {} ）<br>
+match<br>
+(p:person{name:'zhangsan'})-[:eat{level:1}]-&gt;(f:food{name:'apple'})<br>
+return p,f<br>
+正则条件查询(~)<br>
+match<br>
+(n:User)<br>
+where<br>
+n.name=~'T.*'<br>
+return n<br>
+包含条件查询（contains）<br>
+match<br>
+(n:User)<br>
+where<br>
+n.name contains 'T'<br>
+return n</p>
+<p>多度查询<br>
+match (t:teacher)-[]-(s:student)-[]-(ss:score) return t,s,ss</p>
+<pre><code># 注意1： [] 里面不写，代表所有关系
+# 注意2： -  没有箭头，代表任意方向
+# 注意3： 别名不可以重复指定， 所以我设置了 ss
+
+多度关系： （通常是基于人脉来讲的）
+1度关系：我 -&gt; 你
+2度关系：我 -&gt; 你 -&gt; 他
+
+理解技巧： 算几度关系时，把自己（节点）捂住不看， 然后剩下几个人员节点，就是几度关系
+
+特别注意：
+    多度查关系时，比如你查 3度关系的结果。
+    neo4j的图可能会把， 2度关系也画出来，why? 因为他通过2度关系也可直接得出结果。
+    （可理解为 条条大路通罗马。）
+    ！！！但是最终有效的返回路径只是你最初想要的 3度。   （2度就不算了）
 </code></pre>
-<h3 id="查看当前虚拟环境所安装的包">查看当前虚拟环境所安装的包</h3>
-<pre><code>conda list
+<p>查询最短路径：<br>
+match (t:teacher), (s:student),<br>
+p=shortestpath( (t)-[*..]-(s) )<br>
+return p</p>
+<pre><code># 注意： p= 之前有个逗号 ，
 </code></pre>
-<h3 id="搜索某包的信息包括channel">搜索某包的信息（包括channel）</h3>
-<pre><code>conda search requests
+<p>查询所有最短路径：<br>
+match (t:teacher), (s:student),<br>
+p=allshortestpaths( (t)-[*..]-(s) )<br>
+return p</p>
+<pre><code># 注意1： 前面多个 all ，后面多个s
+# 注意2： 所有最短路径的都会列出来。 人人平等~
 </code></pre>
-<h3 id="升级当前conda">升级当前conda</h3>
-<pre><code>conda update conda
+<h1 id="索引">索引</h1>
+<h3 id="创建索引-create">创建索引 (create)</h3>
+<pre><code>create index on  :food(name)      
+
+# food为实体名，name为属性名， 同时注意这个 :    
 </code></pre>
-<h3 id="查看镜像">查看镜像</h3>
-<pre><code>conda config --show channels
+<h3 id="删除索引drop">删除索引（drop）</h3>
+<pre><code>drop index on  :food(name)
 </code></pre>
-<h3 id="更改镜像">更改镜像</h3>
-<pre><code>conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
-conda config --set show_channel_urls yes
+<h1 id="约束">约束</h1>
+<h3 id="创建约束">创建约束</h3>
+<pre><code>create constraint on (gf:girlfriend) assert (gf.name) is unique
 </code></pre>
-<h3 id="删除镜像">删除镜像</h3>
-<pre><code>conda config --remove channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+<h3 id="删除约束">删除约束</h3>
+<pre><code>create constraint on (o:others) assert (o.name) is unique
 </code></pre>
-<h3 id="更新-某环境的-某个包">更新 某环境的 某个包</h3>
-<p>conda update -n rs requests</p>
-<h3 id="删除-某环境-的-某个包">删除 某环境 的 某个包</h3>
-<p>conda remove -n rs requests</p>
-<h1 id="生成jupyter配置文件">生成Jupyter配置文件</h1>
-<pre><code>jupyter notebook --generate-config
+<h1 id="聚合">聚合</h1>
+<h3 id="统计个数count">统计个数（count）</h3>
+<pre><code>match ... return count(别名)        
 </code></pre>
-<p>这条命令过后，会提示你 xxx路径下，创建了一个xxx配置文件，记下来。</p>
-<h1 id="更换jupyter基目录">更换Jupyter基目录</h1>
+<h3 id="限制取多少条-limit">限制取多少条 （limit）</h3>
+<pre><code>match ... return 别名 limit 5    # 只取5条
+</code></pre>
+<h1 id="知识图谱流程">知识图谱流程</h1>
 <ol>
-<li>打开上面的配置文件（windows用Sublime或普通的notebook）（linux用vim即可）</li>
-<li>搜索关键词 c.NotebookApp.notebook_dir     # 把后面字符串设成你的路径即可</li>
-<li>保存退出，重新打开 Jupyter。</li>
+<li>数据抓取</li>
+<li>知识模型设计</li>
+<li>NER （远程监督）</li>
+<li>关系抽取（Bootstrap）</li>
+<li>知识推理</li>
+<li>图谱存储（Neo4j Cypher）</li>
+<li>检索/问答/推荐</li>
 </ol>
-<h1 id="调高jupyter的io频率若不调-可能会越界">调高Jupyter的IO频率（若不调 可能会越界）</h1>
-<ol>
-<li>打开上面的配置文件（windows用Sublime或普通的notebook）（linux用vim即可）</li>
-<li>搜索关键词 c.NotebookApp.iopub_data_rate_limit    # 把后面的数字调大（越大越好）</li>
-<li>保存退出，重新打开 Jupyter。</li>
-</ol>
-<h1 id="修改jupyter主题样式">修改Jupyter主题样式</h1>
-<p>安装<br>
-pip install jupyterthemes     （Anaconda-prompt 的pip）<br>
-列出所有样式名称<br>
-jt -l<br>
-修改样式<br>
-jt -t monokai<br>
-如果感觉都不好看，可恢复(使用完记得重启jupyter)：<br>
-jt -r<br>
-别人推荐的样式（主题+字体+界面宽度一气呵成）：<br>
-jt -t chesterish -f fira -fs 13 -nf ptsans -nfs 11 -N -kl -cursw 5 -cursc r -cellw 95% -T<br>
-官方样式说明：<br>
-https://github.com/dunovank/jupyter-themes<br>
-或者这篇教程：<br>
-https://towardsdatascience.com/bringing-the-best-out-of-jupyter-notebooks-for-data-science-f0871519ca29</p>
-<h1 id="jupyter全屏编辑">Jupyter全屏编辑</h1>
-<p>这个我之前查过，修改配置文件的都不好用<br>
-（上面改主题的时候可以该宽度，但貌似必须修改主题，才能修改界面宽度，否则不可以）</p>
-<p>只在StackOverflow上找到了一种简陋的解决办法<br>
-每个ipynb文件头部加上固定的2条语句即可：<br>
-from IPython.core.display import display, HTML<br>
-display(HTML(&quot;<style>.container { width:100% !important; }</style>&quot;))</p>
-<h1 id="有趣的扩展不是很实用">有趣的扩展（不是很实用）</h1>
-<p>内嵌dataframe表格操作: （玩玩可以，慎用， 小型数据就撑不住了，导致整个kernel崩溃）<br>
-安装：<br>
-pip install qgrid<br>
-jupyter nbextension enable --py --sys-prefix qgrid<br>
-导入：<br>
-from qgrid import show_grid as s<br>
-使用案例：<br>
-df = pd.DataFrame([['bac', 'bcd'],['应用','博客']])<br>
-s(df, show_toolbar=True)<br>
-结果如下:<br>
-笔记无法插入本地图片。。。。。。很易懂的结果。</p>
-<p>内嵌小浏览器：<br>
-from IPython.display import IFrame<br>
-IFrame('https://www.baidu.com/s?ie=UTF-8&amp;wd=fsd', width=1200, height=1000)</p>
-<h1 id="conda各种疑难杂症安装">Conda各种疑难杂症安装</h1>
-<p>所有包几乎都可以用 Anaconda-prompt 中的 pip，这种 安装方法是&quot;下下策&quot;。<br>
-因为有时用这个装可能出问题。</p>
-<h3 id="opencv">Opencv</h3>
-<p>conda:<br>
-conda install -c menpo opencv<br>
-pip:<br>
-pip install opencv-python</p>
+<h3 id="实体抽取">实体抽取</h3>
+<p>BILSTM+CRF</p>
+<h3 id="关系抽取">关系抽取</h3>
+<p>Bootstrap方法：<br>
+1. 构建种子实体： &quot;猫&quot;， &quot;老鼠&quot;。</p>
+<pre><code>2. 寻找包含 &quot;猫&quot;  &quot;老鼠&quot; 的 句子：
+    找到句子：&quot;猫和老鼠是好朋友&quot;  
+    可抽取关系: 和...是好朋友
+
+3. 拿着抽取的关系再次寻找新句子：
+    找到新句子：&quot;张三和里李四是好朋友&quot;
+    提取出新实体: &quot;张三&quot;, &quot;李四&quot;
+    
+4. 寻找包含 &quot;张三&quot;  &quot;李四&quot; 的 句子：
+    找到句子：&quot;张三经常和李四一起玩&quot;  
+    可抽取关系:  经常和... 一起玩
+
+5. 拿着抽取的关系再次寻找新句子：
+    找到新句子：&quot;王五和赵六是好朋友&quot;
+    提取出新实体: &quot;王五&quot;, &quot;赵六&quot;
+...
+...
+循环反复</code></pre>
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[PY => 超级鹰打码（Python）+报错回扣]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/">
+        <title type="html"><![CDATA[AI => NER之BIO转BIOES]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-ner-zhi-bio-zhuan-bioes/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-ner-zhi-bio-zhuan-bioes/">
         </link>
-        <updated>2020-09-29T03:41:55.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="细微如下改动">细微如下改动</h1>
-<ol>
-<li>兼容Python3</li>
-<li>1元包调试试用（8001） 4-6位 英文+数字验证码</li>
-<li>打码与预期结果不符，调用报错提示，将图片ID传回，可将失误次数返回</li>
-<li>代码对照表如下<br>
-https://www.chaojiying.com/price.html</li>
-</ol>
-<h1 id="脚本代码如下">脚本代码如下</h1>
-<pre><code>import requests
-from hashlib import md5
+        <updated>2020-09-29T04:08:26.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="bio">BIO</h3>
+<p>B: 命名实体的起始 或 单个字命名实体<br>
+I: 命名实体的中间位置 或 结束位置<br>
+O：非命名实体</p>
+<h3 id="bioes">BIOES</h3>
+<p>B: 命名实体的起始标注（Only哦）<br>
+I: 命名实体的中间标注（Only哦）<br>
+E: 命名实体的结尾标注（Only哦）</p>
+<p>O: 非命名实体<br>
+S: 单个字命名实体</p>
+<h3 id="bio转bioes规则">BIO转BIOES规则</h3>
+<figure data-type="image" tabindex="1"><img src="https://cythonlin.github.io/post-images/1601352615887.png" alt="" loading="lazy"></figure>
+<h3 id="个人代码实现">个人代码实现</h3>
+<p>传送门：<a href="https://github.com/hacker-lin/bio2bioes/">https://github.com/hacker-lin/bio2bioes/</a></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => 安装neo4j (Linux)]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-an-zhuang-neo4j-linux/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-an-zhuang-neo4j-linux/">
+        </link>
+        <updated>2020-09-29T04:07:49.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="依赖java先装java">依赖java,先装java</h1>
+<p>官网：<a href="https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html</a><br>
+找到： jdk-8u231-linux-x64.tar.gz  下载（可能会比较慢，还需要注册）</p>
+<p>个人网盘分享：https://pan.baidu.com/s/1EMFM_Y_HT3bHFwncKj2orw&amp;shfl=shareset<br>
+提取码: w24a</p>
+<p>通过XFTP传送到服务器。<br>
+任意目录（自己记住即可）：<br>
+tar -zxvf jdk-8u231-linux-x64.tar.gz<br>
+# 解压出来一个目录，记住找个名字，和当前路径，下面用<br>
+# 我这里是 jdk1.8.0_181<br>
+相关配置:<br>
+vi ~/.bashrc</p>
+<pre><code>export JAVA_HOME=/root/kg/neo4j/java/jdk1.8.0_181/
+export JRE_HOME=${JAVA_HOME}/jre 
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib 
+export PATH=${JAVA_HOME}/bin:$PATH 
 
-class Chaojiying_Client(object):
-
-    def __init__(self, username, password, soft_id):
-        self.username = username
-        password =  password.encode('utf8')
-        self.password = md5(password).hexdigest()
-        self.soft_id = soft_id
-        self.base_params = {
-            'user': self.username,
-            'pass2': self.password,
-            'softid': self.soft_id,
-     }
-        self.headers = {
-            'Connection': 'Keep-Alive',
-            'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
-        }
-
-    def PostPic(self, im, codetype):
-        &quot;&quot;&quot;
-        im: 图片字节
-     codetype: 题目类型 参考 http://www.chaojiying.com/price.html
-     &quot;&quot;&quot;
-		params = {
-         'codetype': codetype,
-        }
-        params.update(self.base_params)
-        files = {'userfile': ('ccc.jpg', im)}
-   	 r = requests.post('http://upload.chaojiying.net/Upload/Processing.php', data=params, files=files, headers=self.headers)
-    	return r.json()
-
-	def ReportError(self, im_id):
-        &quot;&quot;&quot;
-     im_id:报错题目的图片ID
-     &quot;&quot;&quot;
-        params = {
-         'id': im_id,
-     }
-     params.update(self.base_params)
-     r = requests.post('http://upload.chaojiying.net/Upload/ReportError.php', data=params, headers=self.headers)
-     return r.json()
-
-
-if __name__ == '__main__':
- chaojiying = Chaojiying_Client('你的用户名', '你的密码', '软件ID')	 # 进入主页-&gt;软件ID -&gt; 生成一个软件ID（上面小字）
-	im = open('a.jpg', 'rb').read()												
-	result = chaojiying.PostPic(im, 8001)											
-	print(result)
-	if result['pic_str'] != 'n1wtu':
-        print(chaojiying.ReportError(result['pic_id']))
+保存退出
 </code></pre>
+<p>激活配置：<br>
+source ~/.bashrc<br>
+至此，java安装完成！</p>
+<h1 id="安装neo4j">安装Neo4j:</h1>
+<p>下载连接：<a href="https://neo4j.com/download-center/">https://neo4j.com/download-center/</a><br>
+选个Linux版本的（需要上网）（记得下社区版的）<br>
+同样传到Linux解压即可。</p>
+<p>个人网盘分享：https://pan.baidu.com/s/1FnbZW0n2-w8yCZEXG3J6zw&amp;shfl=shareset<br>
+提取码: 451c</p>
+<p>因为我是云端运行。所以需要改下配置，支持远程访问。<br>
+进入解压后的目录，我这里是 neo4j-community-3.5.11<br>
+cd neo4j-community-3.5.11<br>
+cd conf<br>
+vi neo4j.conf</p>
+<pre><code>添加如下配置（或者你能找到这行，直接解除注释也行）：
+    dbms.connectors.default_listen_address=0.0.0.0
+</code></pre>
+<p>至此，neo4j安装完成。<br>
+启动neo4j:<br>
+cd neo4j-community-3.5.11<br>
+cd bin<br>
+./neo4j console<br>
+看启动信息的url:port， 复制出来直接访问即可。<br>
+xxxxxxxx:7474    # 若是阿里云，需要放通防火墙7474 和 7687<br>
+成功进去后，会提示你输入默认用户名 和 密码：<br>
+默认用户名为 ：neo4j<br>
+默认密码也为 ：neo4j</p>
+<p>密码忘记了？？<br>
+进入 xx/data/dbms<br>
+删除 auth 文件，重启服务</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => CNN之kernel_size/strides/padding/same]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-cnn-zhi-kernel_sizestridespaddingsame/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-cnn-zhi-kernel_sizestridespaddingsame/">
+        </link>
+        <updated>2020-09-29T04:07:02.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<p>先强调一点：<br>
+涉及到参数，都是针对Tensorflow来讲的。</p>
+<p>本文主要说一些CNN最常用的几个参数。<br>
+以及各种组合情况下卷积之后计算形状的规律公式。<br>
+filters       (必填， 这个本文不说)<br>
+kernel_size  （必填）<br>
+strides         (选填， 默认为 (1,1) )<br>
+padding         （选填，默认为 valid）<br>
+这里先提一下，通用公式： (宽高都用这个公式，我只列出了高度的)<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+也许你看起来没什么问题，但是Tensorflow中的API可不告诉你padding是几。<br>
+而是提供给你2个可选参数：<br>
+padding='valid'     (默认参数)  # 代表不做padding，滑动不能越界，多余就裁剪。<br>
+padding='same'                 # same我会在下面展开说明。</p>
+<h1 id="无same情况">无same情况</h1>
+<h3 id="strides-1">strides = 1</h3>
+<p>你完全可以按照上面的通用公式计算，但是通常情况下我会用另一个简便的公式：<br>
+h图片输出 = h图片输入 - h卷积核 + 1</p>
+<h3 id="strides-1-2">strides != 1</h3>
+<p>这个就得使用上面的通用公式了：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1</p>
+<h1 id="有same情况">有same情况</h1>
+<p>加了same，情况就比较复杂一些了。<br>
+same 就是 让你在不同的 strides滑动情况下，帮你把原图片虚拟补全。<br>
+使得filter在图片中完全滑动，(而不至于，最后剩下一点越界滑不到给无情的裁剪掉)。</p>
+<h3 id="strides-1重点">strides = 1（重点）</h3>
+<p>strides=1的情况下，如果你使用了 same。<br>
+那么same会帮你补充 padding, 使得你滑动后的特征形状与滑动之前的形状 &quot;保持一致&quot;。<br>
+补充的padding大小为: (敲黑板)：<br>
+padding = h图片输入  %  h卷积核            # 看清楚，是取模运算<br>
+举个例子，验证一下：<br>
+假如:<br>
+图片（输入） = 7 x 7,<br>
+kernel_size = (5,5),<br>
+strides = 1。<br>
+（通过我们上面给出的公式，你先求 padding = 7 % 5） ，很显然是2。</p>
+<pre><code>我们再用最开始讲的通用公式验证一遍：
+    h输出长度 = (h输入 - h卷积核 + 2 * padding) / 1 + 1 = 7-5 + 2*2 + 1 = 7
+    巧了，我们的输入长度也是 7。
+    
+所以综上所述： padding = h图片输入  %  h卷积核。 
+可以使得：输入形状 与卷积后的输出形状一致
+</code></pre>
+<h3 id="strides-1重点-2">strides != 1（重点）</h3>
+<p>当步长strides为多步时，如果你使用了 same。<br>
+敲黑板：那么same会帮你补充 padding,  并且卷积后的特征图缩小为原来的 strides倍。<br>
+补充的padding大小为: (敲黑板)：<br>
+padding = h图片输入  %  h卷积核            # 看清楚，是取模运算<br>
+我为了演示， 我突来灵感，随便找了一个 五子棋棋盘（笑了）， 见下图。<br>
+<img src="/img/bVbyNdl" alt="image.png" loading="lazy"></p>
+<h1 id="小技巧有无same都适用">小技巧（有无same都适用）</h1>
+<p>当你预期想要把特征形状卷积之后形状大小&quot;成倍缩小&quot;时，你可以 &quot;同时&quot; 设置：<br>
+kernel_size == strides == (n,n)  # n就是缩小的倍数</p>
+<pre><code>说明，只要你把 kernel_size 和 strides 设置为相等，设置为n。那么图像一定会缩小n倍。
+
+举个栗子： n设为3
+    kernel_size = (3,3) 
+    strides = (3,3)
+    那么: 你卷积出来的特征尺寸，一定比上一层缩小3倍。
+</code></pre>
+<h1 id="结束语聊一下pooling2d">结束语（聊一下Pooling2D）</h1>
+<p>pooling的通用公式和 CNN中的是一模一样的。<br>
+Tensorflow 中 xxxPooling API参数如下：<br>
+pool_size （选填，默认为 (2, 2) ）<br>
+strides   （选填，默认为 None）   （这里你会疑问，None是什么鬼？？？）<br>
+我也不知道，API参数也没给说明。当我跳进源码，我发现如下代码，瞬间豁然开朗！<br>
+if strides is None:<br>
+strides = pool_size        （这应该就不用我解释了吧~）<br>
+padding   （选填，默认为 valid， 通常没必要用 same ）</p>
+<p>我们上面说过小技巧：<br>
+卷积层中：     kernel_size == strides == (n,n)  # n就是缩小的倍数<br>
+池化层也同理： pool_size == strides == (n,n)    # n就是缩小的倍数</p>
+<pre><code>又因为刚才又说了 ，  池化层中 strides 默认值等于 pool_size 的长度。
+
+所以: 我们只设置一个  pool_size = (n,n)。 即可直接让原图缩小n倍。
+
+所以: 池化层通常用来做降采样。  (起到变换形状的作用，无权重参数更新)</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => CNN-RNN（Ng）]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-cnn-rnnng/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-cnn-rnnng/">
+        </link>
+        <updated>2020-09-29T04:05:43.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<p>看Andrew Ng视频，总结的学习心得。<br>
+虽然本篇文章可能不是那么细致入微，甚至可能有了解偏差。<br>
+但是，我喜欢用更直白的方式去理解知识。<br>
+上一篇文章传送门： https://segmentfault.com/a/1190000020588580</p>
+<h1 id="端到端">端到端</h1>
+<h3 id="首先聊一个面试经历">首先聊一个面试经历</h3>
+<p>我最开始接触的是ML （但只限于Sklearn的简单应用，工程化的内容当时一点都不了解。）<br>
+后来有幸了解到DL （这个了解比较多）<br>
+我面的是普通Python岗， 因为我的小项目中涉及到 （聊天机器人）。所以第二个面试官揪着这个聊了聊。<br>
+与面试官交谈时，我也直接挑明了，模型是Github找的，当时自己爬了些问答对，处理后放入模型自己训练的。<br>
+面试官一顿(特征提取，语义）等各种 ML-NLP工程化的过程，把我直接问懵了。。</p>
+<p>怎么提取特征（问号脸，难道是TF-IDF，分词之类的？？）？？？？？<br>
+我也不知道说啥，以仅有的能力，和他聊聊（LSTM、Embedding, Seq2Seq的 Encoder-Vector-Decoder）。。</p>
+<p>面试官说：“你说了这些， 那你特征工程是怎么做的？？？”<br>
+我感觉已经没有任何反驳的能力了。。。接下来的事情，我不说，大家也应该清楚了。</p>
+<h3 id="反思">反思</h3>
+<p>我回来后也反思过， 做了什么特征工程？？<br>
+我看视频中 也是，数据简单预处理下，然后分词，词频过滤，构建词典<br>
+然后，直接就是构建NN层（包括Embedding层）。</p>
+<p>直到最后了解了&quot;端到端这个概念&quot; 与 传统ML的区别。<br>
+才清楚， 当时面试的场景是怎么个情况。。。</p>
+<h3 id="正式开篇端到端">正式开篇端到端</h3>
+<p>传统ML：  原数据 -&gt; 数据特征工程(各种复杂的人工处理) ---&gt; 模型<br>
+端到端DL：原数据 -----------------------------------------------------&gt; 模型</p>
+<p>端到端：（一步到位）：<br>
+传统的ML做的中间层人工&quot;手动&quot;特征工程处理出来的特征。<br>
+这些特征，端到端的NN都可能&quot;自动学习&quot;的到。</p>
+<pre><code>这也可能是当时为什么面试官一直追问我&quot;特征如何处理&quot;的原因吧。也肯能他另有目的QAQ...
+或者我们真的不在一个频道上。。。但是交流的过程真的使我受益匪浅，有了更广阔的视野（3Q！）
+</code></pre>
+<p>强调一点：<br>
+虽然端到端 模型很便捷。但是需要大量的数据，才能训练出好的效果。</p>
+<h1 id="cnn-卷积神经网络">CNN （卷积神经网络）</h1>
+<h2 id="构成">构成</h2>
+<pre><code>卷积层（激活函数） + 池化层    + 全连接层
+Convolution       + Pooling   + Dense
+</code></pre>
+<h3 id="至于一些术语">至于一些术语:</h3>
+<pre><code>有人喜欢把: 卷积层 + 池化层   作为一层网络 （因为池化层无训练训练，后面会提到）
+也有人喜欢把:  卷积层 和 池化层 各自单独算一个层（也是没问题的。Tensorflow的API就是这样设计的）
+</code></pre>
+<h2 id="卷积层convolution-layer">卷积层（Convolution Layer）</h2>
+<h3 id="卷积过程">卷积过程</h3>
+<pre><code>卷积计算过程就不说了。没有案例图。
+但你可以理解为: 两个 正方体 的 对应位置的元素 （相乘再相加）的结果。。。 （互相关，，，）
+</code></pre>
+<h3 id="卷积的输出计算">卷积的输出计算</h3>
+<p>输出图像大小计算公式：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+w图片输出 = （w图片输入 - w卷积核 + 2padding） / strides + 1</p>
+<pre><code>首先声明: 这个式子由于不一定能够整除， 因此除不尽的情况下，向下取整, 也叫地板除
+因为有个原则: 卷积核滑动的时候(通常是，步长&gt;1的情况下) 如果越界了一部分。则舍弃掉
+</code></pre>
+<p>根据上面的公式，求一个输出图像大小的例子(此处，不做paddding， 并且步长为1)<br>
+eg: 输入8x8 的图像 ,  并使用3x3的卷积核<br>
+输出图像高度为:  h图片输出 = (8-3 + 2x0) / 1 + 1 = 6<br>
+输出图像宽度为:  w图片输出 = (8-3 + 2x0) / 1 + 1 = 6<br>
+所以输出图像为:  6x6</p>
+<pre><code>很明显: 卷积一次，图像变小了。 如果再卷积几次， 图像就看不到了。。。
+
+所以: 我们需要解决这个问题
+原则上: 增加 padding 能解决步长为1时，卷积后的图片缩放问题。
+</code></pre>
+<p>假如我们希望输出图像的大小 等于 输出图像的大小，而我们想要求padding需要设置为多少。<br>
+一般这种场景适用于 步长strides = 1,  所以参考开始的公式，可写出如下公式：<br>
+因为: w 和 h是一样的公式，此处只写出一个h,来推导：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+化简:<br>
+padding =（ h图片输出 - h图片输入 + h卷积核 - 1 ） / 2<br>
+因为我们希望的条件: h图片输出 等于 h图片输入， 所以可继续化简：<br>
+padding =（ h卷积核 - 1 ） / 2</p>
+<p>所以步长为1的情况下卷积, 并且想让图片不变形，你的padding的取值，就需要受到 卷积核大小的影响。<br>
+现在常用的卷积核大多都是 1x1、 3x3、 5x3 。所以看上面化简好的公式：<br>
+padding =（ h卷积核 - 1 ） / 2     &lt;=============   1x1, 3x3, 5x5<br>
+奇数-1总等于偶数。<br>
+所以不用担心除不尽的情况<br>
+还需要注意一下: 填充padding一般是环形填充， 假如padding=1, 那么上下左右 都会添加一层。<br>
+当然: tensorflow的padding是可以设置形状的</p>
+<h3 id="padding的种类tensorflow">padding的种类（tensorflow）</h3>
+<p>valid:<br>
+不填充<br>
+same:<br>
+自动去填充，使得输入图像 与 输出图像 的大小相等</p>
+<h3 id="温馨提示关于三通道卷积-和-多个卷积核的区别">温馨提示：关于三通道卷积 和 多个卷积核的区别</h3>
+<p>三通道卷积：<br>
+假如你只有一个卷积核<br>
+即使你图片是3通道的（三层）<br>
+即使你卷积核也是三通道的（三层）<br>
+但是: 卷积输出结果是依然是一个  m x n 的形状  (一层&quot;薄纸&quot;)<br>
+你的疑惑: 不是三层嘛？ 最后怎么变成一层了 ？？？<br>
+我的解释: 每滑动一次,3层通道，各自都会计算各自层的卷积，然后求总和，并填入一层&quot;薄纸&quot;的对应位置<br>
+多个卷积核：<br>
+上面说了: 1个卷积核，无论图片是什么形状的、有几个通道，卷积后输出的形状 是 一层薄纸: m x n</p>
+<pre><code>而如果你有多个卷积核: 那么你就会有多层薄纸摞起来。  就像 一个长方形 摞成了一个 长方体
+明确点:  假如你用了 6个卷积核, 那么你的输出就变成了   m x n x 6      (三维的一个长方体了)
+</code></pre>
+<p>上面说的：就是我最开始学的CNN时候经常理解不清楚的地方。我相信你也一样, qaq  ....<br>
+下面做个总结:<br>
+C个通道:  一点都不会影响输出维度。 注意我说的是维度。<br>
+假如你的输入是 m x n , 那么你的输出依然是  p x q   （注意维度即可，维度没变，二维)</p>
+<pre><code>f个卷积核: 会影响输出的维度。 输出的维度将会增加一个维度f
+    假如你的输入是 m x n  ，  那么你的输出依然是  p x q x f  (增加一个维度F，变成了)
+
+也许你当你学TF的时候会有另一个理解障碍:那就是TF数据格式（以图片为例）： 
+    通常TF数据格式是这样的：  [图片数量B,  图片高度H,  图片宽度W,  通道数C]
+    假如你使用 F 个卷积核做了卷积：
+    那么他的卷积结果的特征的形状就变变成： [B, H, W, F]
+    发现没输出结果和通道数C，没有关系的。 只和 卷积核的个数 f有关系。
+
+但是注意: 虽然结果和C没关系。但是 需要卷积核中具有 C的数量，还做唯独匹配。桥梁运算。
+    对应上例， 我们的卷积核的形状应该是这样的 :   [F, C, H, W]
+    注意一下： 这里面有 卷积核数量f， 也有通道数量C。
+</code></pre>
+<p>如果最后一步的卷积核形状不理解:<br>
+没关系。以后是TF20的天下。 对应API不需要你指定卷积核的形状。<br>
+因此，你没必要记住卷积核的形状。<br>
+你只需要 传递，卷积核的个数， 和 宽高 和 步长 即可。 当然这些都是独立的命名参数。<br>
+摘一小段Conv2D的源码:<br>
+def <strong>init</strong>(self,<br>
+filters,                # 你只需要传递这个参数， 卷积核的个数<br>
+kernel_size,            # 卷积核的宽高，假如 3x3 你只需写  [3,3] 即可<br>
+strides=(1, 1),         # 这是步长， 你不传，他也会给你填默认值, 步长为1<br>
+padding='valid',        # 这时 padding策略，前面说过，这个一般都会设为 &quot;same&quot;</p>
+<pre><code>或许你还有些疑问:
+    刚才上面不是提到了卷积核应该设置 通道数C么。
+    原则上是的。因为要和 输出的样本做卷积。要匹配才行。
+    但是在Tensorflow中。 特别是 Tenosrflow.Keras中，定义模型层
+    我们只需要把整个模型，从上到下连接起来。（就像先后排队一样）
+    而对于一些前后流动贯通的参数，比如刚才提到的通道C。
+    这些参数，Tensorflow会自动帮我们上下文识别管理。
+    
+    所以我们做的只是需要，把原始数据的形状设置好传 给第一层（给排头发数据）
+    至于你这些在中间层流动的参数，Tensorflow会自动帮你计算，你不用传。
+    虽然不用传，但你最好清楚每层是什么结构（当然这时后话，可能需要一些时间理解）
+    
+    到最后，我再给你设置一个输出形状，你能给我输出出来即可 （队尾接数据）
+    
+基本TF参数流动机制讲到这里，刚开始学的时候，也是各种苦思冥想，想不明白qaq...
+</code></pre>
+<h3 id="透过现象看本质卷积-线性">透过现象看本质（卷积 =&gt; 线性）</h3>
+<p>其实我们做的每一步 (每一个)卷积就相当于一个矩阵线性操作： x1 @ w1<br>
+之后，基于常理话， 我会还会给它一个偏差： b  变成   ===&gt;   x1 @ w1 + b</p>
+<p>我们说过，可能会给出很多个卷积核进行运算。<br>
+上面  x1 @ w1 + b    是每一个卷积核的卷积结果<br>
+我们还需要讲所有卷积核计算结果堆叠在一起： 记为  X @ W + b     # m x n x f<br>
+最后将堆叠在一起的结果，做一层非线性变换 relu ( X @ W + b )    # CNN 通常用 relu</p>
+<pre><code>eg： 现有图片 5 x 5 x 3 的图像 （暂时不考虑样本个数，就认为是一个样本）.
+     我们用的是 2 x 2 x  20 的卷积核 (步长为1，不做padding)
+     那么输出结果就是   (5-2+1) x (5-2+1) x 20  ===  4 x 4 x 20
+</code></pre>
+<p>忘记说了，还有一个公式，用来计算 每层卷积的权重参数量的个数的：<br>
+公式:  每层权重参数量(W) = 卷积核个数 x 卷积核高 x 卷积核宽 x 卷积核通道数<br>
+公式:  每层偏差数量(b) = 1 x 卷积核的个数        # 因为每个卷积核只有一个偏差b</p>
+<pre><code>温馨提示: 有太多人喜欢把卷积核个数 与 卷积核通道称作:&quot;输入/输出&quot;通道。
+        这样的称呼是没问题的， 但我在计算参数量的时候，不喜欢这样的称呼，易混淆。 
+
+前情回顾: 记不记得普通神经网络了。每个神经元节点，都有它们自己的参数。因此它们的参数量是巨大的
+回归正文: 而卷积核是共享的， 因为它是在一张图片上滑动的。（挨个服务）所以权重参数也是共享的。
+</code></pre>
+<h2 id="池化层-pooling-layer">池化层 (Pooling Layer)</h2>
+<p>卷积层(激活函数) =&gt; 池化层<br>
+池化层主要分两种： MaxPooling 和 AvgPooling</p>
+<h3 id="池化层输出图片形状计算公式">池化层输出图片形状计算公式：</h3>
+<p>声明： 池化层也有滑动窗口，并且输出形状计算公式，和 卷积的输出形状计算公式一样：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+w图片输出 = （w图片输入 - w卷积核 + 2padding） / strides + 1</p>
+<p>因为池化层，的基本都是放在卷积层之后，因此池化层的通道数 也就顺理成章的 和 卷积层通道一样<br>
+举个例子:<br>
+卷积层数据形状为:  m x n x f<br>
+那么池化层形状同为: p x q x f</p>
+<pre><code>我想主要强调的是: 通道数不变，变得是 宽高。
+</code></pre>
+<h3 id="池化层-滑动窗口参数相关配置">池化层 滑动窗口参数相关配置</h3>
+<p>还是，把Tensorflow, 源码搬过来，标注一下:<br>
+def <strong>init</strong>(self,<br>
+pool_size=(2, 2),   # 滑动窗口大小 2x2<br>
+strides=None,       # 步长，通常设为2<br>
+padding='valid',    # Maxpooling 通常不用padding</p>
+<p>一般都是使用组合   pool_size=(2, 2)  和   stride = 2</p>
+<pre><code>所以，公式来了:
+                                                输入h         滑动窗口h
+    输出h = (输入h - 滑动窗口h) / stride + 1 = ----------  -   --------  + 1
+                                                stride         stride
+</code></pre>
+<p>通常我们把 pooling层作称作数据的降采样:<br>
+所以大多数经验者，都会把 滑动窗口 和 stride步长  设为相等大小。<br>
+所以带入上面公式：<br>
+输入h           1            输入h<br>
+输出h = (输入h - 滑动窗口h) / stride + 1 = ----------  -   -----  + 1 =  -------<br>
+stride          1             步长</p>
+<pre><code>简化一下: （当 pool_size 和  strides 设置相等大小时）：
+    输出 = 输入 / 步长
+
+    所以当我们: 
+        步长设为2时，  输出就是输出的一半。
+        步长设为3时，  输出就是输出的1/3。
+        ...
+</code></pre>
+<p>不知道有没有这样一个疑问：”为什么滑动窗口没有设置 窗口数量 （就像设置卷积核数量）“<br>
+再次说一下Tensorflow的原理。<br>
+因为Pooling的上一层基本完全是 Conv卷积层， 卷积层的 卷积核的个数已经设置好了。<br>
+卷积层对接池化层的时候， Tensorflow会自动判断，并设置:</p>
+<pre><code>池化层滑动窗口的个数===卷积核个数
+池化层通道个数的个数===卷积层通道个数===图片的原始通道个数
+</code></pre>
+<h3 id="maxpooling-最大池化常用">MaxPooling （最大池化，常用）</h3>
+<p>卷积操作：之前我们卷积不是拿着滑动窗口，对应元素相乘再相加么？<br>
+池化操作：池化层也是拿着滑动窗口一样滑，但是不做运算，而是只取每个窗口内最大值。放在一层&quot;薄纸&quot;上</p>
+<h3 id="avgpooling-平均池化不常用">AvgPooling （平均池化，不常用）</h3>
+<pre><code>一样滑动窗口，各种滑， 然后取每个窗口内的数据的&quot;平均值&quot;,  其他就不说了，同 MaxPooling
+</code></pre>
+<h3 id="额外提醒池化层的参数是否训练">额外提醒（池化层的参数是否训练）</h3>
+<pre><code>池化层的是&quot;没有&quot;参数可以训练的。所以，反向传播，也不为所动~~~
+</code></pre>
+<h2 id="全连接层-dense-layer">全连接层 （Dense Layer）</h2>
+<h3 id="什么是全连接层">什么是全连接层？？</h3>
+<p>你很熟悉的， 全连接层其实就是之前讲的普通的NN（神经网络），所以并没有什么好说的。<br>
+只是拼接在池化层之后罢了。<br>
+但其实还是有一些细节需要注意。尤其之前的东西没搞懂，那么这里的参数形状你会垮掉~~~</p>
+<h3 id="展平-及-参数">展平 及 参数</h3>
+<p>之前为了图方便，参数我都没怎么提到样本参数。<br>
+下面我要把样本参数也加进来一起唠唠了。我感觉讲这里，直接上例子比较直观。<br>
+好了，现在我们有个需求， 想要做一个10分类的任务：<br>
+卷积层-池化层: 这个照常做， 设置你还可以堆叠<br>
+卷积层1 + 池化层1 + 卷积层2 + 池化层2 ...<br>
+等堆叠的差不多了: (你自我感觉良好了。。。)，我们需要做一层展平处理！<br>
+展平处理（特意拿出来说）<br>
+假如你叠加到最后一层池化层数据形状是:(1000,4,4,8)==&gt; 1000个样本，宽高8 x 8, 输出通道为8<br>
+你展平后的形状为: (1000, 4<em>4</em>8) == (1000, 128)<br>
+展平操作第一种API:  tf.keras.Flatten()     # tensorflow2.0的Flatten被作为网络层使用<br>
+展平操作第一种API:  tf.reshape(x, [-1, 128])  # 手动变换， -1是补位计算的意思<br>
+然后在加全连接层，形状为: (1000, 50)        # 50代表输出，起到过渡作用<br>
+然后在加全连接层，形状为: (1000, 10)        # 最终，10代表输出，因为我们说了，要做10分类嘛<br>
+1. 其实你中间可以加很多全连接层，我这里只加了一层，控制最后一层全连接是你想要的输出就行。<br>
+2. 特别注意， 这里的每一层全连接计算，是需要有激活函数跟着的。<br>
+除了最后一层全连接，其他层的全连接都设置为 Relu 激活函数即可。<br>
+3. 因为我们做的是10分类（多分类自然应想到 softmax参数， 如果是其他业务，你也可以不加激活函数）<br>
+没做，也就是最后一层。我们要再添加一层激活函数 Softmax。</p>
+<h2 id="1-x-1-卷积的作用">1 x 1 卷积的作用</h2>
+<p>降采样（控制输出通道数量）：<br>
+假如,前一个卷积层参数为: (1000,32,32,256)<br>
+如果你下一层使用1x1x128的卷积，则对应参数为: (1000，32，32，128)  # 256通道变成了128通道</p>
+<h2 id="cnn文本分类也许你看完下面的rnn再回来看这个会更好">CNN文本分类（也许你看完下面的RNN再回来看这个会更好）</h2>
+<p>通常CNN大多数都是用来做CV工作。对于某些文本分类。CNN也可以完成。如下变通概念：</p>
+<ol>
+<li>句子的长度 看作 (图片的高度)</li>
+<li>embedding的维度， 看作 (图片的宽度)</li>
+<li>卷积核是铺满一行(或者多行)，然后沿着高度竖着滑下来的。 你也可以有多个卷积核<br>
+eg: 一个句子 10个词语，20dim， 这个句子的输入形状就是（10 x 20）<br>
+我们准备3个卷积核分别是（3x20),(2x20), (1x20）<br>
+每个卷积核竖着滑下来，最后按次序得到向量形状为（10，3）<br>
+你可以看作输出三通道（对应卷积核个数，这和之前讲的CNN原理一模一样）<br>
+最终提取出来这个（10，3）是，一个句子3个通道的特征信息。</li>
+<li>将10x3特征矩阵，通过maxpooling压缩成 （1x3)的特征矩阵</li>
+<li>放入Dense层，构建多输出单元的n分类模型。</li>
+</ol>
+<h1 id="resnet-残差网络-residual-networks">ResNet (残差网络 Residual Networks)</h1>
+<h3 id="问题引入">问题引入：</h3>
+<p>是否网络层数越多越好，虽然堆叠更多的网络，可以使得参数丰富，并且可以学到更多更好的特征。<br>
+但是实际效果并非如此，而是出现，过拟合等现象。</p>
+<p>ResNet作者 何凯明：有感而发：按理说模型是应该越丰富越好的。可是出现了过拟合这种现象。<br>
+最少，更深层的网络的效果，应该比浅层网络的效果好吧。不至于差了那么多。<br>
+因此，他将此问题转换为一个深度模型优化的问题。</p>
+<h3 id="resnet相关配置">ResNet相关配置</h3>
+<ol>
+<li>batch-size: 256</li>
+<li>optimizer: SGD+Momentum(0.9)</li>
+<li>learning_rate: 初始化为0.1， 验证集出现梯度不下降的情况下，learning_rate每次除以10衰减</li>
+<li>每一层卷积层之后，都做 Batch Normalization</li>
+<li>不使用 Dropout    （其实应该是用了 BN,所以就没有 Dropout）</li>
+</ol>
+<h1 id="rnn-循环神经网络">RNN (循环神经网络)</h1>
+<p>###直接引用 Andrew Ng的降解图<br>
+<img src="/img/bVbyy83" alt="clipboard.png" loading="lazy"><br>
+可以看到，上图中有一些输入和输出：慢慢捋清。</p>
+<ol>
+<li>第一个输入 x&lt;1&gt; 代表 （你分词后的每一个句子中的第一个单词）  x&lt;2&gt;就是第二个单词喽</li>
+<li>第二个输入 a&lt;0&gt; 代表  初始输入， （一般初始化为0矩阵）</li>
+<li>前面两个输入， 各会乘上各自的 权重矩阵，然后求和 得出  a&lt;1&gt;   (这是临时输出)</li>
+<li>a&lt;1&gt; 乘上 一个权重参数 得到输出一: y&lt;1&gt;   （这是终极输出一）    （这就是图中黑框顶部的输出分支）</li>
+<li>a&lt;1&gt; 乘上 又一个新权重参数后， 再加上 x&lt;2&gt; 乘以自己的权重参数得到  a&lt;2&gt;</li>
+<li>......你会发现 1-5步是个循环的过程， 到第5步， a&lt;1&gt; 就相当于 最开始a&lt;0&gt;的地位，作为下一层的输入</li>
+<li>题外话。其实每层的输出y1 会替代下一层的x作为下一层的输入。 （我会放到下面&quot;防坑解释&quot;中说）<br>
+然后将上述途中最后2行的公式化简，可得到如下形式：</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="/img/bVbyzaj" alt="clipboard.png" loading="lazy"></figure>
+<h3 id="防坑解释-rnn语言模型">防坑解释 (RNN语言模型)</h3>
+<p>如果你看过了上面的图，你会很清楚， 有多少个x, 就会输出多少个y。<br>
+上面第7点说过  : &quot;其实每层的输出y1 会替代下一层的x作为下一层的输入&quot;,  该如何理解这句话？？？<br>
+假如你有这样一段文本: &quot;我精通各种语言&quot;   =&gt; 分词后的结果会变成 &quot;我&quot;,&quot;精通&quot;,&quot;各种&quot;,&quot;语言&quot;<br>
+一般的问答对这种的句子，处理流程是: （这里只先说一个）：<br>
+那就是：在句子的末尾添加一个 <END> 标识符<br>
+所以句子变成了:  &quot;我&quot;,&quot;精通&quot;,&quot;各种&quot;,&quot;语言&quot;, &quot;END&quot;<br>
+这些单词都会预先转为 （One-Hot编码 或者Embedding编码）</p>
+<pre><code>x1(初始值0) =&gt; y1(我)       y1有一定概率输出 &quot;我&quot;， 下面所有的y同理，只是概率性。
+x2(y1) =&gt; y2(精通)          如此每一层嵌套下来，相当于条件概率  P(精通|我)
+x3(y2) =&gt; y3(各种)          P(各种|(我，精通))
+x4(y3) =&gt; y4(语言)          ...
+x5(y4) =&gt; y5(&lt;END&gt;)         ...
+</code></pre>
+<p>不知道看了上例，你会不会有下面一连串的问号脸？？：</p>
+<ol>
+<li>
+<p>为什么y1-y5 输出都是精准的文字？<br>
+答：我只是方便书写表示，其实每个输出的Y都是一个从词典选拔出来的词的概率。（多分类）</p>
+</li>
+<li>
+<p>不是说x1-x5每个x应该输入固定句子的每个单词么？？？为什么变成了输入y1-y5<br>
+答：的确是这样的，但是我们的 y1-y5 都是朝着预测x1-x5的方向前进的。（这也是我们要训练的目标）<br>
+所以: 可以近似把y1-y5等价于x1-x5。 所以用 y1-y5 替代了 x1-x5<br>
+这样: 也可以把前后单词串联起来，让整个模型具有很强的关联性。<br>
+比如: 你第一个y1就预测错了。那么之后的y很可能都预测错。（我的例子是：双色球概率）<br>
+但是: 假如我们预测对了。那说明我们的模型的效果，已经特别好了（双色球每个球都预测对了~）</p>
+</li>
+<li>
+<p>那我们就靠这x和y就能把前后语义都关联起来吗？？？<br>
+答： 当然不仅于此。 你别忘了我们还有贯穿横向的输入啊，如最开始RNN图的 a&lt;0&gt;. a&lt;1&gt; 这些</p>
+</li>
+<li>
+<p>既然你说y 是从词典选拔出来的词的概率属性。 那么这个概率怎么算？<br>
+答： 这问得太好了~~~<br>
+前面说了: 一般都会预先给数据做 One-Hot或 Embedding编码。<br>
+所以数据格式为: [0,0,....,1,...]   # 只有一个为1<br>
+基本上我们最后给输出都会套一层: softmax激活函数， softmax应该知道吧：e^x /(e<sup>x1+..+e</sup>x)<br>
+所以: softmax结果就是一个 和One-Hot形状一样的概率列表集合: [.....,最高概率,...]<br>
+softmax的结果（概率列表） :（代表着预测 在词典中每一个单词的可能性）</p>
+</li>
+<li>
+<p>那么损失函数怎么算呢？？<br>
+答：没错，损失函数也是我们最关注的。<br>
+前面:我们已经求出了softmax对应的结果列表 (....,最高概率，...)<br>
+损失函数: 我们使用的是交叉熵。<br>
+交叉熵知道吧:  -（ Σp<em>logq ）         # p为真实值One-hot, q为预测值<br>
+简单举个例子:<br>
+假如 softmax预测结果列表为 :[0.01,0.35, 0.09, 0.55]  # 温馨提示，softmax和为1<br>
+你的真实标签One-Hot列表为:  [0,   0,    0,    1]<br>
+那么交叉熵损失就等于: -(  0</em>log0.01 + 0<em>log0.35 + 0</em>log0.09 + 1*log0.55 ) = ...</p>
+<pre><code> 到此为止，我们第一层NN的输出的损失函数就已经计算完毕了。
+ 而我们训练整个网络需要计算整体的损失函数。
+ 所以，我们需要把上面的交叉熵损失求和， 优化损失。
+</code></pre>
+</li>
+</ol>
+<h3 id="梯度爆炸-梯度消失">梯度爆炸 &amp; 梯度消失</h3>
+<p>RNN 的梯度是累乘，所以NN层如果很多，可能会达到 指数级的梯度。<br>
+你应该听过一个小关于指数的小案例吧~~ (学如逆水行舟，不进则退~)<br>
+&gt;&gt;&gt; 1.01 ** 365<br>
+37.78343433288728        # 每天进步0.01 ，一年可以进步这些 （对应梯度爆炸）<br>
+&gt;&gt;&gt; 0.99 ** 365<br>
+0.025517964452291125     # 每天退步0.01 ， 一年可以沦落至此（对应梯度消失）<br>
+梯度爆炸：<br>
+就是上面例子的原理。 就不多说了。<br>
+解决方式：梯度裁剪<br>
+梯度消失：<br>
+同上例， 不好解决（于是LSTM网络出现， 和LSTM）</p>
+<h3 id="tensorflow20stable-api">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+tk.layers.SimpleRNN(
+    units=单元层,            # units单元数，对应着你每个单词的个数
+    return_sequences=False   # 默认值就是False     
+)
+</code></pre>
+<h1 id="gru">GRU</h1>
+<p>GRU比RNN的每一层的多了一个 记忆信息(相当于RNN的 h)，这个记忆信息就像传送带一样，一直流通各层RNN<br>
+然后还多了2个门 (r门和U门)， 这2个门就是负责控制（是否从传送带上取记忆， 且取多少记忆）<br>
+####注明： GRU 只有一个 c(横向， 传送带) ， 没有h<br>
+简化版（只有U门）：<br>
+C新' = tanh( w @ [C旧, x新] + b )   # 根据传动带的旧信息， 生产出 传送带的新信息<br>
+u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用</p>
+<pre><code>C新 = u门 * C新' + (1-u门) * C旧    #  经过u门控单元的控制过滤后， 最终放到传送带的信息
+如果: u门为1，则传送带上全是新信息（旧的全忘掉）
+如果: u门为0，则传送带上全是旧信息（新的不要）
+
+强调一下: 我不方便写公式负号，于是用了 &quot;新&quot;,&quot;旧&quot; 代替
+新: 代表当前 t
+旧: 代表前一时刻 t-1
+</code></pre>
+<p>完整版（同时具有r门和u门）<br>
+添加这一行：<br>
+r门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差<br>
+C新' = tanh( w @ [r门 @ C旧, x新] + b )   # 修改这一行: C旧 <mark>变为</mark>=&gt;  r门 @ C旧</p>
+<pre><code>u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用
+C新 = u门 * C新' + (1-u门) * C旧    #  经过u门控单元的控制过滤后， 最终放到传送带的信息
+</code></pre>
+<h3 id="tensorflow20stable-api-2">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+tk.layers.GRU(                    # 参数同上面RNN我就不解释了
+    units=64,            
+    return_sequences=False       # 这些参数看下面LSTM我会讲到
+)
+</code></pre>
+<h1 id="lstm">LSTM</h1>
+<p>LSTM和GRU很像，但是比GRU复杂。<br>
+LSTM结构包括: u门（更新门）+ f门（遗忘门）+ o门（输出门）</p>
+<h4 id="注明-lstm-不仅有个传送带c横向-他还有个rnn的-h-信息横向">注明： LSTM 不仅有个传送带C（横向） ， 他还有个RNN的  h 信息（横向）</h4>
+<pre><code>f门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差
+o门 = sigmoid (w @ [c旧, x新] + b)     # 和下面的U门几乎相似，只不过换了一下权重和偏差
+
+C新' = tanh( w @ [C旧, x新] + b )      # 注意，这里没有r门了
+
+u门 = sigmoid (w @ [c旧, x新] + b)     # 一个门控单元，起到过滤信息的作用
+C新 = u门 * C新' + f门 * C旧        #  &quot;(1-u门)&quot;  换成了 f门
+h = o门 * tanh( C新 )
+</code></pre>
+<h3 id="tensorflow20stable-api-3">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+keras.layers.LSTM(
+    units=64,
+    return_state=True                 # 占坑，下面剖析
+    return_sequences=False            # 占坑，下面源码剖析
+    recurrent_initializer='glorot_uniform',   # 均匀分布的权重参数初始化
+
+    # stateful=True, # API文档：若为True,则每一批样本的state的状态，都会继续赋予下一批样本
+)
+</code></pre>
+<p>return_state 和 return_sequences 这两个参数到底有什么用？？？<br>
+我的另一篇文章单独源码分析这两个参数：https://segmentfault.com/a/1190000020603328</p>
+<h1 id="总结对比-gru-和-lstm">总结对比 GRU 和 LSTM</h1>
+<pre><code>GRU有2个门:   u门 和 r门
+LSTM有3个门:  u门 和 f门 和 o门
+
+GRU有一个C:          # 就有一条传送带c, 他的前后单元信息仅靠这一条传送带来沟通（舍弃与保留）
+LSTM有一个C和一个h:  # 不仅有传送带c, 还有h， 他的前后单元信息 靠 c 和 h 联合沟通。
+
+
+再说一下每个门控单元: 不管你是什么门，  都是由 Sigmoid() 包裹着的。
+所以: 说是 0 和 1 ， 但严格意义上，只是无穷接近。但是微乎其微，所以我们理解为近似相等0和1
+</code></pre>
+<h1 id="rnn-lstm-gru拓展">RNN-LSTM-GRU拓展</h1>
+<h3 id="双向bidirection">双向（Bidirection）</h3>
+<p>首先说明:<br>
+双向模型，对于 RNN/LSTM/GRU  全部都适用<br>
+由于单向的模型，不能关联之后信息。比如：你只能根据之前的单词预测下一个单词。<br>
+而双向的模型，可以根据前后上下文的语境，来预测当前的下一个单词。<br>
+或者举一个更直白的例子（我自己认为）：<br>
+比如说: 你做英语完型填空题， 你是不是 需要 把空缺部分的 前面 和 后面 都得读一遍，才能填上。<br>
+单向与双向结构对比如下：<br>
+单向: 1 -&gt; 2 -&gt; 3 -&gt; 4<br>
+双向: 1 -&gt; 2 -&gt; 3 -&gt; 4<br>
+|<br>
+1 &lt;- 2 &lt;- 3 &lt;- 4</p>
+<pre><code>注意: 上下对齐，代表一层。
+</code></pre>
+<h3 id="tensorflow20stable-api-4">Tensorflow2.0（Stable） API</h3>
+<pre><code>import tensorflow.keras as tk     # 注意我用的是TF20标准版，所以这样导入
+
+tk.layers.Bidirectional(        # 就在上上面那些API的基础上,外面嵌套一个 这个层即可。
+    tk.layers.GRU(              
+        units=64,            
+        return_sequences=False
+    )
+),
+</code></pre>
+<h3 id="模型深层堆叠纵向堆叠">模型深层堆叠（纵向堆叠）</h3>
+<p>首先说明:<br>
+层叠模型对于 RNN/LSTM/GRU  同样全部都适用<br>
+之前单层单向模型是这种结构<br>
+1 -&gt; 2 -&gt; 3<br>
+计算公式是:  单元 = tanh ( W @ (x, h左) )</p>
+<p>而多层单向是这种结构（我们以2层为例）：</p>
+<pre><code>y1   y2   y3        输出层
+^    ^    ^
+|    |    |
+7 -&gt; 8 -&gt; 9         二层单元
+^    ^    ^
+|    |    |
+4 -&gt; 5 -&gt; 6         一层单元
+^    ^    ^
+|    |    |
+x1-&gt; x2 -&gt;x3        输入层
+你   好   啊
+
+计算公式是： （我写的可能只按自己的意思了~）
+    一层每个单元 = tanh ( W @ (x, h左) )     # 因为是第一层嘛：所以输入为 x 和 左边单元h 
+    二层每个单元 = tanh ( W @ (h下, h左) )   # 第二层就没有x了:而是下边单元h 和 左边单元h
+</code></pre>
+<h1 id="词嵌入word-embedding">词嵌入(Word Embedding)</h1>
+<h3 id="单词之间相似度计算">单词之间相似度计算</h3>
+<pre><code>                       c1 @ c2
+余弦定理，求 cosθ = ------------------
+                     ||c1|| * ||c2||
+           
+或者你可以使用欧氏距离。
+</code></pre>
+<h3 id="原始词嵌入并训练">原始词嵌入并训练</h3>
+<ol>
+<li>假如我们通过一个句子的一部分来预测，这个句子的最后一个单词。</li>
+<li>把词典的每个词做成One-Hot便是形式，记作矩阵 O</li>
+<li>随机高维权重矩阵， 记为 E</li>
+<li>E @ O 矩阵乘积后记为词向量 W<br>
+可见如下案例：<br>
+如果:  我们分词后词典总大小为1000<br>
+那么:  他的 One-Hot 矩阵形状为  [6, 1000] （假如我们这里通过句子6个词来预测最后一个词）<br>
+并且:  随机高维权重矩阵 形状为 [1000, 300]     （注意，这个300是维度，可自行调整选择）<br>
+注意:  上面权重矩阵是随机初始化的， 后面训练调节的。<br>
+最后:  E @ O 后得到词向量W 的形状为  [6, 300]</li>
+<li>送进NN(打成1000类) 作为输出</li>
+<li>加一层 Softmax （算出1000个单词的概率） 作为最终输出y_predict</li>
+<li>y_predict 与 y真正的单词标签（one-hot后的） 做交叉熵loss</li>
+<li>优化loss，开始训练。</li>
+</ol>
+<h3 id="word2vec-的-skip-grams不是太懂-pass">Word2Vec 的 skip-grams(不是太懂， Pass)</h3>
+<p>说下个人的理解，可能不对<br>
+skip-grams： 拿出中间 一个词，来预测若干（这是词距，自己给定）上下文的单词。<br>
+例子如下：<br>
+seq = 今天去吃饭</p>
+<pre><code>给定单词   标签值（y_true）
+去         今
+去         天
+去         吃
+去         饭
+</code></pre>
+<p>训练过程就是上面说过的小节 &quot;原始词嵌入并训练&quot;，你只需把 y_true改为 &quot;今&quot;,&quot;天&quot;,&quot;吃&quot;,&quot;饭&quot;训练即可。<br>
+Word2Vec 除了 skip-grams, 还有  CBOW 模型。 它的作用是 给定上下文，来预测中间的词。<br>
+据说效率等某种原因(softmax计算慢，因为分母巨大)，这两个都没看。（Pass~）</p>
+<h3 id="负采样negative-sampling">负采样（Negative Sampling）</h3>
+<p>解决Word2Vec 的 softmax计算慢。<br>
+负采样说明（假如我们有1000长度的词典）：<br>
+从上下文（指定词距）:   随机，选择一个正样本对，n个负样本对（5-10个即可）<br>
+主要机制: 将 Word2Vec的 softmax（1000分类） 换成 1000个 sigmoid做二分类。<br>
+因为: 是随机采样（假设，采样1个正样本 和 5个负样本）。<br>
+所以: 1000个 sigmoid二分类器，每次只用到 6 个对应分类器（1个正样本分类器，5个负样本分类器）<br>
+负采样，样本随机选择公式：<br>
+单个词频 ^ (3/4)<br>
+-----------------<br>
+Σ(所有词频 ^ (3/4))</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => TF20的LSTM与GRU(return_sequences与return_state)参数源码]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-tf20-de-lstm-yu-grureturn_sequences-yu-return_statecan-shu-yuan-ma/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-tf20-de-lstm-yu-grureturn_sequences-yu-return_statecan-shu-yuan-ma/">
+        </link>
+        <updated>2020-09-29T04:05:18.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<h3 id="温馨提示">温馨提示：</h3>
+<pre><code>本文只适用于: 了解LSTM 和 GRU的结构，但是不懂Tensorflow20中LSTM和GRU的参数的人)
+</code></pre>
+<h3 id="额外说明">额外说明</h3>
+<p>看源码不等于高大上。<br>
+当你各种博客翻烂，发现内容不是互相引用，就是相互&quot;借鉴&quot;。。。且绝望时。<br>
+你可能会翻翻文档，其实有些文档写的并不是很详细。<br>
+这时，看源码是你最好的理解方式。（LSTM 和 GRU 部分源码还是比较好看的）</p>
+<p>标题写不下了: TF20 ==&gt; Tensorflow2.0（Stable）<br>
+tk ===&gt; tensorflow.keras<br>
+LSTM 和 GRU 已经放在 tk.layers模块中。<br>
+return_sequences = True<br>
+return_state = True</p>
+<pre><code>这两个参数是使用率最高的两个了， 并且LSTM 和 GRU 中都有。
+那它们究竟是什么意思呢???
+来，开始吧！
+
+进入源码方式：
+    import tensorflow.keras as tk
+    tk.layers.GRU()
+    tk.layers.LSTM()
+    用pycharm ctrl+左键 点进源码即可~~~
+</code></pre>
+<h1 id="lstm源码">LSTM源码</h1>
+<p>我截取了部分主干源码：<br>
+...<br>
+...<br>
+states = [new_h, new_c]           # 很显然，第一个是横向状态h, 另一个是记忆细胞c</p>
+<pre><code>if self.return_sequences:         # 如果return_sequences设为True
+  output = outputs                    # 则输出值为所有LSTM单元的 输出y，注意还没return
+else:                             # 如果return_sequences设为False
+  output = last_output                # 则只输出LSTM最后一个单元的信息, 注意还没return
+
+if self.return_state:             # 如果return_state设为True
+  return [output] + list(states)      # 则最终返回 上面的output + [new_h, new_c]
+else:                             # 如果return_state设为False
+  return output                       # 则最终返回 只返回上面的output
+
+小技巧: 瞄准 return 关键词。 你就会非常清晰，它会返回什么了。 
+</code></pre>
+<h1 id="gru源码">GRU源码</h1>
+<pre><code>...
+...
+########  我们主要看这一部分 #########################################
+  last_output, outputs, runtime, states = self._defun_gru_call( 
+      inputs, initial_state, training, mask)
+#####################################################################          
+...
+...
+
+######### 下面不用看了， 这下面代码和  LSTM是一模一样的 ###################
+if self.return_sequences:
+  output = outputs
+else:
+  output = last_output
+
+if self.return_state:
+  return [output] + list(states)
+else:
+  return output
+</code></pre>
+<p>现在我们的寻找关键点只在于， states 是怎么得到的？？？<br>
+你继续点进去 &quot;self._defun_gru_call&quot; 这个函数的源码， 你会发现 states 就直接暴露在里面<br>
+states = [new_h]<br>
+return ..., states<br>
+现在源码几乎全部分析完毕。 我们回头思考总结一下：<br>
+LSTM 和 GRU 中的 return_sequences 和 return_state 部分的源码是一模一样的！！！<br>
+return_sequences: 只管理 output变量的赋值，（最后一个单元 或 全部单元）<br>
+return_state： 负责返回 output变量，并且按条件决定是否再一并多返回一个 states变量</p>
+<pre><code>进而我们把问题关注点转换到  output变量， 和 states变量：
+
+LSTM 和 GRU 的 output变量: 大致相似，不用管。
+LSTM 和 GRU 的 ststes变量：
+    LSTM的 states变量:  [H, C]    # 如果你了解LSTM的结构，看到这里你应该很清楚，LSTM有C和H
+    GRU的 states变量:   [H]       # 如果你了解GRU的结构，看到这里你应该很清楚，GRU就一个H
+</code></pre>
+<h1 id="最终使用层总结">最终使用层总结：</h1>
+<h3 id="lstm">LSTM:</h3>
+<p>有四种组合使用：</p>
+<ol>
+<li>
+<p>return_sequences = False 且 return_state = False (默认)<br>
+返回值: 只返回 最后一个 LSTM单元的输出Y</p>
+</li>
+<li>
+<p>return_sequences = True 且 return_state = False<br>
+返回值: 只返回 所有 LSTM单元的输出Y</p>
+</li>
+<li>
+<p>return_sequences = False 且 return_state = True<br>
+返回值: 返回最后一个LSTM单元的输出Y   和    C + H 两个（隐层信息）</p>
+</li>
+<li>
+<p>return_sequences = True  且 return_state = True<br>
+返回值: 返回所有LSTM单元的输出Y  和  C + H 两个（隐层信息）  (适用于Atention)</p>
+</li>
+</ol>
+<h3 id="gru">GRU：</h3>
+<p>有四种组合使用：</p>
+<ol>
+<li>
+<p>return_sequences = False 且 return_state = False (默认)<br>
+返回值: 同LSTM</p>
+</li>
+<li>
+<p>return_sequences = True 且 return_state = False<br>
+返回值: 同LSTM</p>
+</li>
+<li>
+<p>return_sequences = False 且 return_state = True<br>
+返回值: 返回 最后一个 LSTM单元的输出Y   和   一个H（隐层信息）</p>
+</li>
+<li>
+<p>return_sequences = True  且 return_state = True<br>
+返回值: 返回 所有 LSTM单元的输出Y  和 一个H（隐层信息）  (适用于Atention)</p>
+</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AI => DeepLearning+Metrics（Ng）]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-deeplearningmetricsng/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-deeplearningmetricsng/">
+        </link>
+        <updated>2020-09-29T04:04:47.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<p>看Andrew Ng视频，总结的学习心得。<br>
+虽然本篇文章可能不是那么细致入微，甚至可能有了解偏差。<br>
+但是，我喜欢用更直白的方式去理解知识。</p>
+<h1 id="数据划分">数据划分</h1>
+<h3 id="传统机器学习数据的划分">传统机器学习数据的划分</h3>
+<p>传统机器学习一般都是小规模数据（几万条）<br>
+那么可以  训练集：验证集：测试集 = 6:2:2<br>
+若是大规模深度学习一般都是大规模数据（几百万条）<br>
+训练集: 验证机：测试集 = 9:0.5:0.5<br>
+划分 验证集 可以过早的为我们预测 指标和精度</p>
+<h3 id="偏差-与-方差">偏差 与 方差</h3>
+<p>高偏差： 训练集和测试集 loss 都比较高   （比人预测的loss高很多） （欠拟合）<br>
+高方差： 训练集Loss低， 测试集 Loss高。  所以训练集和测试集 loss相差太大， 也成为（过拟合）</p>
+<h1 id="防止过拟合的几种方法">防止过拟合的几种方法</h1>
+<h3 id="损失函数-惩罚项系数-正则化regularization">损失函数 (惩罚项系数) 正则化（regularization）</h3>
+<p>可分两种 （L1正则化惩罚 和 L2正则化惩罚）下面只以 L2为例，L2用的也是比较多的）<br>
+正则化系数公式：<br>
+loss = ...<br>
+new_loss = loss + (λ/2m) * w^2<br>
+w = w - learning_rate * 梯度<br>
+上面公式的单调变换解释：<br>
+求梯度的时候 λ越大， new_loss越大， 求得的梯度越大（正比）<br>
+w 减去的值就越大。   w变得就越小。<br>
+w 越小， 一定程度上特征就衰减了许多。  就有效的放置了过拟合哦</p>
+<p>对应API（有两种方式）：<br>
+L1 = keras.regularizers.l2(0.01)   # TF2 当作 keras 的 Layers定义来使用<br>
+L1 = tf.nn.l2_loss(w_b)            # 看到里面传递 w和b了吧， 这种是偏手动方式实现的API</p>
+<p>如果你想使用手撕实现，下面有个例子（伪代码）：<br>
+for<br>
+with tf.GradientTape() as tape:<br>
+...<br>
+loss_reg = [tf.nn.l2_loss(w_b) for w_b in model.trainable_variables] # [w1,b1,w2,b2]<br>
+print(tf.reduce_sum(loss_reg))		# tf.Tensor(2.98585, shape=(), dtype=float32) # 就是这个形状<br>
+loss = loss + loss_reg</p>
+<h3 id="另一种正则化方式regularization-dropout">另一种正则化方式（regularization） -- DropOut</h3>
+<pre><code>&quot;随机&quot;剪枝， 略， TF框架一步到位
+</code></pre>
+<h3 id="还有一种防止过拟合的方式数据增强">还有一种防止过拟合的方式（数据增强）</h3>
+<p>防止过拟合的另一种方式，就是需要的大量的数据来支撑，那么数据就那么点，怎么办？<br>
+数据增强（ 其原理就是增大样本数量，小幅度翻转等） 某种程度上，就是增加了样本。</p>
+<h3 id="最后一种防止过拟合的方法-earlystopping">最后一种防止过拟合的方法 （earlystopping  ）</h3>
+<p>earlystopping  （tf.keras.callback模块中，有这个 callback函数，注释部分有解释）<br>
+callbacks = [<br>
+keras.callbacks.TensorBoard(logdir),<br>
+keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),<br>
+# 在这里<br>
+keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)<br>
+# 验证集，每次都会提升，如果提升不动了，小于这个min_delta阈值，则会耐性等待5次。<br>
+# 5次过后，要是还提升这么点。就提前结束。<br>
+]</p>
+<h1 id="数据预处理">数据预处理</h1>
+<h3 id="标准化-和-归一化能起到什么作用">标准化 和 归一化能起到什么作用：</h3>
+<pre><code>做了标准化 和 归一化 可以 让函数收敛的 更快速（梯度下降的快）
+参考 （圆形下降的快， 和 椭圆下降的慢）
+
+其次，在神经网络中,BN层还有额外的效果。每层网络的不同参数，可能会导致&quot;数据分布&quot;散乱、变形
+因此，BN可以有效 防止数据分布变形。 （其实说白了也是&quot;加速函数收敛&quot; ,加速NN训练）
+</code></pre>
+<h3 id="注意点">注意点</h3>
+<pre><code>训练集 和 测试集的样本特征 （&quot;要么都做处理，要么都不做处理&quot;）（就是相同待遇的意思。。。）
+专业点叫做 ：&quot;保证训练集 和 测试集 相同分布&quot;
+</code></pre>
+<h3 id="数据-随机分布有什么影响andrew-ng解释">数据 随机分布有什么影响（Andrew ng解释）？</h3>
+<p>假如训练集的数据分布 训练的目标是正中靶心。<br>
+而预测时，假如你的预测集数据分布 和 训练集数据分布的不同。<br>
+那么很可能会 预测集 预测的时候（是另一个靶心）。<br>
+所以你训练的再好，到预测集的靶子上  也是脱靶。。。<br>
+所以 训练集 和 测试集 的 相同分布很重要</p>
+<p>###数据预处理大体分2类：<br>
+1. 中心化处理<br>
+2. 缩放处理</p>
+<h3 id="zero-centered-中心化处理">zero-centered (中心化处理)</h3>
+<p>平移 --- 减去固定值<br>
+###scale (缩放处理)<br>
+归一化：除以  最大值-最小值<br>
+标准化：除以  标准差</p>
+<h3 id="下面的操作都是通过-中心化处理缩放处理-联合组成的">下面的操作都是通过  中心化处理+缩放处理 联合组成的</h3>
+<h1 id="normalization归一化-sklearn那里也提到过">normalization（归一化）  sklearn那里也提到过</h1>
+<p>目标：<br>
+将数据收敛到 [0,1]<br>
+公式<br>
+x - min(x)          # 中心化<br>
+------------------<br>
+max(x) - min(x)			# 缩放处理</p>
+<p>###StandardScaler（标准化）<br>
+目标：<br>
+将数据转化为标准 正态分布（均值为0，方差为1）<br>
+公式：<br>
+x - 平均值<br>
+-----------------<br>
+标准差</p>
+<h3 id="标准化-和-归一化-选哪个">标准化 和 归一化 选哪个？？？</h3>
+<p>视觉图片： 归一化<br>
+其他：   标准化较好</p>
+<h1 id="数据集不足怎么办">数据集不足怎么办？</h1>
+<p>我自己也遇到过这样的问题。<br>
+我之前做一个QA聊天机器人时。 数据是百度知道的爬的。<br>
+但是（用过的应该清楚。 百度知道有很多用户的垃圾回答，是用户刷分的。）<br>
+问了解决这一问题。我的解决思路是：通过Pandas, 筛选答案长度至最小。<br>
+但是这样。就可能筛选除了 大量大量的 原生数据<br>
+再加上，把（原数据中 &quot;有问无答&quot; 的问答对）过滤扔掉。<br>
+那么弄下来的源数据，几乎没剩多少了。。（我记得我当时弄了400W+问答对）<br>
+筛选到最后（问答长度 15个汉字， 筛选掉空回答）(只剩下 几万条了。。。)<br>
+后来，我急中生智。在网上找了一些 中文语料库（我用的青云中文语料库）<br>
+把它融合到 我自己的 语料库中。。。</p>
+<p>但是训练后的结果， 全是人家 青云语料库的 问答内容。。。<br>
+后来也没去继续深究了。。。</p>
+<h3 id="后来正好看到-ng-提到这一问题记录一下相应的应对措施">后来正好看到 Ng。提到这一问题，记录一下相应的应对措施!</h3>
+<p>训练集：青云语料+ 1/2 自己的语料<br>
+测试集: 1/4 自己的语料<br>
+验证集：1/4 自己的语料</p>
+<h1 id="随机初始化权重">随机初始化权重</h1>
+<h3 id="随机初始化认知">随机初始化认知</h3>
+<p>为什么不是初始化为0？？？<br>
+因为神经网络中， W初始化为0的话， 会导致反向传播后， 所有神经元会训练同一个网络。一点效果没有<br>
+为什么不初始化很大的值或者很小的值？？？<br>
+这是分情况来定的。<br>
+比如你用的 tanh 或者 sigmoid函数<br>
+由脑海中的图像可知（求导 或 斜率） ，当 初始值过大，或者过小。<br>
+都会可能导致，y直接落在 sigmoid的  顶部和底部（就是斜率水平，近乎为0）<br>
+落在了水平的梯度。这样的梯度，猴年马月也降不下去啊。。。。。<br>
+如果落在了 倾斜陡峭的梯度。 那么梯度下降的一定很快啦。</p>
+<h3 id="如果做了batchnormalization那么可使用-高斯-x-001">如果做了BatchNormalization，那么可使用 高斯 x 0.01</h3>
+<p>正态分布 * 拉低值<br>
+np.random.randn(2,2)  * 0.01			# 2,2是形状， 这个0.01 可以自己调节。 总之，小一点 最好， 但不要太小</p>
+<h3 id="如果使用了relu激活函数对应-初始化方法">如果使用了Relu激活函数，对应 初始化方法</h3>
+<pre><code>np.random.randn(shapex, shapey) *  np.sqrt( 2/shapex )	# 系数为2
+</code></pre>
+<h3 id="如果使用了tanh激活函数对应-初始化方法ng推荐-也叫-xavier">如果使用了Tanh激活函数，对应 初始化方法（NG推荐， 也叫 Xavier）</h3>
+<pre><code>np.random.randn(shapex, shapey) *  np.sqrt( 1/shapex ) # 系数为1
+</code></pre>
+<h1 id="激活函数">激活函数</h1>
+<h3 id="激活函数认知">激活函数认知</h3>
+<p>学习Andrew Ng课更深刻了解了激活函数。</p>
+<p>神经网络中，为什么我们需要激活函数，甚至需要非线性激活函数？<br>
+首先挑明，我们使用神经网络的目的，就是想训练出更多，更丰富的特征。<br>
+所以。 一直用线性激活函数，或者不用激活函数。会使得你整个网络训练到头，还是线性的。就没意思了。<br>
+它学不到丰富的特征的。</p>
+<pre><code>因为神经网络多层是需要拿前一层的结果作为下一层的 x，所以有了如下公式：
+	w3 (w2 (w1x+b) +b) +b
+展开后， 
+	w3 * w2 * w1 * x + ......   
+	很明显它依然是线性的。  
+	所以，无论你用多少层 神经网络。  到最后它依然是线性的。。。。
+	这样倒不如 一层网络也不用。
+	直接上个 逻辑回归模型，效果估计也是一样的。。。。。。
+</code></pre>
+<p>当然有一些场合也需要使用 线性激活函数，比如 房价预测。身高预测。（这些都是线性回归模型）<br>
+这些情况，就可以使用 线性激活函数了。</p>
+<pre><code>但是不妨想一想， 就像上面 身高预测这些。是线性回归，并且 y预测都是正数值。
+某种程度上，其实我们也可以使用 relu激活函数， （因为 relu的右半侧（就是大于0的部分） 也是线性的哦）
+</code></pre>
+<p>我们NN隐层就大多数都使用非线性激活函数。<br>
+隐层： relu 或者 leakly relu 或者 tanh<br>
+输出层： sigmoid  或者 softmax 或者 tanh  等等</p>
+<h3 id="sigmoid">sigmoid</h3>
+<p>公式<br>
+1<br>
+---------<br>
+1 + e**(-x)</p>
+<pre><code>每个out: (0, 1)  
+
+二分类out之和为 1
+</code></pre>
+<p>对应API：<br>
+1. tf.sigmoid(y)<br>
+2. 或函数参数 xxxxx (activations='sigmoid')<br>
+3. tf.keras.activations.sigmoid()</p>
+<h3 id="softmax">softmax</h3>
+<pre><code>  e**x
+---------------------------------
+e**(x1) + e**(x2) + ... + e**(xn)
+
+每个out: (0,1)
+
+多分类 out之和为 1
+</code></pre>
+<p>对应API：<br>
+1. tf.nn.softmax()<br>
+2. 函数参数 xxxxx (activations='softmax')<br>
+3. tf.keras.activations.softmax()</p>
+<p>softmax特点：<br>
+输出的是什么形状的张量，输出的就是什么形状的张量<br>
+也是有线性决策边界（线性 多 分类器）</p>
+<h3 id="tanh">tanh</h3>
+<p>coshx<br>
+e<strong>x - e</strong>(-x)<br>
+-------------<br>
+2<br>
+sinhx<br>
+e<strong>x + e</strong>(-x)<br>
+--------------<br>
+2<br>
+tanhx<br>
+e<strong>x - e</strong>(-x)<br>
+-------------<br>
+e<strong>x + e</strong>(-x)</p>
+<pre><code>每个out: (0,1) * 2 -1  ===&gt;  (-1,1)
+
+LSTM
+</code></pre>
+<p>对应API：<br>
+1. tf.tanh(y)<br>
+2. 函数参数 xxxxx (activations='tanh')<br>
+3. tf.keras.activations.tanh()</p>
+<h3 id="relu">relu</h3>
+<p>公式：<br>
+y = 0 if x &lt; 0 else x    # 大于0，梯度为1<br>
+对应API<br>
+1. tf.nn.relu()<br>
+2. 或函数参数 xxxxx (activations='relu')<br>
+3. tf.keras.activations.relu()</p>
+<pre><code>leaky_relu: (小扩展)
+	y = kx if x &lt; 0 else x    
+	tf.nn.leaky_relu()
+</code></pre>
+<h1 id="损失函数">损失函数</h1>
+<h3 id="mse-均方误差">MSE （均方误差）</h3>
+<p>公式<br>
+Σ( (y-y_predict)**2 )<br>
+--------------------<br>
+n<br>
+对应API<br>
+公式实现：<br>
+tf.reduce_mean( tf.square( y-y_predict ) )<br>
+tf.API:<br>
+tf.reduce_mean( tf.loss.MSE(y, y_predict) )</p>
+<h3 id="crossentropy-交叉熵">CrossEntropy （交叉熵）</h3>
+<p>熵公式：  -Σ（plogp）<br>
+交叉熵公式：-（ Σplogq ）     p为真实值One-hot, q为预测值<br>
+p: [1,0,0]<br>
+q: [0.9, 0,0.1]<br>
+H = -( 1<em>log0.9 + 0</em>log0 + 0*log0.1) = -log0.9 = -ln0.9 ≈ 0.1053....<br>
+tf的 tf.math.log相当于 ln<br>
+交叉熵API：<br>
+交叉熵越小（y与y-predict差距越小，预测较准确）<br>
+交叉熵越大（y与y_predict差距越大，交叉相乘累加后值大，说明预测错位了。。。所以交叉起来变大了）</p>
+<pre><code>tf.API: （方式1：直接是函数调用）
+	loss = tf.losses.categorical_crossentropy([1,0,0], [0.9, 0, 0.1],from_logits=True)  # 第一个参数y, 第二个参数 y_predict
+	loss = tf.reduce_mean(loss)
+
+tf.API: （方式2：用类的call调用 , 这次以 二分类交叉熵为例）
+	loss = tf.losses.BinaryCrossentropy(from_logits=True)( [1], [0.1] )  # 结果为2.+  。 因为 真实值是1类， 而预测值概率是0.1太小了。所以肯定预测错了。
+	loss = tf.reduce_mean(loss)
+    
+说明：categorical_crossentropy( ) # 第一个参数必须 one_hot, （第二个参数按理来说需要做 softmax，但是你传了 from_logigs=True，就不必softmax了）
+</code></pre>
+<h1 id="梯度">梯度</h1>
+<h3 id="sgdstochastic-gradent-descent">SGD（Stochastic Gradent Descent）:</h3>
+<p>解释 各种梯度下降的区别：<br>
+Mini-Batch Gradent Descent:<br>
+指定每次 mini-batch个 来做梯度下降 （就是每次指定多少个样本 来做GD的意思）<br>
+这种介于  1-全部样本之间的。 是最优的<br>
+Batch gradent descent:<br>
+mini-batch 为全部样本<br>
+Stochastic gradent descent:<br>
+mini-batch 为 1个样本<br>
+缺点： 每次 1个样本做SGD， 那么就失去了 向量化（矩阵乘代替循环）的 加速快感。。。。。</p>
+<p>减去梯度，代表朝着梯度方向走<br>
+w新 = w当前 - learning_rate * 梯度	<br>
+使用方式：<br>
+model.compile(..... ,optimizer=keras.optimizers.SGD(learning_rate=0.01))</p>
+<h3 id="再记录其他优化器之前-先补一个-指数加权平均-的知识">再记录其他优化器之前， 先补一个 指数加权平均 的知识</h3>
+<p>公式：<br>
+y = β * X之前 + （1-β）* X当前</p>
+<p>图形曲线表现：<br>
+β越小：（小到0.5） ：曲线越抖动频繁（锯齿 越厉害）（0.5左右已经，严重上下跳动了）<br>
+β越大：（大至1.0） ：曲线越光滑（无锯齿）<br>
+所以 β： 越大越好<br>
+（涉及到一个技术--偏差修正， 如果你不修正。 可能训练会稍微慢一些。无伤大雅）</p>
+<h3 id="momentum动量">Momentum（动量）</h3>
+<p>公式大概：<br>
+dw' =  β * dw-1 + ( 1-β ) * dw		# 用 dw-1 掰弯 dw<br>
+db' =  β * db-1 + ( 1-β ) * db		# 用 db-1 掰弯 db</p>
+<p>公式理解：<br>
+在原来的梯度基础上， 用 上一次的梯度方向， 把当前将要计算的梯度掰弯</p>
+<h3 id="rmsprop">RMSProp</h3>
+<pre><code>model.compile(..... ,optimizer=keras.optimizers.RMSprop(learning_rate=0.01, momentum=0.9))
+</code></pre>
+<h3 id="adam强烈推荐">Adam(强烈推荐)</h3>
+<p>TF-API:  默认原参数<br>
+model.compile(..... ,optimizer=keras.optimizers.Adam(<br>
+learning_rate=0.001,<br>
+beta_1=0.9,           # 学习率衰减参数<br>
+beta_2=0.999,<br>
+epsilon=1e-7,<br>
+),<br>
+)<br>
+其实这个API参数，我们只稍微调整一下 learning _ rate 即可，其他不用怎么。</p>
+<h3 id="学习率衰减">学习率衰减</h3>
+<p>其实大多数 优化器内都有 学习率衰减参数，例如：<br>
+SGD(decay)<br>
+Adam(beta_1)<br>
+当然你也可以自己实现（按照样本已训练的批次，动态衰减）<br>
+learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）</p>
+<pre><code>其实还有更多 可调节参数，就像Adam中的 那么多参数似。当然我压根也没想自己实现衰减。。
+
+可知 decay越小， 学习率衰减的越慢， 当衰减率为0时。  学习率压根就不衰减
+而 decay越大， 学习率衰减的越快， 当衰减率为1时。  那衰减的就太夸张了~~
+</code></pre>
+<h1 id="迁移学习-我想到一个词移花接木">迁移学习 （我想到一个词：移花接木）</h1>
+<h3 id="应用场景">应用场景</h3>
+<p>假如已经有现成的 狗类 识别的 神经网络模型<br>
+那么假如你现在想要 做一个 猫类的 识别</p>
+<p>你完全可以把 狗识别 网络模型拿过来<br>
+然后把最后 输出层 扔掉，自己加一个新输出层（当然中间你也可以加一些新的NN层）<br>
+然后 旁敲侧击，只在最后一层提供输入，只对 新的输出层（或者你额外加的NN）层训练。</p>
+<h3 id="应用条件">应用条件</h3>
+<p>当你迁移后的数据有特别特别多的时候， 那么你完全可以把 搬过来的 模型参数 从头到尾训练一遍。<br>
+就像你 狗模型， 前面的网络学到了很多  毛，特征。 （这猫也有嘛，所以正好可以用得上）<br>
+然后你 在狗模型的基础上 ，训练猫模型 （我不太了解猫~~~， 比如说可以新学到猫的胡须之类的新特征）<br>
+总结来说：  新模型 = NN层（狗）参数 + NN层（猫）参数 + 输出层（猫）参数<br>
+当然， 如果你迁移支持的数据，只有很少，根本不够强大的神经网络训练<br>
+那么，你就可以直接把，搬过来的模型参数固定住， 直接只在 最后输出层，提供输入，进行训练<br>
+总结来说：  新模型 = NN层（狗）参数 + 输出层（猫）参数</p>
+<p>迁移学习的主要目的思想：<br>
+当你 有很少的小数据集A， 但是你想训练成一个 NN 来 达到目的。<br>
+可想而知，少量数据集A 还不够 NN 塞牙缝的。。。</p>
+<pre><code>所以，你需要找一些其他类似的数据集B（量多的，好收集的）
+然后这些大量数据集B，足以 驰骋于 NN ， 得到一个模型。（并且带着 训练好的参数）
+
+数据集A说： &quot;
+	大哥，你训练好的网络借我用用呗。
+	你用了那么多数据，训练出的特征一定有我想要的。
+	我把整个模型拿过来，只改一下最后一层的输入。然后只训练最后一层的参数。
+	其他层的参数都用你的。
+&quot;。
+数据集B大哥说： &quot;可以&quot;
+</code></pre>
+<h3 id="迁移学习api-tensorflow20">迁移学习API （Tensorflow2.0）</h3>
+<p>温馨提示： TF20的Keras Layers 是可以 用切片语法 选取具体网络层的，举个例子：<br>
+# from tensorflow import keras<br>
+# cut_resnet = keras.applications.DenseNet121(  # 使用现有ResNet模型<br>
+#     include_top=False,  # 不要最后一层，而是使用我们自己定义的全连接层<br>
+#     pooling='avg',<br>
+#     weights='imagenet',  # 初始化权重（从imagenet训练好模型参数来初始化）<br>
+# )<br>
+# for layer in cut_resnet.layers[0:-3]:  # 部分可训练（fine-tune分割）<br>
+#     trainable=False             # 0 到 倒数第三层，参数不可训练<br>
+#<br>
+# new_model = keras.models.Sequential()<br>
+# new_model.add(cut_resnet)<br>
+# new_model.add(其他层)</p>
+<h3 id="迁移学习-适用场景">迁移学习 适用场景</h3>
+<ol>
+<li>统一使用领域（要么文本迁移要文本，  要门图像迁移到图像。）</li>
+<li>假如 A 迁移到 B （那么 A的样本最好远大于 B的样本）</li>
+<li>假如 A 迁移到 B （最好A的许多特征信息，B正好可以用得到。比如 猫狗，都有毛发，胡须，四条腿）</li>
+</ol>
+<h3 id="多任务学习了解用的少">多任务学习（了解，用的少）</h3>
+<p>直接感观：我认为就像（类的继承 ， 或者封装为一个函数， 这样的概念。。）<br>
+你想训练 预测 各种各样类别的图片。<br>
+你可以首先 用一个任务 训练一下 共有特征 的 NN。<br>
+然后其他任务 用这个 训练好的 共有的特征的 NN。<br>
+Ng提示： 你需要有庞大的神经网络支撑，不然效果不好。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Tensorflow2.0 GPU管理与分布式]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/">
+        </link>
+        <updated>2020-09-29T04:04:06.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="nvidia命令">Nvidia命令</h1>
+<pre><code>nvidia-smi 	# 查看GPU占用情况
+watch -n 0.1  -x nvidia-smi 	# 动态实时0.1秒间隔，查看GPU占用情况。
+</code></pre>
+<h1 id="gpu管理">GPU管理</h1>
+<h3 id="为什么需要管理gpu">为什么需要管理GPU？</h3>
+<pre><code>默认TF程序运行会沾满耗尽GPU
+</code></pre>
+<h3 id="如何管理gpu">如何管理GPU</h3>
+<p>使用内存增长式 API<br>
+内存增长解释： 按需分配<br>
+# 查看物理GPU信息<br>
+gpus = tf.config.experimental.list_physical_devices('GPU')  # 获取所有物理GPU信息</p>
+<pre><code>tf.config.experimental.set_visible_devices(gpus[2])      # 只使用 第3个GPU， 默认不设置就是使用所有GPU
+
+for gpu in gpus:             
+	tf.config.experimental.set_memory_growth(gpu, True)   # 这行代码必须放在前面
+    
+print(len(gpus))
+</code></pre>
+<h1 id="gpu-逻辑切分-分配大小">GPU 逻辑切分 （分配大小）</h1>
+<p>就像划分CDE盘符一样，实际上还是一个整体的GPU<br>
+tf.config.experimental.set_virtual_device_configuration(<br>
+gpus[2],    # 拿第3块物理 GPU来切分<br>
+[<br>
+tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048), # 实例化第一个蛋糕，并分为2G<br>
+tf.config.experimental.VirtualDeviceConfiguration(memory_limit=2048), # 实例化第二个蛋糕，并分为2G<br>
+]<br>
+)</p>
+<h3 id="使用逻辑切分好的gpu">使用逻辑切分好的GPU</h3>
+<pre><code># 查看逻辑GPU
+logical_gpus = tf.config.experimental.list_logical_devices('GPU')  # 获取所有物理GPU信息
+print(len(logical_gpus))
+
+c = []
+for gpu in logical_gpus:
+	with tf.device(gpu.name):	# 指定GPU名字作为上下文环境，（将此GPU应用到上下文变量当中）
+		a = xxx
+		b = xxx
+		c.append( a @ b )   		# 矩阵乘法，应用到了CPU，遍历一次，切换一个GPU
+with tf.device('/CPU:0'): 		# 指定CPU名字作为上下文环境，（将此CPU应用到上下文变量当中）
+	tf.add_n(c)
+</code></pre>
+<h1 id="分布式策略">分布式策略</h1>
+<h3 id="mirroredstrategy">MirroredStrategy</h3>
+<p>镜像式策略：<br>
+0. 一台机器， 多GPU</p>
+<ol>
+<li>参数同步式，分布式训练</li>
+<li>同步的意思是， 每个GPU的不同的参数会 按次序同步处理。<br>
+主要机制：<br>
+数据集 分发 给 不同的 GPU处理 （参考多线程）</li>
+</ol>
+<h3 id="centralstoragestrategy">CentralStorageStrategy</h3>
+<pre><code>MirroredStrategy 变种
+注意这里：  
+	参数转变为 存储在一个设备上集中管理（可CPU，可GPU）
+	而计算，依然是在所有GPU上运行
+</code></pre>
+<h3 id="multiworkermirroredstrategy">MultiWorkerMirroredStrategy</h3>
+<pre><code>同 MirroredStrategy，只不过 可扩展为  在多台机器
+参数同步式
+</code></pre>
+<h3 id="parameterserverstrategy">ParameterServerStrategy</h3>
+<ol>
+<li>参数，异步分布</li>
+<li>机器分为 Parameter Server 和 Worker两类 (可理解为，生产者，消费者)<br>
+Parameter Serve： 负责管理，更新 参数和梯度<br>
+Worker:  负责计算，训练网络</li>
+<li>将输入数据转发给 多个 Worker<br>
+Woker流程：<br>
+3.1 Worker们， 训练后 将参数 push 回给 Server<br>
+3.2 Worker们， 训练后 将 Server的参数 pull 拉过来</li>
+</ol>
+<p>Server流程：<br>
+3.1 梯度聚合<br>
+3.2 梯度更新</p>
+<h3 id="总结同步式-vs-异步式">总结同步式 vs 异步式</h3>
+<p>同步式：<br>
+就像分布式爬虫一样， 同步式，相当于在 Server中 加了一个缓冲管道。<br>
+等所有GPU齐了，再全部聚合更新。<br>
+缺点：<br>
+有的机器计算快，有的机器计算慢，浪费时间  (短板效应，，拖后腿)<br>
+适用于：<br>
+一台机器，多个GPU， 避免过多网络IO通信<br>
+异步式：<br>
+缺点+ 也算是优点：<br>
+就像多线程对全局变量的不可控一样。可能参数错乱。<br>
+但是这样训练出的模型，更有泛化能力（更能容忍错误， 所以这也算是个小优点）</p>
+<pre><code>适用于：
+	多机器，多GPU
+</code></pre>
+<h1 id="分布式实例以mirroredstrategy为例其他也一样">分布式实例（以MirroredStrategy为例，其他也一样）</h1>
+<h3 id="keras中使用分布式">keras中使用分布式：</h3>
+<pre><code>strategy = tf.distribute.MirroredStrategy()
+with strategy.scope():               # 同样制造一个上下文
+	model = keras.models.Sequential([...])  # 模型定义部分放在上下文意味着，参数需要分布式管理
+	model.add()
+	...
+	...
+	model.add()
+	model.compile(...)						# compile 放在上下文中，意味着，训练环节，同样也需要分布式训练
+	# 至此结束
+</code></pre>
+<h3 id="estimator使用分布式">estimator使用分布式</h3>
+<p>原始，没有添加分布式的 estimator 代码<br>
+model = keras.Sequential([])<br>
+estimator = keras.estimator.model_to_estimator(model)<br>
+# 偷个懒，直接用Keras转过来的， 其实estimator 有很多内置模型（比如线性回归，逻辑回归）。和SKlearn用法差不多</p>
+<pre><code># 所以在训练时，把 model.fit替换为 estimator.train
+from sklearn.linear_model.base import make_dataset
+estimator.train(
+	input_fn= lambda: 自己处理数据的函数(参数),  # 此函数返回结果通常是 tf.data.Dataset对象()
+	max_steps=1000      # 最多训练1000步数
+)
+
+# 训练结果的精度值等指标，通常输出到一个文件中，  可通过 tensorflow_board 打开查看
+</code></pre>
+<p>使用 分布式的 estimator 代码： 只需按照上面便跟几行即可：<br>
+strategy = tf.distribute.MirroredStrategy()<br>
+config = tf.estimator.RunConfig(              # 主要加了这里<br>
+train_distribute=strategy<br>
+)<br>
+model = keras.Sequential([])<br>
+estimator = keras.estimator.model_to_estimator(model, config=config)<br>
+下面同上</p>
+<h3 id="自定义模型训练-的-分布式改造">自定义模型+训练 的 分布式改造</h3>
+<h1 id="分布式效果不好">分布式效果不好？？</h1>
+<ol>
+<li>可以考虑 把 batch _ size 增大</li>
+<li>可以尝试数据分布式<br>
+数据分布式代码：<br>
+strategy = tf.distribute.MirroredStrategy()<br>
+with strategy.scope():<br>
+...<br>
+train_dataset = strategy.experimental_distribute_dataset(train_dataset)<br>
+test_dataset = strategy.experimental_distribute_dataset(test_dataset)</li>
+</ol>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Tensorflow2.0模型保存与部署]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/">
+        </link>
+        <updated>2020-09-29T04:03:37.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="模型保存">模型保存</h1>
+<p>tf1: checkpoint（主力）<br>
+tf2: keras(hdf5) 或 SavedModel(tf2.0) 推荐格式</p>
+<h1 id="模型部署-tflite">模型部署 TFLite</h1>
+<h3 id="tflite-converter">TFLite Converter</h3>
+<p>将上面的 hdf5 或 SavedModel 转化为 TFLite格式</p>
+<h3 id="tflite-interpreter">TFLite Interpreter</h3>
+<p>用来加载 TFLite Converte 转化后的模型 （支持 IOS Andriod） （支持C++等多种语言）</p>
+<h3 id="tflite-flatbuffer">TFLite  FlatBuffer</h3>
+<p>TFLite 是一种 FlatBuffer 格式<br>
+FlatBuffer： Google开源 跨平台数据序列化库</p>
+<h3 id="tflite-量化">TFLite 量化</h3>
+<p>量化： 参数从 float32 变为 int8。 （损失精度，提升速度）<br>
+模型可以降低为原来的  1/4</p>
+<h1 id="实战">实战</h1>
+<h3 id="保存模型">保存模型</h3>
+<p>tf2的模型保存，有两大派别：<br>
+方式1. keras的保存方式<br>
+方式2. saved _ model的保存方式</p>
+<p>方式1具体使用： 使用callback<br>
+keras.callbacks.ModelCheckpoint(<br>
+'xxx.h5',<br>
+save_best_only=True,<br>
+save_weights_only=False     # 默认就是False, 意为保存 模型+参数<br>
+)<br>
+方式2具体使用： 使用 tf.saved _ model()    将 keras转为 saved _ model<br>
+tf.saved_model.save(model, './文件夹名')		# 结果目录里面有个  saved_model.pd 有用</p>
+<h3 id="模型-转化为-lite格式">模型 转化为 Lite格式</h3>
+<p>keras格式的模型对应API：<br>
+keras_model = tf.lite.TFLiteConverter.from_keras_model(model)  # 普通<br>
+keras_tflite = keras_model.convert()</p>
+<pre><code>with open('keras目录', 'wb') as f:
+	f.write(keras_tflite)
+</code></pre>
+<p>saved _ model 格式的模型对应API：<br>
+saved_model = tf.lite.TFLiteConverter.from_saved_model('./原始模型保存目录')<br>
+saved_model_tflite = saved_model.convert()</p>
+<pre><code>with open('saved_model目录', 'wb') as f:
+	f.write(saved_model_tflite)
+</code></pre>
+<h3 id="tflite-interpreter继续操作lite">TFLite Interpreter继续操作Lite</h3>
+<pre><code>with open('keras目录', 'rb') as f:		# 读取 TFLite
+	keras_model = f.read()		  
+
+interpreter = tf.lite.Interpreter(
+	model_content=keras_model
+)
+interpreter.allocate_tersors()		#  给 TFLite中的所有 Tensor 分配内存
+</code></pre>
+<h3 id="模型量化-实操">模型量化 实操</h3>
+<p>其实就是在上面的基础上，中间部分加一行代码<br>
+keras_model = tf.lite.TFLiteConverter.from_keras_model(model)  # 普通<br>
+# 就在这里加<br>
+keras_model.optimizations = [ tf.lite.Optimize.OPTIMIZE_FOR_SIZE ]<br>
+keras_tflite = keras_model.convert()</p>
+<h3 id="模型转换转换为-js为例">模型转换（转换为 JS为例）</h3>
+<p>首先需要下载一个工具 tensorflowjs<br>
+pip install tensorflowjs -i https://pypi.douban.com/simple<br>
+注意一下， tensorflowjs目前最高只支持 tf1.14 。 所以你运行上述安装命令，你的tf会自动降级到 tf1.14......</p>
+<p>查看帮助文档，看看参数：<br>
+tensorflowjs_converter --help</p>
+<p>正式转换：(CMD or Shell命令行式转换方法)<br>
+（keras保存版）<br>
+tensorflowjs_converte <br>
+--input_format keras <br>
+--output_format  tfjs_layers_model <br>
+./xxx/xxx.h5 <br>
+./keras_to_tfjs_layers</p>
+<pre><code># 倒数第二个参数是 输入
+# 倒数第一个参数是 输出
+# 运行成功后， JS保存目录中 会有2个文件
+1. xx.bin		# 真正的模型
+2. xx.json		# 模型相关配置信息
+</code></pre>
+<p>（model _ saved保存版）<br>
+tensorflowjs_converte <br>
+--input_format tf_saved_model <br>
+--output_format  tfjs_graph_model <br>
+./xxx/xxx.h5 <br>
+./keras_to_tfjs_layers</p>
+<pre><code># 上面的 saved_model 版本 主要改了这两个参数:
+	--input_format tf_saved_model \
+	--output_format  tfjs_graph_model \
+</code></pre>
+<hr>
+<p>其次还有 代码式 转换方法：<br>
+import tensorflowjs as tfjs</p>
+<pre><code>model = ...
+
+tfjs.converters.save_keras_model(model,'新JS路径')
+tfjs.converters.convert_tf_saved_model(model,'新JS路径')
+</code></pre>
+<h3 id="js端调用">JS端调用</h3>
+<p>需要安装Node等启动服务。 Node也需要安装 tensorflowjs 模块。<br>
+使用方法，略。。。。。，</p>
 ]]></content>
     </entry>
 </feed>

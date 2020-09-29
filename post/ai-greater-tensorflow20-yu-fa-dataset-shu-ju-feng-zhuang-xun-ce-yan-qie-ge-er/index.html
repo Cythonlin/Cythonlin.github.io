@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二） | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="训练集-测试集-验证集切割
+###方法1：（借用三方sklearn库）
+因为sklearn的train_test_split只能切2份，所以我们需要切2次：
+from sklearn.model_selection import train..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二）</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="训练集-测试集-验证集切割">训练集-测试集-验证集切割</h1>
+<p>###方法1：（借用三方sklearn库）<br>
+因为sklearn的train_test_split只能切2份，所以我们需要切2次：<br>
+from sklearn.model_selection import train_test_split</p>
+<pre><code>x_train, x_test, y_train, y_test = train_test_split(
+    x, y,                # x,y是原始数据
+    test_size=0.2        # test_size默认是0.25
+)  # 返回的是 剩余训练集+测试集
+
+x_train, x_valid, y_train, y_valid = train_test_split(
+    x_train, y_train,    # 把上面剩余的 x_train, y_train继续拿来切
+    test_size=0.2        # test_size默认是0.25
+)  # 返回的是 二次剩余训练集+验证集
+</code></pre>
+<p>切分好的数据，一般需要做 batch_size， shuffle等， 可以使用 tf.keras模型的 fit() 一步传递！<br>
+eg:<br>
+model.compile(<br>
+loss=keras.losses.mean_squared_error,<br>
+optimizer=keras.optimizers.SGD(),<br>
+metrics=['acc']    # 注意这个metrics参数，下面一会就提到<br>
+)</p>
+<pre><code>history = model.fit(
+    x_train, 
+    y_train, 
+    validation_data=(x_valid, y_valid),     # 验证集在这里用了！！！
+    epochs=100, 
+    batch_size = 32      #  batch_size 不传也行，因为默认就是32
+    shuffle=True,        #  shuffle    不传也行，因为默认就是True
+    # callbacks=callbacks, #
+)
+度量指标 = model.evaluate(x_test, y_test)    # 返回的是指标（可能包括loss,acc）
+# 这里说一下，为什么我说可能包括。
+# 因为这个返回结果取决于 你的  model.compile() 传递的参数
+    # 如果你传了  metrics=['acc']， 那么这个度量指标的返回结果就是 (loss, acc)
+    # 如果你没传 metrics ，         那么这个度量指标的返回结果就是一个 loss
+
+y_predict = model.predict(x_test)            # 返回的是预测结果
+</code></pre>
+<p>###方法2：（tf.split）<br>
+自己封装的代码：功能包括： 3切分，乱序数据集，分批操作 一体化！！！ （可能有瑕疵）<br>
+已上传至Github :  https://github.com/hacker-lin/train_test_valid_split<br>
+定义部分：<br>
+class HandlerData:<br>
+def <strong>init</strong>(self, x, y):<br>
+&quot;&quot;&quot;我封装的类，数据通过实例化传进来保存&quot;&quot;&quot;<br>
+self.x = x<br>
+self.y = y</p>
+<pre><code>    def shuffle_and_batch(self, x, y, batch_size=None):
+        &quot;&quot;&quot;默认定死乱序操作，batch_size可选参数， 其实乱序参数也应该设置可选的。懒了&quot;&quot;&quot;
+        data = tf.data.Dataset.from_tensor_slices((x, y))    # 封装 dataset数据集格式
+
+        data_ = data.shuffle(        # 乱序
+            buffer_size=x.shape[0],  # 官方文档说明 shuffle的buffer_size 必须大于或等于样本数量
+        )
+        if batch_size:
+            data_ = data_.batch(batch_size)
+        return data_
+
+    def train_test_valid_split(self, 
+        test_size=0.2,                 # 测试集的切割比例
+        valid_size=0.2,                # 验证集的切割比例
+        batch_size=32,                 # batch_size 默认我设为了32
+        is_batch_and_shuffle=True      # 这个是需不需要乱序和分批，默认设为使用乱序和分批
+    ):
+    
+        sample_num = self.x.shape[0]    # 获取样本总个数
+        train_sample = int(sample_num * (1 - test_size - valid_size))  # 训练集的份数
+        test_sample = int(sample_num * test_size)                      # 测试集测份数
+        valid_train = int(sample_num * valid_size)                     # 验证集的份数
+        # 这三个为什么我用int包裹起来了，因为我调试过程中发现，有浮点数计算精度缺失现象。
+        # 所以必须转整形
+        
+        # tf.split()  此语法上一篇我讲过，分n份，每份可不同数量
+        x_train, x_test, x_valid = tf.split(  
+            self.x,
+            num_or_size_splits=[train_sample, test_sample, valid_train],
+            axis=0
+        )
+        y_train, y_test, y_valid = tf.split(
+            self.y,
+            [train_sample, test_sample, valid_train],
+            axis=0
+        )
+        # 因为份数是我切割x,y之前计算出来的公共变量。所以不用担心 x,y不匹配的问题。
+            
+        if is_batch_and_shuffle:   # 是否使用乱序和分批，默认是使用的，所以走这条
+            return (
+                self.shuffle_and_batch(x_train, y_train, batch_size=batch_size),
+                self.shuffle_and_batch(x_test, y_test, batch_size=batch_size),
+                self.shuffle_and_batch(x_valid, y_valid, batch_size=batch_size),
+            )
+        else:    # 如果你只想要切割后的原生数据，那么你把is_batch_and_shuffle传False就走这条路了
+            return (
+                (x_train, y_train),
+                (x_test, y_test),
+                (x_valid, y_valid)
+            )
+</code></pre>
+<p>调用案例：<br>
+x = tf.ones([1000, 5000])<br>
+y = tf.ones([1000, 1])</p>
+<pre><code>data_obj = HandlerData(x,y)   # x是原生的样本数据，x是原生的label数据
+
+# 方式1：使用乱序，使用分批，就是一个参数都不用传，全是默认值
+train, test, valid = data_obj.train_test_valid_split(
+    # test_size=0.2, 
+    # valid_size=0.2, 
+    # batch_size=32, 
+    # is_batch_and_shuffle=True
+) # 这些参数你都可以不传，这都是设置的默认值。
+
+print(train)
+print(test)
+print(valid)
+
+# 结果
+&gt;&gt;&gt; &lt;BatchDataset shapes: ((None, 5000), (None, 1)), types: (tf.float32, tf.float32)&gt;
+&gt;&gt;&gt; &lt;BatchDataset shapes: ((None, 5000), (None, 1)), types: (tf.float32, tf.float32)&gt;
+&gt;&gt;&gt; &lt;BatchDataset shapes: ((None, 5000), (None, 1)), types: (tf.float32, tf.float32)&gt;
+
+# 虽然你看见了样本数为None，但是没关系，因为你还没使用，遍历一下就明白了    
+for x_train,y_train in train:
+    print(x_train.shape,y_train.shape)
+
+# 结果  600 // 32 == 18 （你可以查一下正好18个）
+# 结果  600 % 32 == 24 （你可以看一下最后一个就是24）
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(32, 5000) (32, 1)
+(24, 5000) (24, 1)   # 32个一批，最后一个就是余数 24个了。
+
+
+# 方式2：不使用乱序，使用分批，只要原生数据，
+(x_train, y_train), (x_test, y_test), (x_valid, y_valid) = data_obj.train_test_valid_split(
+    # test_size=0.2,
+    # valid_size=0.2,
+    # batch_size=32,
+    is_batch_and_shuffle=False    # 这个改为False即可，其他参数可选
+)
+
+print(x_train.shape, y_train.shape)
+print(x_test.shape, y_test.shape)
+print(x_valid.shape, y_valid.shape)
+
+# 结果
+&gt;&gt;&gt; (600, 5000) (600, 1)
+&gt;&gt;&gt; (200, 5000) (200, 1)
+&gt;&gt;&gt; (200, 5000) (200, 1)
+</code></pre>
+<h3 id="方式3训验分割">方式3（训验分割）</h3>
+<pre><code>history = model.fit(
+    .....
+    validation_split=0.2      # 训练集分出0.2给验证集
+)
+</code></pre>
+<h1 id="数据处理-dataset">数据处理 （dataset）</h1>
+<p>这个模块的作用就是，将我们的数据，或者 TF张量，封装成数据集。<br>
+这个数据集具有成品API，比如：可以帮助我们，分批，乱序，制作迭代，等一些列操作。</p>
+<h3 id="基本理解">基本理解</h3>
+<pre><code>dataset = tf.data.Dataset.from_tensor_slices(np.arange(16).reshape(4,4))
+按理来说（先不取），数据形状应该是这样的。  （一个大列表里面，有4个小列表）
+[
+    [0, 1, 2 ,3 ],
+    [4, 5, 6 ,7 ],
+    [8, 9, 10,11],
+    [12,13,14,15],
+]
+
+for data in dataset:   # 封装的数据集需要遍历（或者 iter() 改变为迭代器类型），才能返回值
+    print(data)        # 每遍历一条就是里面的小列表。 eg:第一条形状： [0, 1, 2 ,3 ]
+                       # 但是别忘了。我们这是Tensorflow，因此每层数据集都被封装为Tensor。
+                       # 因此，我们每遍历出一条数据，都是一条Tensor
+输出：
+&gt;&gt;    tf.Tensor([0 1 2 3], shape=(4,), dtype=int32)
+      tf.Tensor([4 5 6 7], shape=(4,), dtype=int32)
+      tf.Tensor([ 8  9 10 11], shape=(4,), dtype=int32)
+      tf.Tensor([12 13 14 15], shape=(4,), dtype=int32)
+
+前面说了，这个数据的格式就是（一个大列表里面，有4个小列表）
+对应来看， （一个大Tensor里面， 有4个小Tensor）。 记住这个理念
+</code></pre>
+<h3 id="数据来源参数类型">数据来源参数类型</h3>
+<p>参数传元组：<br>
+question = [[1, 0], [1, 1]]<br>
+answer = ['encode', 'decoder']<br>
+dataset = tf.data.Dataset.from_tensor_slices( (question, answer) ) # 用元组包起来了<br>
+for data in dataset:<br>
+print(data[0],'=&gt;' ,data[1])<br>
+输出:<br>
+&gt;&gt; tf.Tensor([1 0], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'encode', shape=(), dtype=string)<br>
+tf.Tensor([1 1], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'decoder', shape=(), dtype=string)</p>
+<pre><code>你可以看出它自动把我们传递的 question 和 answer 两个大列表。  &quot;相当于做了zip()操作&quot;。
+
+# 我的实验经历：训练 Encoder-Decoder模型的，&quot;问答对数据&quot;，做编码后，就可以这样用元组传。
+</code></pre>
+<p>参数传字典：<br>
+data_dict = {<br>
+'encoder': [1, 0],<br>
+'decoder': [1, 1]<br>
+}</p>
+<pre><code>dataset = tf.data.Dataset.from_tensor_slices(data_dict)
+for data in dataset:    # 其实每一个元素就是一个字典
+    print(data)
+
+# 其实就是把你的 value部分，转成了Tensor类型。 总体结构没变
+</code></pre>
+<h3 id="链式调用">链式调用</h3>
+<p>Dataset API 大多数操作几乎都是链式调用（就像python字符串的 replace方法）<br>
+用上面的数据作为案例数据， 介绍几种API：</p>
+<h4 id="batch-分批">batch (分批)</h4>
+<pre><code>for data in dataset.batch(2):    # 若设置 drop_remainder=True，则最后余下一批会被丢弃
+    print(data) 
+输出： 
+&gt;&gt;    tf.Tensor([[0 1 2 3] [4 5 6 7]], shape=(2, 4), dtype=int32)
+      tf.Tensor([[ 8  9 10 11] [12 13 14 15]], shape=(2, 4), dtype=int32)
+                     
+上面说过，默认就是 遍历出的每个子项，就是一个Tensor，  如上数据，遍历出 4个Tensor
+而调用 batch(2) 后， 把2个子项分成一批， 然后再包装成为Tensor。
+so, 4/2 = 2批 ， 包装成2个Tensor
+</code></pre>
+<h4 id="repeat重复使用数据epoch理念-重复训练n轮次">repeat（重复使用数据：epoch理念， 重复训练n轮次）</h4>
+<pre><code>注意（传的就是总重复数，算自身）： 
+    1. 如果repeat() 不传参数，那就是无限重复。。。
+    2. 如果传参数 = 0,  那么代表不取数据
+    3. 如果传参数 = 1,  那么代表一共就一份数据
+    4. 如果传参数 = 2,  那么代表一共就2份数据（把自己算上，一共2份，就这么个重复的意思）
+    
+for data in dataset.repeat(2).batch(3):   # 重复2次。 3个一组  （这就是链式调用）
+    print(data)
+
+结果
+&gt;&gt;  tf.Tensor([[ 0  1  2  3] [ 4  5  6  7] [ 8  9 10 11]], shape=(3, 4), dtype=int32)  
+    tf.Tensor([[12 13 14 15] [ 0  1  2  3] [ 4  5  6  7]], shape=(3, 4), dtype=int32)
+    tf.Tensor([[ 8  9 10 11] [12 13 14 15]], shape=(2, 4), dtype=int32)  
+    
+    原数据是4个子项，  重复2次 ：  4*2=8 
+    然后链式调用分3批： 8/3=2 ..... 2    （整批3个一组， 最后一批余数一组）
+    # 还要注意一下， 它们重复是顺序重复拼接。 分批时，可以首尾相连的 
+    （eg:就像小时候吃的一连串棒棒糖， 拽不好，会把上一个的糖皮连着拽下来）
+</code></pre>
+<h1 id="未完待续">未完待续</h1>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-zhang-liang-andji-ben-han-shu-yi/">
+                  <h3 class="post-title">
+                    AI =&gt; Tensorflow2.0语法 - 张量&amp;基本函数(一)
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

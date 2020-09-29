@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; Tensorflow2.0语法 - keras_API的使用(三) | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+keras接口大都实现了 _call_ 方法。
+母类 _call_ 调用了 call()。
+因此下面说的几乎所有模型/网络层 都可以在定义后，直接像函数一样调用。
+eg:
+模型对象(参数)
+网络层对象(参数)
+我们还可以实现继承模板
+..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; Tensorflow2.0语法 - keras_API的使用(三)</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>keras接口大都实现了 _<em>call</em>_ 方法。<br>
+母类 _<em>call</em>_ 调用了 call()。<br>
+因此下面说的几乎所有模型/网络层 都可以在定义后，直接像函数一样调用。<br>
+eg:<br>
+模型对象(参数)<br>
+网络层对象(参数)<br>
+我们还可以实现继承模板</p>
+<h1 id="导入">导入</h1>
+<pre><code>from tensorflow import keras
+</code></pre>
+<h1 id="metrics-统计平均">metrics (统计平均)</h1>
+<p>里面有各种度量值的接口<br>
+如：二分类、多分类交叉熵损失容器，MSE、MAE的损失值容器， Accuracy精确率容器等。<br>
+下面以Accuracy伪码为例：<br>
+acc_meter = keras.metrics.Accuracy() # 建立一个容器<br>
+for _ in epoches:<br>
+for _ in batches:<br>
+y = ...<br>
+y_predict = ...<br>
+acc_meter.update_state(y, y_predict) # 每次扔进去数据，容器都会自动计算accuracy，并储存</p>
+<pre><code>        if times % 100 == 0: # 一百次一输出, 设置一个阈值/阀门
+            print(acc_meter.result().numpy())   # 取出容器内所有储存的数据的，均值准确率
+    acc_meter。reset_states()    # 容器缓存清空， 下一epoch从头计数。
+</code></pre>
+<h1 id="激活函数损失函数优化器">激活函数+损失函数+优化器</h1>
+<p>导入方式：<br>
+keras.activations.relu()    # 激活函数：以relu为例，还有很多<br>
+keras.losses.categorical_crossentropy() # 损失函数：以交叉熵为例，还有很多<br>
+keras.optimizers.SGD()      # 优化器：以随机梯度下降优化器为例<br>
+keras.callbacks.EarlyStopping()  # 回调函数： 以‘按指定条件提前暂停训练’回调为例</p>
+<h1 id="sequential继承自model属于模型">Sequential(继承自Model)属于模型</h1>
+<h3 id="模型定义方式">模型定义方式</h3>
+<p>定义方式1：<br>
+model = keras.models.Sequential( [首层网络,第二层网络。。。] )<br>
+定义方式1：<br>
+model = keras.models.Sequential()<br>
+model.add(首层网络)<br>
+model.add(第二层网络)</p>
+<h3 id="模型相关回调配置">模型相关回调配置</h3>
+<pre><code>logdir = 'callbacks'
+if not os.path.exists(logdir):
+    os.mkdir(logdir)
+save_model_file = os.path.join(logdir, 'mymodel.h5')
+
+callbacks = [
+    keras.callbacks.TensorBoard(logdir),    # 写入tensorboard
+    keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),  # 模型保存
+    keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)  # 按条件终止模型训练
+    # 验证集，每次都会提升，如果提升不动了，提升小于这个min_delta阈值，则会耐心等待5次。
+    # 5次过后，要是还提升这么点。就提前结束。
+]
+# 代码写在这里，如何传递调用， 下面 “模型相关量度配置” 会提到
+</code></pre>
+<h3 id="模型相关量度配置损失优化器准确率等">模型相关量度配置：(（损失，优化器，准确率等)</h3>
+<p>说明，下面的各种量度属性，可通过字符串方式，也可通过上面讲的导入实例化对象方式。<br>
+model.compile(<br>
+loss=&quot;sparse_categorical_crossentropy&quot;,    # 损失函数，这是字符串方式<br>
+optimizer= keras.optimizers.SGD()          # 这是实例化对象的方式，这种方式可以传参<br>
+metrics=['accuracy']  # 这项会在fit()时打印出来<br>
+)  # compile() 操作，没有真正的训练。<br>
+model.fit(<br>
+x,y,<br>
+epochs=10,                              # 反复训练 10 轮<br>
+validation_data = (x_valid,y_valid),    # 把划分好的验证集放进来（fit时打印loss和val）<br>
+validation_freq = 5,                    # 训练5次，验证一次。  可不传，默认为1。<br>
+callbacks=callbacks,                    # 指定回调函数， 请衔接上面‘模型相关回调配置’</p>
+<pre><code>)   # fit()才是真正的训练 
+</code></pre>
+<h3 id="模型-验证测试">模型 验证&amp;测试</h3>
+<p>一般我们会把 数据先分成三部分（如果用相同的数据，起不到测试和验证效果，参考考试作弊思想）：</p>
+<ol>
+<li>训练集: （大批量，主体）</li>
+<li>测试集: （模型所有训练结束后， 才用到）</li>
+<li>验证集: （训练的过程种就用到）<br>
+说明1：（如何分离？）
+<ol>
+<li>它们的分离是需要（x,y）组合在一起的，如果手动实现，需要随机打散、zip等操作。</li>
+<li>但我们可以通过 scikit-learn库，的 train_test_split() 方法来实现 （2次分隔）</li>
+<li>可以使用 tf.split()来手动实现<br>
+具体分离案例：参考上一篇文章： https://segmentfault.com/a/1190000020447666</li>
+</ol>
+</li>
+</ol>
+<p>说明2：（为什么我们有了测试集，还需要验证集？）</p>
+<ol>
+<li>测试集是用来在最终，模型训练成型后（参数固定），进行测试，并且返回的是预测的结果值！！！！</li>
+<li>验证集是伴随着模型训练过程中而验证）<br>
+代码如下：<br>
+loss, accuracy = model.evaluate( (x_test, y_test) ) # 度量， 注意，返回的是精度指标等<br>
+target = model.predict( (x_test, y_test) )          # 测试， 注意，返回的是 预测的结果！</li>
+</ol>
+<h3 id="可用参数">可用参数</h3>
+<pre><code>model.trainable_variables    # 返回模型中所有可训练的变量
+# 使用场景： 就像我们之前说过的 gradient 中用到的 zip(求导结果, model.trainable_variables)
+</code></pre>
+<h1 id="自定义model">自定义Model</h1>
+<p>Model相当于母版， 你继承了它，并实现对应方法，同样也能简便实现模型的定义。</p>
+<h1 id="自定义layer">自定义Layer</h1>
+<p>同Model， Layer也相当于母版， 你继承了它，并实现对应方法，同样也能简便实现网络层的定义。</p>
+<h1 id="模型保存与加载">模型保存与加载</h1>
+<p>###方法1：之前callback说的<br>
+###方法2：只保存weight(模型不完全一致)<br>
+保存：<br>
+model = keras.Sequential([...])<br>
+...<br>
+model.fit()<br>
+model.save_weights('weights.ckpt')<br>
+加载：<br>
+假如在另一个文件中。（当然要把保存的权重要复制到本地目录）<br>
+model = keras.Sequential([...])    # 此模型构建必须和保存时候定义结构的一模一样的！<br>
+model.load_weights('weights.ckpt')<br>
+model.evaluate(...)<br>
+model.predict(...)</p>
+<p>###方法3：保存整个模型（模型完全一致）<br>
+保存：<br>
+model = keras.Sequential([...])<br>
+...<br>
+model.fit()<br>
+model.save('model.h5')    # 注意 这里变了，是 save<br>
+加载:（直接加载即可，不需要重新复原建模过程）<br>
+假如在另一个文件中。（当然要把保存的模型要复制到本地目录）<br>
+model = keras.models.load_model('model.h5')  # load_model是在 keras.models下<br>
+model.evaluate(...)<br>
+model.predict(...)<br>
+###方法4：导出可供其他语言使用（工业化）<br>
+保存： （使用tf.saved_model模块）<br>
+model = keras.Sequential([...])<br>
+...<br>
+model.fit()<br>
+tf.saved_model.save(model, '目录')<br>
+加载：（使用tf.saved_model模块）<br>
+model = tf.saved_model.load('目录')</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-zhi-shi-tu-pu-zhi-neo4j-cypher/">
+                  <h3 class="post-title">
+                    AI =&gt; 知识图谱之Neo4j-Cypher
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

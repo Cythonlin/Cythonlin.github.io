@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title> PY =&gt; Sklearn | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="数据预处理
+大体分为  （中心化处理+缩放处理）
+###zero-centered (中心化处理)
+平移 --- 减去固定值
+###scale (缩放处理)
+归一化：除以  最大值-最小值
+标准化：除以  标准差
+下面的操作都是通过  中心..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title"> PY =&gt; Sklearn</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="数据预处理">数据预处理</h1>
+<p>大体分为  （中心化处理+缩放处理）<br>
+###zero-centered (中心化处理)<br>
+平移 --- 减去固定值<br>
+###scale (缩放处理)<br>
+归一化：除以  最大值-最小值<br>
+标准化：除以  标准差</p>
+<h3 id="下面的操作都是通过-中心化处理缩放处理-联合组成的">下面的操作都是通过  中心化处理+缩放处理 联合组成的</h3>
+<p>###normalization（归一化）<br>
+目标：<br>
+将数据收敛到 [0,1]<br>
+公式<br>
+x - min(x)          # 中心化<br>
+------------------<br>
+max(x) - min(x)			# 缩放处理</p>
+<p>sklearn代码如下<br>
+from sklearn.preprocessing import MinMaxScaler<br>
+mm = MinMaxScaler( feature_range=[0,1] )   # 注意，这里也可以归一化到其他区间 [2,4] ，也是没问题的</p>
+<pre><code># mm.fit([[1,2,3],[40,60,70]])
+# result = mm.transform([[1,2,3],[40,60,70]])      # 这步返回的 才是归一化后的数据
+result = mm.fit_transform([[1,2,3],[40,60,70]])
+
+raw_data = mm.inverse_transform(result)				 # 可以还原出 归一化前的 原始数据
+
+# 额外注意
+# 如果数据量太大， 导致 fit() 报错，那么可使用 partial_fit() 。 用法和 fit() 一样的
+mm.partial_fit(x)
+</code></pre>
+<p>###StandardScaler（标准化）<br>
+目标：<br>
+将数据转化为标准 正态分布（均值为0，方差为1）<br>
+公式：<br>
+x - 平均值<br>
+-----------------<br>
+标准差<br>
+sklearn代码如下<br>
+from sklearn.preprocessing import StandardScaler<br>
+standardscaler = StandardScaler()</p>
+<pre><code>result = standardscaler.fit_transform([[1,2,3],[40,60,70]])
+print(result)
+
+print(standardscaler.mean_)			# 可以查看方差， 注意是 实例化对象的属性
+print(standardscaler.var_)			# 可以查看均值
+
+# 同样可以 逆向求原始数据
+raw_data = standardscaler.inverse_transform(result)
+# 同样也可以使用 partial_fit
+standardscaler.partial_fit(x)
+</code></pre>
+<h3 id="标准化-和-归一化-选哪个">标准化 和 归一化 选哪个？？？</h3>
+<p>视觉图片： 归一化<br>
+其他：   标准化较好</p>
+<h1 id="数据缺失值填补">数据缺失值填补</h1>
+<h3 id="方式1-用pandas手动fillna">方式1： 用pandas手动fillna</h3>
+<p>这种方式更简单<br>
+df[...].fillna( df.loc[:, '列名'].mean() ) # 用均值来填补 ， 中位数 # median</p>
+<h3 id="方式2-用-sklearn-的imputer">方式2： 用 sklearn 的Imputer</h3>
+<p>先说一下查看缺失（通常实在 pandas的dataframe中）<br>
+df.info()<br>
+Imputer处理如下<br>
+# X 通常是 pandas取出的某一列</p>
+<pre><code>from sklearn.impute import SimpleImputer
+
+im = SimpleImputer() # 默认 strategy = 'mean'， 用均值填补
+im.fit_transform(X)
+
+im_meadian = SimpleImputer(strategy='median') # 用中位数填补
+im_meadian.fit_transform(X)
+
+im_meadian = SimpleImputer(strategy='most_frequent') # 用众数填补
+im_meadian.fit_transform(X)
+
+im_constant = SimpleImputer(strategy='constant', fill_value=0) # 用常数填补
+im_constant.transform(X)
+</code></pre>
+<p>注意了，它们还有个 参数 missing _ values<br>
+im = SimpleImputer(missing_values=np.nan)  # 默认为填补  np.nan</p>
+<pre><code># 其实大多数也都是在numpy环境下的。空缺值几乎都是np.nan, 所以这个参数不用动
+# 如果你真的有 None ，那么你也可以设置   missing_values=None
+</code></pre>
+<h1 id="标签编码">标签编码</h1>
+<h3 id="作用效果">作用效果</h3>
+<p>原始标签<br>
+['猫', '狗', '老鼠']<br>
+LabelEncoder作用后的标签<br>
+[0,1,2]</p>
+<h3 id="使用方法">使用方法</h3>
+<pre><code>from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+encode_label = le.fit_transform(y)
+
+print( le.classes_ )  # 查看所有类别
+print( le.inverse_transform(encode_label) )  # 获取原生标签数据
+</code></pre>
+<h1 id="特征编码">特征编码</h1>
+<h3 id="作用效果-2">作用效果</h3>
+<p>原始特征数据<br>
+动物    学历<br>
+猫     专科<br>
+狗     本科<br>
+老鼠    重点<br>
+LabelEncoder作用后的标签<br>
+动物    学历<br>
+0       0<br>
+1       1<br>
+2       2</p>
+<h3 id="使用方法sklearn几乎都是一样的">使用方法（Sklearn几乎都是一样的）</h3>
+<pre><code>from sklearn.preprocessing import OrdinalEncoder
+oe = OrdinalEncoder()
+encode_feature = oe.fit_transform(X)  # 传进来的是二维特征
+print(oe.categories_)  # 查看所有特征
+	# 结果：  [ array['猫','狗','老鼠'],  array['专科','本科','重点'] ]
+oe.inverse_transform(encode_feature)  # 获取原生特征
+</code></pre>
+<h1 id="one-hot特征编码哑变量">One-Hot特征编码(哑变量)</h1>
+<p>特征编码和  One-Hot编码有何不同？ One-Hot具有互斥性， 而特征编码是无脑编码</p>
+<h3 id="作用效果-3">作用效果</h3>
+<p>原始特征数据<br>
+动物    学历<br>
+猫     专科<br>
+狗     本科<br>
+老鼠    重点<br>
+LabelEncoder作用后的标签 (它们是拼接在一起的，需要自己甄别)<br>
+1,0,0,  1,0,0<br>
+0,1,0,  0,1,0,<br>
+0,0,1,  0,0,1,</p>
+<h3 id="使用方法sklearn几乎都是一样的-2">使用方法（Sklearn几乎都是一样的）</h3>
+<pre><code>from sklearn.preprocessing import OneHotEncoder
+ohe = OneHotEncoder(categories='auto')  # 固定参数，这样写即可
+encode_label = ohe.fit_transform(X).to_array()  # fit_trainsform结果为稀疏矩阵，需要to_array转为DF
+ohe.inverse_transform(encode_label)  # 获取原生特征
+
+print( ohe.get_feature_names() ) 	# 查看所有特征对应位置的 OneHot
+
+# 通常做完One-Hot的结果后，我们需要做善后工作：
+1. 拼接到 DF尾部
+2. 并且把原 特征删除
+3. 把One-Hot后的6个特征列 改个列名
+</code></pre>
+<h1 id="二值化">二值化</h1>
+<pre><code>from sklearn.preprocessing import Binarizer
+bi = Binarizer(threshold=30) # 30以下设为0， 30以上设为1
+result = bi.fit_transform(X)
+</code></pre>
+<h1 id="网格搜索">网格搜索</h1>
+<pre><code>from sklearn.model_selection import GridSearchCV
+grid_search = GridSearchCV(knn_clf,dict,cv=3)	# cv是几，就进行几折的交叉验证
+grid_search.fit(x_train,y_train)
+grid_search.best_estimator_  # 得出 最佳参数 模型
+grid_search.best_score_   	# 得出 最佳准确度
+grid_search.best_params_    # 得出  params 参数 对应的  最佳 参数组合 
+grid_search.cv_results_	    # 每次 模型 的 结果
+</code></pre>
+<h1 id="交叉验证">交叉验证</h1>
+<pre><code>from sklearn.model_selection import cross_val_score
+knn_clf = KNeighborsClassifier()
+scores = cross_val_score(knn_clf, x_train, y_train, cv=3）     
+</code></pre>
+<h1 id="决策树">决策树</h1>
+<h3 id="分类树">分类树</h3>
+<pre><code>from sklearn import tree
+
+cls_tree = tree.DecisionTreeClassifier(
+	criterion='gini',   # 默认 基尼系数 , 或 &quot;entropy&quot; 信息熵（信息熵可能会过拟合）
+	max_depth=3,        # 限制树的深度
+	# min_samples_leaf=5, # 分支后的  每个‘叶子节点’ 中必须包含样本数必须都大于5.否则不让分支
+	# min_samples_split=10, #  当 当前节点 的样本数 大于10 ，才允许分支
+)
+
+cls_tree.fit()
+cls_tree.score()
+cls_tree.predict()
+
+print(cls_tree.feature_importances_)  # 输出 每个特征对应的概率分布，返回为数组，需要自己zip特证名
+</code></pre>
+<h3 id="回归树">回归树</h3>
+<pre><code>reg_tree = tree.DecisionTreeRegressor(random_state=0)     # 比分类树参数少
+...
+# 下面同分类树API
+</code></pre>
+<h1 id="集成算法">集成算法</h1>
+<h3 id="bagging-装袋法">bagging （装袋法）</h3>
+<p>模型相互独立，最后取平均或聚合等。<br>
+代表： 随机森林<br>
+分类随机森林<br>
+from sklearn.ensemble import RandomForestClassifier<br>
+rf_clf = RandomForestClassifier(<br>
+n_estimators = 50,   # 50个子树模型<br>
+random_state=666,<br>
+oob_score=True,<br>
+n_jobs=-1<br>
+)<br>
+rf_clf.fit()<br>
+rf_clf.oob_score_		# 求准确率<br>
+回归随机森林<br>
+rf_clf = RandomForestClassifier(<br>
+n_estimators = 50,<br>
+random_state=666,<br>
+)</p>
+<h3 id="boosting-提升法">boosting (提升法)</h3>
+<p>等</p>
+<h1 id="聚类算法-k-means">聚类算法 k-means</h1>
+<p>客户分类（依据用户各种特征，自动分堆）</p>
+<h3 id="簇堆-与-质心">簇（堆） 与 质心</h3>
+<p>簇：是不相交的。  如果有相交的点，那么一定是一个新簇<br>
+质心： 相当于每个簇的中心位置坐标 （我理解为&quot;圆&quot;心）</p>
+<h3 id="聚类流程">聚类流程</h3>
+<ol>
+<li>随机选取K个样本点作为 质心</li>
+<li>while 循环 （旧质心 != 新质心）</li>
+<li>将K个样本点周围的样本 分配到 最近的质心，形成新簇</li>
+<li>计算新簇的所有样本点的 （xy坐标和的均值 作为新的质心）</li>
+<li>跳回到第二点的 while循环</li>
+</ol>
+<h3 id="聚类形成新簇的公式与指标">聚类形成新簇的公式与指标</h3>
+<p>每个样本点 到 质心距离：<br>
+distance = 每个样本点 到 质心距离<br>
+1.欧拉距离  （默认使用的是欧氏距离）   # 根据数学推导，质心位置最终就是 均值 位置<br>
+2.曼哈顿距离（绝对值），  # 根据数学推导，质心位置最终就是 中位数 位置<br>
+3.余弦距离				  # 根据数学推导，质心位置最终就是 均值 位置</p>
+<h3 id="kmeans评估指标重点">Kmeans评估指标（重点）</h3>
+<p>一、所有点到 质心的距离之和能不能 作为指标？（距离越小，效果越好）<br>
+这是严格错误！！ 因为  每调整一次质心 和 调整一次簇， 都可能缩小范围。因此 距离之和 自然就变小了<br>
+所以你再用距离判断，就是没有意义的<br>
+二、正宗的指标 --- 轮廓系数 (越靠近1 越好)<br>
+a = 单个点（注意，只是一个点） 与 簇内 其他点的 距离的平均<br>
+b = 单个点（注意，只是一个点） 与 簇外 其他点的 距离的平均<br>
+b - a<br>
+s(轮廓系数) = 	---------------<br>
+max(a,b)<br>
+Sklearn 轮廓系数：<br>
+有两种方式（用哪个都行，推荐第一种）：<br>
+方式1：<br>
+from sklearn.metrics import silhouette_score<br>
+print( silhouette_score(x, y_predict) )<br>
+方式2：<br>
+from sklearn.metrics import silhouette_samples<br>
+print( silhouette_samples(x, y_predict).mean() )  # 这还得写个求均值<br>
+轮廓系数绘图:</p>
+<pre><code>from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_samples, silhouette_score
+
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import numpy as np
+
+for n_clusters in [2,3,4,5,6,7]:
+    n_clusters = n_clusters
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig.set_size_inches(18, 7)
+    ax1.set_xlim([-0.1, 1])
+    ax1.set_ylim([0, X.shape[0] + (n_clusters + 1) * 10])
+    clusterer = KMeans(n_clusters=n_clusters, random_state=10).fit(X)
+    cluster_labels = clusterer.labels_
+    silhouette_avg = silhouette_score(X, cluster_labels)
+    print(&quot;For n_clusters =&quot;, n_clusters,
+          &quot;The average silhouette_score is :&quot;, silhouette_avg)
+    sample_silhouette_values = silhouette_samples(X, cluster_labels)
+    y_lower = 10
+    for i in range(n_clusters):
+        ith_cluster_silhouette_values = sample_silhouette_values[cluster_labels == i]
+        ith_cluster_silhouette_values.sort()
+        size_cluster_i = ith_cluster_silhouette_values.shape[0]
+        y_upper = y_lower + size_cluster_i
+        color = cm.nipy_spectral(float(i)/n_clusters)
+        ax1.fill_betweenx(np.arange(y_lower, y_upper)
+                          ,ith_cluster_silhouette_values
+                          ,facecolor=color
+                          ,alpha=0.7
+                         )
+        ax1.text(-0.05
+                 , y_lower + 0.5 * size_cluster_i
+                 , str(i))
+        y_lower = y_upper + 10
+
+    ax1.set_title(&quot;The silhouette plot for the various clusters.&quot;)
+    ax1.set_xlabel(&quot;The silhouette coefficient values&quot;)
+    ax1.set_ylabel(&quot;Cluster label&quot;)
+    ax1.axvline(x=silhouette_avg, color=&quot;red&quot;, linestyle=&quot;--&quot;)
+    ax1.set_yticks([])
+    ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
+
+    colors = cm.nipy_spectral(cluster_labels.astype(float) / n_clusters)
+    ax2.scatter(X[:, 0], X[:, 1]
+                ,marker='o'
+                ,s=8
+                ,c=colors
+               )
+    centers = clusterer.cluster_centers_
+    # Draw white circles at cluster centers
+    ax2.scatter(centers[:, 0], centers[:, 1], marker='x',
+                c=&quot;red&quot;, alpha=1, s=200)
+    
+    ax2.set_title(&quot;The visualization of the clustered data.&quot;)
+    ax2.set_xlabel(&quot;Feature space for the 1st feature&quot;)
+    ax2.set_ylabel(&quot;Feature space for the 2nd feature&quot;)
+
+    plt.suptitle((&quot;Silhouette analysis for KMeans clustering on sample data &quot;
+                  &quot;with n_clusters = %d&quot; % n_clusters),
+                 fontsize=14, fontweight='bold')
+    plt.show()
+</code></pre>
+<h3 id="聚类时间复杂度">聚类时间复杂度</h3>
+<pre><code>O（k*n*T） ~=   O(n)  
+k: 簇数 （超参数）
+n：样本数量
+T：迭代次数
+</code></pre>
+<h3 id="聚类api-实战">聚类API + 实战</h3>
+<p>生成分堆点<br>
+from sklearn.datasets import make_blobs # 生成分堆点的数据API</p>
+<pre><code>import matplotlib.pyplot as plt
+
+x,y = make_blobs(
+	n_samples=1000,  # 1000个样本
+	n_features=2,   # 2个特征。 也可以更多 eg:10个滕峥
+	centers=4,     # 初始化4个质心
+	random_state=1   # 随机化
+) # x是样本， y是标签， 这里面y用不到，因为是无监督
+
+fig, ax1 = plt.subplots(1)    # 生成1个子图。 fig：画布， ax绘画对象
+ax1.scatter(
+x[:, 0], x[:, 1],
+	marker='o',  # 点的形状, 这是字母o， 而不是数字0, 钩子字符串了解一下
+	s=6,         # 点的大小
+	# c='red'      # 点的颜色
+)
+plt.show()
+</code></pre>
+<p>聚类API<br>
+from sklearn.cluster import KMeans</p>
+<pre><code>clusters = KMeans(
+	n_clusters=3,   # 要求最后 分3堆 数据
+	random_state=0
+)
+clusters.fit(x)  # fit() 代表求完了所有过程了。 质心-分簇-质心-分簇
+# 其实fit() 过后，就已经训练出来了模型的参数（其实最重要参数的就是 质心）
+
+labels = clusters.labels_    # 查看每个数据 分出来的 label
+center = clusters.cluster_centers_  # 返回质心的坐标（x,y）。 有几个簇（类别），就有几个质心
+all_distance = clusters.inertia_    # 返回所有点到质心的总距离平方和
+
+y_predict = clusters.fit_predict(x)  # 拿着上面训练好的质心去把新数据自动分堆，并返回所有数据的类别label
+
+clusters.labels_  和   y_predict 的结果是一模一样的，用哪个都行
+</code></pre>
+<p>聚类API说明：	<br>
+因为聚类复杂度为 O（n)+<br>
+所以所有数据喂进去直接 fit() 训练可能会很慢</p>
+<pre><code>因此我们可以取部分数据 fit()  # 得到质心
+然后剩余数据 fit_predict()   去拿着上面的质心， 预测分堆, 并返回 label
+</code></pre>
+<h3 id="画出散点图结果">画出散点图结果</h3>
+<pre><code>colors = ['pink', 'orange', 'gray']
+
+fig1, ax2 = plt.subplots(1)
+for i in range(n_clusters):  # 相当于合集 。。。（y_predict值是松散的）
+	ax2.scatter(
+    x[y_predict==i, 0], # 每个预测值对应的样本 的 横坐标
+    x[y_predict==i, 1], # 每个预测值对应的样本 的 纵坐标
+    marker='o',
+    s=6,
+    c=colors[i]
+	)
+
+ax2.scatter(
+	center[:, 0], center[:, 1],
+	marker='x',
+	s=6,
+	# c='red'      # 点的颜色
+)
+plt.show()
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-ai-bi-ji/">
+                  <h3 class="post-title">
+                    PY =&gt; AI笔记
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

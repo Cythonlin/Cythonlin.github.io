@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; CNN之kernel_size/strides/padding/same | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="前言
+先强调一点：
+涉及到参数，都是针对Tensorflow来讲的。
+本文主要说一些CNN最常用的几个参数。
+以及各种组合情况下卷积之后计算形状的规律公式。
+filters       (必填， 这个本文不说)
+kernel_size  （..." />
+    <meta name="keywords" content="AI" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; CNN之kernel_size/strides/padding/same</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="前言">前言</h1>
+<p>先强调一点：<br>
+涉及到参数，都是针对Tensorflow来讲的。</p>
+<p>本文主要说一些CNN最常用的几个参数。<br>
+以及各种组合情况下卷积之后计算形状的规律公式。<br>
+filters       (必填， 这个本文不说)<br>
+kernel_size  （必填）<br>
+strides         (选填， 默认为 (1,1) )<br>
+padding         （选填，默认为 valid）<br>
+这里先提一下，通用公式： (宽高都用这个公式，我只列出了高度的)<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1<br>
+也许你看起来没什么问题，但是Tensorflow中的API可不告诉你padding是几。<br>
+而是提供给你2个可选参数：<br>
+padding='valid'     (默认参数)  # 代表不做padding，滑动不能越界，多余就裁剪。<br>
+padding='same'                 # same我会在下面展开说明。</p>
+<h1 id="无same情况">无same情况</h1>
+<h3 id="strides-1">strides = 1</h3>
+<p>你完全可以按照上面的通用公式计算，但是通常情况下我会用另一个简便的公式：<br>
+h图片输出 = h图片输入 - h卷积核 + 1</p>
+<h3 id="strides-1-2">strides != 1</h3>
+<p>这个就得使用上面的通用公式了：<br>
+h图片输出 = （h图片输入 - h卷积核 + 2padding） / strides + 1</p>
+<h1 id="有same情况">有same情况</h1>
+<p>加了same，情况就比较复杂一些了。<br>
+same 就是 让你在不同的 strides滑动情况下，帮你把原图片虚拟补全。<br>
+使得filter在图片中完全滑动，(而不至于，最后剩下一点越界滑不到给无情的裁剪掉)。</p>
+<h3 id="strides-1重点">strides = 1（重点）</h3>
+<p>strides=1的情况下，如果你使用了 same。<br>
+那么same会帮你补充 padding, 使得你滑动后的特征形状与滑动之前的形状 &quot;保持一致&quot;。<br>
+补充的padding大小为: (敲黑板)：<br>
+padding = h图片输入  %  h卷积核            # 看清楚，是取模运算<br>
+举个例子，验证一下：<br>
+假如:<br>
+图片（输入） = 7 x 7,<br>
+kernel_size = (5,5),<br>
+strides = 1。<br>
+（通过我们上面给出的公式，你先求 padding = 7 % 5） ，很显然是2。</p>
+<pre><code>我们再用最开始讲的通用公式验证一遍：
+    h输出长度 = (h输入 - h卷积核 + 2 * padding) / 1 + 1 = 7-5 + 2*2 + 1 = 7
+    巧了，我们的输入长度也是 7。
+    
+所以综上所述： padding = h图片输入  %  h卷积核。 
+可以使得：输入形状 与卷积后的输出形状一致
+</code></pre>
+<h3 id="strides-1重点-2">strides != 1（重点）</h3>
+<p>当步长strides为多步时，如果你使用了 same。<br>
+敲黑板：那么same会帮你补充 padding,  并且卷积后的特征图缩小为原来的 strides倍。<br>
+补充的padding大小为: (敲黑板)：<br>
+padding = h图片输入  %  h卷积核            # 看清楚，是取模运算<br>
+我为了演示， 我突来灵感，随便找了一个 五子棋棋盘（笑了）， 见下图。<br>
+<img src="/img/bVbyNdl" alt="image.png" loading="lazy"></p>
+<h1 id="小技巧有无same都适用">小技巧（有无same都适用）</h1>
+<p>当你预期想要把特征形状卷积之后形状大小&quot;成倍缩小&quot;时，你可以 &quot;同时&quot; 设置：<br>
+kernel_size == strides == (n,n)  # n就是缩小的倍数</p>
+<pre><code>说明，只要你把 kernel_size 和 strides 设置为相等，设置为n。那么图像一定会缩小n倍。
+
+举个栗子： n设为3
+    kernel_size = (3,3) 
+    strides = (3,3)
+    那么: 你卷积出来的特征尺寸，一定比上一层缩小3倍。
+</code></pre>
+<h1 id="结束语聊一下pooling2d">结束语（聊一下Pooling2D）</h1>
+<p>pooling的通用公式和 CNN中的是一模一样的。<br>
+Tensorflow 中 xxxPooling API参数如下：<br>
+pool_size （选填，默认为 (2, 2) ）<br>
+strides   （选填，默认为 None）   （这里你会疑问，None是什么鬼？？？）<br>
+我也不知道，API参数也没给说明。当我跳进源码，我发现如下代码，瞬间豁然开朗！<br>
+if strides is None:<br>
+strides = pool_size        （这应该就不用我解释了吧~）<br>
+padding   （选填，默认为 valid， 通常没必要用 same ）</p>
+<p>我们上面说过小技巧：<br>
+卷积层中：     kernel_size == strides == (n,n)  # n就是缩小的倍数<br>
+池化层也同理： pool_size == strides == (n,n)    # n就是缩小的倍数</p>
+<pre><code>又因为刚才又说了 ，  池化层中 strides 默认值等于 pool_size 的长度。
+
+所以: 我们只设置一个  pool_size = (n,n)。 即可直接让原图缩小n倍。
+
+所以: 池化层通常用来做降采样。  (起到变换形状的作用，无权重参数更新)</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="tag">
+                    AI
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-cnn-rnnng/">
+                  <h3 class="post-title">
+                    AI =&gt; CNN-RNN（Ng）
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

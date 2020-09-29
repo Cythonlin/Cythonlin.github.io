@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI =&gt; 安装neo4j (Linux) | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601352740092">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="依赖java,先装java
+官网：https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+找到： jdk-8u231-linu..." />
+    <meta name="keywords" content="KG" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601352740092" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI =&gt; 安装neo4j (Linux)</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="依赖java先装java">依赖java,先装java</h1>
+<p>官网：<a href="https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html</a><br>
+找到： jdk-8u231-linux-x64.tar.gz  下载（可能会比较慢，还需要注册）</p>
+<p>个人网盘分享：https://pan.baidu.com/s/1EMFM_Y_HT3bHFwncKj2orw&amp;shfl=shareset<br>
+提取码: w24a</p>
+<p>通过XFTP传送到服务器。<br>
+任意目录（自己记住即可）：<br>
+tar -zxvf jdk-8u231-linux-x64.tar.gz<br>
+# 解压出来一个目录，记住找个名字，和当前路径，下面用<br>
+# 我这里是 jdk1.8.0_181<br>
+相关配置:<br>
+vi ~/.bashrc</p>
+<pre><code>export JAVA_HOME=/root/kg/neo4j/java/jdk1.8.0_181/
+export JRE_HOME=${JAVA_HOME}/jre 
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib 
+export PATH=${JAVA_HOME}/bin:$PATH 
+
+保存退出
+</code></pre>
+<p>激活配置：<br>
+source ~/.bashrc<br>
+至此，java安装完成！</p>
+<h1 id="安装neo4j">安装Neo4j:</h1>
+<p>下载连接：<a href="https://neo4j.com/download-center/">https://neo4j.com/download-center/</a><br>
+选个Linux版本的（需要上网）（记得下社区版的）<br>
+同样传到Linux解压即可。</p>
+<p>个人网盘分享：https://pan.baidu.com/s/1FnbZW0n2-w8yCZEXG3J6zw&amp;shfl=shareset<br>
+提取码: 451c</p>
+<p>因为我是云端运行。所以需要改下配置，支持远程访问。<br>
+进入解压后的目录，我这里是 neo4j-community-3.5.11<br>
+cd neo4j-community-3.5.11<br>
+cd conf<br>
+vi neo4j.conf</p>
+<pre><code>添加如下配置（或者你能找到这行，直接解除注释也行）：
+    dbms.connectors.default_listen_address=0.0.0.0
+</code></pre>
+<p>至此，neo4j安装完成。<br>
+启动neo4j:<br>
+cd neo4j-community-3.5.11<br>
+cd bin<br>
+./neo4j console<br>
+看启动信息的url:port， 复制出来直接访问即可。<br>
+xxxxxxxx:7474    # 若是阿里云，需要放通防火墙7474 和 7687<br>
+成功进去后，会提示你输入默认用户名 和 密码：<br>
+默认用户名为 ：neo4j<br>
+默认密码也为 ：neo4j</p>
+<p>密码忘记了？？<br>
+进入 xx/data/dbms<br>
+删除 auth 文件，重启服务</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/FLS_eF6Eg/" class="tag">
+                    KG
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/ai-greater-cnn-zhi-kernel_sizestridespaddingsame/">
+                  <h3 class="post-title">
+                    AI =&gt; CNN之kernel_size/strides/padding/same
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
