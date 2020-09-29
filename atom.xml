@@ -2,13 +2,142 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T03:47:52.324Z</updated>
+    <updated>2020-09-29T03:53:27.312Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[GO => 谈一谈Goland/Pycharm/Idea全局搜索为何偶尔失灵的问题]]></title>
+        <id>https://cythonlin.github.io/post/ai-greater-ci-xing-biao-da-quan/</id>
+        <link href="https://cythonlin.github.io/post/ai-greater-ci-xing-biao-da-quan/">
+        </link>
+        <updated>2020-09-29T03:51:40.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="众所周知">众所周知</h1>
+<p>JetBrains全家桶系列默认全局搜索快捷键为:<br>
+ctrl + shift + f</p>
+<h1 id="为何上述快捷键偶尔失灵">为何上述快捷键偶尔失灵?</h1>
+<p>不想看原因的可以直接跳到最后看2种解决办法</p>
+<h3 id="微软拼音切换简体繁体">微软拼音切换简体/繁体：</h3>
+<p>一直使用的是Win10自带的微软拼音（其他输入法没用过，应该类似）<br>
+ctrl + shift + f<br>
+这里切换简体/繁体有个条件：<br>
+只有你当前输入法状态为 “中文输入法”时， 切换简/繁（ctrl+shift+f）快捷键才会生效<br>
+如果当前输入法状态为 “英文输入法”时，  切换简/繁（ctrl+shift+f）快捷键 不起作用。<br>
+到这里应该可以想出pycharm/goland/...全局搜索为何失灵了吧~~</p>
+<h3 id="失灵原因">失灵原因</h3>
+<p>因为写代码时，输入法可能会 中/英 切换。<br>
+当前我们的输入法状态为 “中文” 时： ctrl+shift+f  的作用是切换 繁/简 输入法<br>
+当前我们的输入法状态为 “英文” 时： ctrl+shift+f  的作用就是我们想要的《全局搜索》</p>
+<h1 id="解决办法">解决办法</h1>
+<h3 id="解决办法1切换习惯">解决办法1（切换习惯）</h3>
+<p>根据失灵原因，我们想要使用JetBrains系列产品全局搜索时，我们可以注意自己的输入法是否是&quot;英文状态&quot;，若不是，则切换到英文状态：<br>
+shift             # 微软拼音切换 中/英 是 shift ，其他输入法不清楚<br>
+对我而言，这是习惯问题，不存在输入法冲突，如果没切换中/英这个习惯，可以按照如下改快捷键</p>
+<h3 id="解决办法2改快捷键">解决办法2（改快捷键）</h3>
+<p>如果执意要改快捷键，可以改快捷键 (因为我已经习惯了中/英输入法切换方式)，所以我是不改的。<br>
+按照如下配置流程走：<br>
+File -&gt;<br>
+Settings -&gt;<br>
+Keymap -&gt;<br>
+在搜索快捷键的输入框输入： find in path<br>
+双击 &quot;find in path&quot; -&gt;<br>
+Add Keyboard Shortcut（然后键盘按下你像设置的快捷键）<br>
+（我个人推荐是 ctrl+shift+|），因为这个快捷键未被占用 ~<br>
+ok -&gt;<br>
+ok</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Docker配置daemon.json的host选项失败]]></title>
+        <id>https://cythonlin.github.io/post/docker-pei-zhi-daemonjson-de-host-xuan-xiang-shi-bai/</id>
+        <link href="https://cythonlin.github.io/post/docker-pei-zhi-daemonjson-de-host-xuan-xiang-shi-bai/">
+        </link>
+        <updated>2020-09-29T03:50:10.000Z</updated>
+        <content type="html"><![CDATA[<p>当我配置Docker让外部连接的时候<br>
+我尝试创建 /etc/docker/daemon.json文件， 并写如下内容：<br>
+{<br>
+&quot;registry-mirrors&quot;: [&quot;https://rs3ab060.mirror.aliyuncs.com&quot;],<br>
+&quot;hosts&quot;: [&quot;unix:///var/run/docker.sock&quot;, &quot;tcp://0.0.0.0:6006&quot;]<br>
+}<br>
+然后，重启docker服务，一直失败。 根本无法启动。<br>
+经排查，是hosts这个配置项有问题。</p>
+<p>终极解决办法：<br>
+systemctl edit dockerd.service    # 复制这条命令执行，并写粘贴如下内容<br>
+[Service]<br>
+ExecStart=<br>
+ExecStart=/usr/bin/dockerd</p>
+<pre><code>ctrl + s 保存 
+ctrl + x 退出
+</code></pre>
+<p>很多问题stack,  github 解决不了的，我都会去qiita。（人家写的言简意赅，解决问题从不废话）</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => 音声分离]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-yin-sheng-fen-chi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-yin-sheng-fen-chi/">
+        </link>
+        <updated>2020-09-29T03:48:02.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="环境安装">环境安装</h1>
+<p>自主安装 FFmpeg<br>
+pip install jupyter<br>
+pip install spleeter</p>
+<h1 id="思路">思路</h1>
+<p>spleeter工具可在command逐一分离,有些费劲。<br>
+并且文件名不许有空格和特殊字符。</p>
+<p>本想通过py脚本，批处理（os.system/os.subprocess）做些脚本操作。<br>
+但是 spleeter隐式搜索 FFmpeg。所以（os.system/os.subprocess）都搜不到FFmpeg<br>
+即使内/外添加环境变量也不行。</p>
+<p>后来没办法，想个歪的。</p>
+<p>用 jupyter notebook 的 !指令嵌套循环实现。</p>
+<h1 id="jupyter-notebook代码">Jupyter Notebook代码</h1>
+<pre><code>import re
+import os
+import shutil
+
+music_list = os.listdir('音乐')
+r1 = re.compile(r'(\(.*?\)|（.*?）|\[.*?\]|\s*?|【.*?】|《.*?》)')
+new_music_list = [r1.sub('',per_music) for per_music in music_list]
+
+%cd 音乐
+
+name_map = zip(music_list, new_music_list)
+for old_name,new_name in name_map:
+    try:
+        os.rename(old_name,new_name)
+    except:
+        pass
+        
+new_name_list = os.listdir('.')
+
+for filename in new_name_list:
+    if filename.endswith('jpg'):
+        continue
+    print(filename)
+    try:
+        !spleeter separate -i {filename} -p spleeter:2stems -o output
+    except:
+        pass
+</code></pre>
+<h3 id="分离好的音声都放在各自的歌曲的文件夹内">分离好的音/声都放在各自的歌曲的文件夹内</h3>
+<h3 id="为了听伴奏把所有伴奏放一起">为了听伴奏，把所有伴奏放一起</h3>
+<pre><code>music_list = os.listdir('音乐')
+
+# 方便复制， output 和 pretrained_models 移动了出来
+[shutil.copy(f'output/{music.rsplit(&quot;.&quot;,1)[0]}/accompaniment.wav', f'D:/music/acc/{music}') for music in music_list if music.rsplit(&quot;.&quot;,1)[1] != 'jpg' and music not in ['pretrained_models','output']]
+
+# 我只听伴奏，所以人声就免了。。
+# [os.rename(f'output/{music.rsplit(&quot;.&quot;,1)[0]}/vocals.wav', f'D:/music/voice/{music}') for music in music_list if music.rsplit(&quot;.&quot;,1)[1] != 'jpg' and music not in ['pretrained_models','output']]
+</code></pre>
+<h3 id="osrename-和-shutilmove使用区别">os.rename 和 shutil.move使用区别：</h3>
+<pre><code>shutil.move 是先复制后删除 （根本不是cut）(慢)
+os.rename 可以达到剪切的效果(神速) （也可以用来改名）
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[PY => PY38]]></title>
         <id>https://cythonlin.github.io/post/py-greater-py38/</id>
@@ -674,124 +803,6 @@ if __name__ == '__main__':
 	if result['pic_str'] != 'n1wtu':
         print(chaojiying.ReportError(result['pic_id']))
 </code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => import_module 和 __import__ 区别]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-import_module-he-__import__-qu-bie/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-import_module-he-__import__-qu-bie/">
-        </link>
-        <updated>2020-09-29T03:41:12.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="问题引入原因">问题引入原因</h1>
-<h4 id="今天用反射写配置时发现-import-不能将多级模块导入而import_module可以">今天用反射写配置时，发现 <strong>import</strong>() 不能将多级模块导入，而import_module可以</h4>
-<h1 id="案例一-我最开始接触就是这么测试用法的">案例一 (我最开始接触就是这么测试用法的。。)</h1>
-<h3 id="_import_">_<em>import</em>_</h3>
-<pre><code>random = __import__('random')
-random.randint()
-# 正常运行
-</code></pre>
-<h3 id="import_module">import_module</h3>
-<pre><code>from importlib import import_module
-random = import_module('random')
-random.randint()
-# 正常运行
-</code></pre>
-<h1 id="案例二">案例二</h1>
-<h3 id="_import_-2">_<em>import</em>_</h3>
-<pre><code>parse = __import__('urllib.parse')
-parse.urlencode('a=1')
-# 报错：module 'urllib' has no attribute 'urlencode'
-</code></pre>
-<h3 id="import_module-2">import_module</h3>
-<pre><code>from importlib import import_module
-parse = import_module('urllib.parse')
-parse.urlencode({'a':1})
-# 正常运行
-</code></pre>
-<h1 id="分析">分析</h1>
-<h4 id="1-通过导入的-from-importlib-import-_import_-和-内建函数-_import_-我都试过他俩的作用是一样的">1. 通过导入的 from importlib import _<em>import</em>_ 和 内建函数 _<em>import</em>_ 我都试过，他俩的作用是一样的</h4>
-<h4 id="2-_import_-参数只能写一个单词模块-如果写成形如-aabbcc-它只会导入-aa">2. _<em>import</em>_()  参数只能写一个单词模块， 如果写成形如 aa.bb.cc， 它只会导入 aa</h4>
-<h4 id="2-import_module-它的用法就很合人意了-里面写啥他就会像-import-一样都导入进来">2. import_module()  它的用法就很合人意了。 里面写啥他就会像 import 一样都导入进来</h4>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => Celery使用记录]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-celery-shi-yong-ji-lu/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-celery-shi-yong-ji-lu/">
-        </link>
-        <updated>2020-09-29T03:40:44.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前置环境">前置环境</h1>
-<pre><code>pip install redis
-pip install gevent
-</code></pre>
-<h1 id="configpy">config.py</h1>
-<pre><code>broker_url = 'redis://ip/0'
-result_backend = 'redis://ip/1'	# tasks返回结果存储地址
-result_expires = 10 * 60	# 过期时间
-imports = ('tasks')
-</code></pre>
-<h1 id="taskspy">tasks.py</h1>
-<pre><code>import requests
-from celery import Celery
-
-app = Celery()
-app.config_from_object('config')
-
-@app.task(ignore_result=False)
-def crawl(url):
-    response = requests.get(url)
-    return {'data': response.text}	# 返回并储存的结果
-</code></pre>
-<h1 id="spiderpy">spider.py</h1>
-<pre><code>import tasks
-
-def main(url_list):
-	for per_url in url_list:
-	tasks.crawl.delay(per_url)
-    
-if __name__ == '__main__':
-	main(
-		['http://www.baidu.com','http://www.douyu.com/']
-	)
-</code></pre>
-<h1 id="workerpy">worker.py</h1>
-<pre><code>import os
-os.system('celery worker -A tasks  -l info -P gevent')
-	# -A tasks    即为 tasks.py对应模块
-	# -P gevent   即为异步指定环境为 gevent
-</code></pre>
-<h1 id="使用">使用</h1>
-<p>先执行 spider.py 将任务存入到redis队列中，<br>
-然后执行 worker.py，正式启动任务</p>
-<h1 id="总结">总结</h1>
-<p>celery 大体分为 3种 模块<br>
-task ：  专门定义函数，用装饰器装饰作为一个任务（类似于flask的视图）<br>
-broker： 中间人队列，存储任务  （例如 rabbitmq, redis等）<br>
-worker： 从broker队列拿出任务来 正式运行 （可多个）</p>
-<h1 id="相关配置参数参考地址">相关配置参数参考地址</h1>
-<p>https://www.cnblogs.com/cwp-bg/p/8759638.html</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => 自编魔法"鬼"句]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-zi-bian-mo-fa-gui-ju/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-zi-bian-mo-fa-gui-ju/">
-        </link>
-        <updated>2020-09-29T03:38:58.000Z</updated>
-        <content type="html"><![CDATA[<p>鬼句1：<br>
-女朋友 = type('A',(), {'<strong>eq</strong>': lambda _,<strong>: 'True' if  _ is not __ else 'False', '<strong>ne</strong>': lambda _,</strong>: 'True' if  _ is __ else 'False'})()<br>
-天使 = type('天使')</p>
-<pre><code>print(女朋友 == 女朋友)
-print(女朋友 != 女朋友)
-print(女朋友 == 天使)
-print(女朋友 != 天使)
-</code></pre>
-<p>鬼句2：数列<br>
-import math</p>
-<pre><code>数列 = type('数列', (), {'__getitem__': lambda self,_: list(range(_[0], _[4]+1, _[1]-_[0])) if _[1]-_[0]==_[2]-_[1] else (lambda a1,e:  [a1 * e**(_) for _ in range(0,int(math.log(_[4]/a1, e))+1)])(_[0],_[1]/_[0])})()
-
-print(数列[1,3,9,...,729])
-print(数列[1,3,5,...,21])</code></pre>
 ]]></content>
     </entry>
 </feed>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>Sublime-Py插件 | Cython_lin</title>
+<title>GO =&gt; 谈一谈Goland/Pycharm/Idea全局搜索为何偶尔失灵的问题 | Cython_lin</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,11 +18,13 @@
 
 
 
-    <meta name="description" content="Sublime-Py插件
-localizeMenu		# 汉化插件   帮助-&gt; language中就能找到
-autofilename		# 文件路径提示
-SublimeCodeIntel 	# 基本格式补全
-SublimeLinte..." />
+    <meta name="description" content="众所周知
+JetBrains全家桶系列默认全局搜索快捷键为:
+ctrl + shift + f
+为何上述快捷键偶尔失灵?
+不想看原因的可以直接跳到最后看2种解决办法
+微软拼音切换简体/繁体：
+一直使用的是Win10自带的微软拼音（其他输入法..." />
     <meta name="keywords" content="IDE" />
   </head>
   <body>
@@ -94,28 +96,43 @@ SublimeLinte..." />
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">Sublime-Py插件</h2>
+            <h2 class="post-title">GO =&gt; 谈一谈Goland/Pycharm/Idea全局搜索为何偶尔失灵的问题</h2>
             <div class="post-date">2020-09-29</div>
             
             <div class="post-content" v-pre>
-              <h1 id="sublime-py插件">Sublime-Py插件</h1>
-<pre><code>localizeMenu		# 汉化插件   帮助-&gt; language中就能找到
-autofilename		# 文件路径提示
-SublimeCodeIntel 	# 基本格式补全
-SublimeLinter		# 代码pep8格式检查
-Python PEP8 Autoformat 插件	# ctrl + shift + R   自动格式化
-anaconda 		# 真正的代码补全
-</code></pre>
-<p>去除白框：<br>
-Anaconda的settings里面配置<br>
-{&quot;anaconda_linting&quot;:false} 即可</p>
-<h1 id="vuestylus插件之前用的">Vue+Stylus插件（之前用的）</h1>
-<pre><code>Vuejs Snippets
-Vue Syntax Highlight
-VueFormatter
-Vuetify
-Stylus-Snippets
-Stylus</code></pre>
+              <h1 id="众所周知">众所周知</h1>
+<p>JetBrains全家桶系列默认全局搜索快捷键为:<br>
+ctrl + shift + f</p>
+<h1 id="为何上述快捷键偶尔失灵">为何上述快捷键偶尔失灵?</h1>
+<p>不想看原因的可以直接跳到最后看2种解决办法</p>
+<h3 id="微软拼音切换简体繁体">微软拼音切换简体/繁体：</h3>
+<p>一直使用的是Win10自带的微软拼音（其他输入法没用过，应该类似）<br>
+ctrl + shift + f<br>
+这里切换简体/繁体有个条件：<br>
+只有你当前输入法状态为 “中文输入法”时， 切换简/繁（ctrl+shift+f）快捷键才会生效<br>
+如果当前输入法状态为 “英文输入法”时，  切换简/繁（ctrl+shift+f）快捷键 不起作用。<br>
+到这里应该可以想出pycharm/goland/...全局搜索为何失灵了吧~~</p>
+<h3 id="失灵原因">失灵原因</h3>
+<p>因为写代码时，输入法可能会 中/英 切换。<br>
+当前我们的输入法状态为 “中文” 时： ctrl+shift+f  的作用是切换 繁/简 输入法<br>
+当前我们的输入法状态为 “英文” 时： ctrl+shift+f  的作用就是我们想要的《全局搜索》</p>
+<h1 id="解决办法">解决办法</h1>
+<h3 id="解决办法1切换习惯">解决办法1（切换习惯）</h3>
+<p>根据失灵原因，我们想要使用JetBrains系列产品全局搜索时，我们可以注意自己的输入法是否是&quot;英文状态&quot;，若不是，则切换到英文状态：<br>
+shift             # 微软拼音切换 中/英 是 shift ，其他输入法不清楚<br>
+对我而言，这是习惯问题，不存在输入法冲突，如果没切换中/英这个习惯，可以按照如下改快捷键</p>
+<h3 id="解决办法2改快捷键">解决办法2（改快捷键）</h3>
+<p>如果执意要改快捷键，可以改快捷键 (因为我已经习惯了中/英输入法切换方式)，所以我是不改的。<br>
+按照如下配置流程走：<br>
+File -&gt;<br>
+Settings -&gt;<br>
+Keymap -&gt;<br>
+在搜索快捷键的输入框输入： find in path<br>
+双击 &quot;find in path&quot; -&gt;<br>
+Add Keyboard Shortcut（然后键盘按下你像设置的快捷键）<br>
+（我个人推荐是 ctrl+shift+|），因为这个快捷键未被占用 ~<br>
+ok -&gt;<br>
+ok</p>
 
             </div>
             
@@ -130,9 +147,9 @@ Stylus</code></pre>
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://cythonlin.github.io/post/py-greater-rabbitmqpika-shi-yong-ji-lu/">
+                <a href="https://cythonlin.github.io/post/docker-pei-zhi-daemonjson-de-host-xuan-xiang-shi-bai/">
                   <h3 class="post-title">
-                    PY =&gt; RabbitMQ/Pika使用记录
+                    Docker配置daemon.json的host选项失败
                   </h3>
                 </a>
               </div>
