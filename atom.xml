@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://cythonlin.github.io</id>
+    <title>Cython_lin</title>
+    <updated>2020-09-29T00:02:36.271Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://cythonlin.github.io"/>
+    <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
+    <logo>https://cythonlin.github.io/images/avatar.png</logo>
+    <icon>https://cythonlin.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2020, Cython_lin</rights>
+</feed>
