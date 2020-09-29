@@ -2,13 +2,619 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T04:20:50.593Z</updated>
+    <updated>2020-09-29T04:23:40.294Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[GO => 交换元素的四种方式]]></title>
+        <id>https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
+        <link href="https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
+        </link>
+        <updated>2020-09-29T04:22:34.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="python-and-go">Python and Go</h1>
+<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
+a := 1<br>
+b := 3</p>
+<h3 id="方式0">方式0</h3>
+<pre><code>c := 0
+c = a
+a = b
+b = c
+</code></pre>
+<h3 id="方式1">方式1</h3>
+<pre><code>a,b = b,a
+</code></pre>
+<h3 id="方式2">方式2</h3>
+<pre><code>a = a + b
+b = a - b
+a = a - b
+</code></pre>
+<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
+<pre><code>a = a ^ b
+b = a ^ b
+a = a ^ b
+
+fmt.Println(a)
+fmt.Println(b)
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 推荐系统（三）离线召回与排序 ]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/">
+        </link>
+        <updated>2020-09-29T04:21:44.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="召回设计">召回设计</h1>
+<h3 id="召回排序流程">召回排序流程</h3>
+<h4 id="匿名用户">匿名用户：</h4>
+<pre><code>通常使用用户冷启动方案，区别在于user_id为匿名用户手机识别号(黑马头条不允许匿名用户)
+所有只正针对于登录用户：
+</code></pre>
+<h4 id="用户冷启动前期点击行为较少情况">用户冷启动（前期点击行为较少情况）</h4>
+<p>非个性化推荐<br>
+热门召回：自定义热门规则，根据当前时间段热点定期更新维护人点文章库<br>
+新文章召回：为了提高新文章的曝光率，建立新文章库，进行推荐<br>
+个性化推荐：<br>
+基于内容的协同过滤在线召回：基于用户实时兴趣画像相似的召回结果用于首页的个性化推荐</p>
+<h4 id="后期离线部分用户点击行为较多用户画像完善">后期离线部分（用户点击行为较多，用户画像完善）</h4>
+<p>建立用户长期兴趣画像（详细）：包括用户各个维度的兴趣特征<br>
+训练排序模型<br>
+LR模型、FTRL、Wide&amp;Deep<br>
+离线部分的召回：<br>
+基于模型协同过滤推荐离线召回：ALS<br>
+基于内容的离线召回：或者称基于用户画像的召回</p>
+<h3 id="召回表设计与模型召回">召回表设计与模型召回</h3>
+<h4 id="召回表设计">召回表设计</h4>
+<p>我们的召回方式有很多种。<br>
+多路召回结果存储模型召回 与 内容召回的结果 需要进行相应频道推荐合并。<br>
+方案：基于模型与基于内容的召回结果存入同一张表，避免多张表进行读取处理<br>
+由于HBASE有多个版本数据功能存在的支持<br>
+TTL=&gt;7776000, VERSIONS=&gt;999999<br>
+如下：<br>
+create 'cb_recall', {NAME=&gt;'als', TTL=&gt;7776000, VERSIONS=&gt;999999}<br>
+alter 'cb_recall', {NAME=&gt;'content', TTL=&gt;7776000, VERSIONS=&gt;999999}<br>
+alter 'cb_recall', {NAME=&gt;'online', TTL=&gt;7776000, VERSIONS=&gt;999999}</p>
+<pre><code># 例子（多版本）：
+put 'cb_recall', 'recall:user:5', 'als:1',[45,3,5,10]
+put 'cb_recall', 'recall:user:5', 'als:1',[289,11,65,52,109,8]
+put 'cb_recall', 'recall:user:5', 'als:2',[1,2,3,4,5,6,7,8,9,10]
+put 'cb_recall', 'recall:user:2', 'content:1',[45,3,5,10,289,11,65,52,109,8]
+put 'cb_recall', 'recall:user:2', 'content:2',[1,2,3,4,5,6,7,8,9,10]
+
+
+hbase(main):084:0&gt; desc 'cb_recall'
+Table cb_recall is ENABLED                                                                             
+cb_recall                                                                                              
+COLUMN FAMILIES DESCRIPTION                                                                            
+{NAME =&gt; 'als', VERSIONS =&gt; '999999', EVICT_BLOCKS_ON_CLOSE =&gt; 'false', NEW_VERSION_BEHAVIOR =&gt; 'false'
+, KEEP_DELETED_CELLS =&gt; 'FALSE', CACHE_DATA_ON_WRITE =&gt; 'false', DATA_BLOCK_ENCODING =&gt; 'NONE', TTL =&gt; 
+'7776000 SECONDS (90 DAYS)', MIN_VERSIONS =&gt; '0', REPLICATION_SCOPE =&gt; '0', BLOOMFILTER =&gt; 'ROW', CACHE
+_INDEX_ON_WRITE =&gt; 'false', IN_MEMORY =&gt; 'false', CACHE_BLOOMS_ON_WRITE =&gt; 'false', PREFETCH_BLOCKS_ON_
+OPEN =&gt; 'false', COMPRESSION =&gt; 'NONE', BLOCKCACHE =&gt; 'true', BLOCKSIZE =&gt; '65536'}                    
+{NAME =&gt; 'content', VERSIONS =&gt; '999999', EVICT_BLOCKS_ON_CLOSE =&gt; 'false', NEW_VERSION_BEHAVIOR =&gt; 'fa
+lse', KEEP_DELETED_CELLS =&gt; 'FALSE', CACHE_DATA_ON_WRITE =&gt; 'false', DATA_BLOCK_ENCODING =&gt; 'NONE', TTL
+          =&gt; '7776000 SECONDS (90 DAYS)', MIN_VERSIONS =&gt; '0', REPLICATION_SCOPE =&gt; '0', BLOOMFILTER =&gt; 'ROW', C
+ACHE_INDEX_ON_WRITE =&gt; 'false', IN_MEMORY =&gt; 'false', CACHE_BLOOMS_ON_WRITE =&gt; 'false', PREFETCH_BLOCKS
+_ON_OPEN =&gt; 'false', COMPRESSION =&gt; 'NONE', BLOCKCACHE =&gt; 'true', BLOCKSIZE =&gt; '65536'}                
+{NAME =&gt; 'online', VERSIONS =&gt; '999999', EVICT_BLOCKS_ON_CLOSE =&gt; 'false', NEW_VERSION_BEHAVIOR =&gt; 'fal
+se', KEEP_DELETED_CELLS =&gt; 'FALSE', CACHE_DATA_ON_WRITE =&gt; 'false', DATA_BLOCK_ENCODING =&gt; 'NONE', TTL 
+=&gt; '7776000 SECONDS (90 DAYS)', MIN_VERSIONS =&gt; '0', REPLICATION_SCOPE =&gt; '0', BLOOMFILTER =&gt; 'ROW', CA
+CHE_INDEX_ON_WRITE =&gt; 'false', IN_MEMORY =&gt; 'false', CACHE_BLOOMS_ON_WRITE =&gt; 'false', PREFETCH_BLOCKS_
+ON_OPEN =&gt; 'false', COMPRESSION =&gt; 'NONE', BLOCKCACHE =&gt; 'true', BLOCKSIZE =&gt; '65536'}                 
+3 row(s)	
+</code></pre>
+<p>（几乎不用）在HIVE用户数据数据库下建立HIVE外部表,若hbase表有修改，则进行HIVE 表删除更新<br>
+create external table cb_recall_hbase(<br>
+user_id STRING comment &quot;userID&quot;,<br>
+als map&lt;string, ARRAY<BIGINT>&gt; comment &quot;als recall&quot;,<br>
+content map&lt;string, ARRAY<BIGINT>&gt; comment &quot;content recall&quot;,<br>
+online map&lt;string, ARRAY<BIGINT>&gt; comment &quot;online recall&quot;)<br>
+COMMENT &quot;user recall table&quot;<br>
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'<br>
+WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,als:,content:,online:&quot;)<br>
+TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;cb_recall&quot;);</p>
+<h4 id="增加一个历史召回结果表">增加一个历史召回结果表</h4>
+<pre><code>create 'history_recall', {NAME=&gt;'channel', TTL=&gt;7776000, VERSIONS=&gt;999999}
+
+put 'history_recall', 'recall:user:5', 'als:1',[1,2,3]
+put 'history_recall', 'recall:user:5', 'als:1',[4,5,6,7]
+put 'history_recall', 'recall:user:5', 'als:1',[8,9,10]
+</code></pre>
+<p>为什么增加历史召回表？<br>
+1、直接在存储召回结果部分进行过滤，比之后排序过滤，节省排序时间<br>
+2、防止Redis缓存没有消耗完，造成重复推荐，从源头进行过滤</p>
+<h3 id="基于模型召回集合计算">基于模型召回集合计算</h3>
+<h4 id="als模型推荐实现">ALS模型推荐实现</h4>
+<p>步骤：<br>
+1、数据类型转换,clicked以及用户ID与文章ID处理<br>
+2、ALS模型训练以及推荐<br>
+3、推荐结果解析处理<br>
+4、推荐结果存储<br>
+数据类型转换,clicked( bool 转 int)<br>
+ur.spark.sql(&quot;use profile&quot;)<br>
+user_article_click = ur.spark.sql(&quot;select * from user_article_basic&quot;).<br>
+select(['user_id', 'article_id', 'clicked'])<br>
+# 更换类型<br>
+def change_types(row):<br>
+return row.user_id, row.article_id, int(row.clicked)</p>
+<pre><code>user_article_click = user_article_click.rdd.map(change_types).toDF(['user_id', 'article_id', 'clicked'])
+</code></pre>
+<p>这步处理结果格式如下：<br>
+user_id	article_id	clicked<br>
+0<br>
+1<br>
+用户ID与文章ID处理，编程ID索引（原用户ID和文章ID是长字符串，ALS模型不能处理，要重新编排ID索引）<br>
+from pyspark.ml.feature import StringIndexer<br>
+from pyspark.ml import Pipeline<br>
+# 用户和文章ID超过ALS最大整数值，需要使用StringIndexer进行转换<br>
+user_id_indexer = StringIndexer(inputCol='user_id', outputCol='als_user_id')<br>
+article_id_indexer = StringIndexer(inputCol='article_id', outputCol='als_article_id')<br>
+pip = Pipeline(stages=[user_id_indexer, article_id_indexer])<br>
+pip_fit = pip.fit(user_article_click)<br>
+als_user_article_click = pip_fit.transform(user_article_click)<br>
+ALS 模型训练与推荐（ALS模型需要输出用户ID列，文章ID列以及点击列）<br>
+from pyspark.ml.recommendation import ALS<br>
+# 模型训练和推荐默认每个用户固定文章个数<br>
+als = ALS(userCol='als_user_id', itemCol='als_article_id', ratingCol='clicked', checkpointInterval=1)<br>
+model = als.fit(als_user_article_click)<br>
+recall_res = model.recommendForAllUsers(100)<br>
+结果：<br>
+als_user_id	recommendations<br>
+1			[[article_id, 分数]]</p>
+<h4 id="推荐结果处理">推荐结果处理</h4>
+<p>通过StringIndexer变换后的下标知道原来的和用户ID<br>
+# recall_res得到需要使用StringIndexer变换后的下标<br>
+# 保存原来的下表映射关系<br>
+refection_user = als_user_article_click.groupBy(['user_id']).max('als_user_id').withColumnRenamed(<br>
+'max(als_user_id)', 'als_user_id')<br>
+refection_article = als_user_article_click.groupBy(['article_id']).max('als_article_id').withColumnRenamed(<br>
+'max(als_article_id)', 'als_article_id')</p>
+<pre><code># Join推荐结果与 refection_user映射关系表
+# +-----------+--------------------+-------------------+
+# | als_user_id | recommendations | user_id |
+# +-----------+--------------------+-------------------+
+# | 8 | [[163, 0.91328144]... | 2 |
+ # | 0 | [[145, 0.653115], ... | 1106476833370537984 |
+ 
+recall_res = recall_res.join(refection_user, on=['als_user_id'], how='left').select(
+['als_user_id', 'recommendations', 'user_id'])
+</code></pre>
+<p>对推荐文章ID后处理：得到推荐列表,获取推荐列表中的ID索引<br>
+# Join推荐结果与 refection_article映射关系表<br>
+# +-----------+-------+----------------+<br>
+# | als_user_id | user_id | als_article_id |<br>
+# +-----------+-------+----------------+<br>
+# | 8 | 2 | [163, 0.91328144] |<br>
+# | 8 | 2 | [132, 0.91328144] |<br>
+import pyspark.sql.functions as F<br>
+recall_res = recall_res.withColumn('als_article_id', F.explode('recommendations')).drop('recommendations')</p>
+<pre><code># +-----------+-------+--------------+
+# | als_user_id | user_id | als_article_id |
+# +-----------+-------+--------------+
+# | 8 | 2 | 163 |
+# | 8 | 2 | 132 |
+def _article_id(row):
+	return row.als_user_id, row.user_id, row.als_article_id[0]
+</code></pre>
+<p>进行索引对应文章ID获取<br>
+als_recall = recall_res.rdd.map(_article_id).toDF(['als_user_id', 'user_id', 'als_article_id'])<br>
+als_recall = als_recall.join(refection_article, on=['als_article_id'], how='left').select(<br>
+['user_id', 'article_id'])<br>
+# 得到每个用户ID 对应推荐文章<br>
+# +-------------------+----------+<br>
+# | user_id |				 article_id |<br>
+# +-------------------+----------+<br>
+# | 1106476833370537984 |   44075 |<br>
+# | 1 | 					 44075 |<br>
+获取每个文章对应的频道，推荐给用户时按照频道存储:<br>
+ur.spark.sql(&quot;use toutiao&quot;)<br>
+news_article_basic = ur.spark.sql(&quot;select article_id, channel_id from news_article_basic&quot;)</p>
+<pre><code>als_recall = als_recall.join(news_article_basic, on=['article_id'], how='left')
+als_recall = als_recall.groupBy(['user_id', 'channel_id']).agg(F.collect_list('article_id')).withColumnRenamed(
+                    'collect_list(article_id)', 'article_list')
+
+als_recall = als_recall.dropna()
+</code></pre>
+<h4 id="召回结果存储">召回结果存储</h4>
+<p>HBASE表设计概览：<br>
+put 'cb_recall', 'recall:user:5', 'als:1',[45,3,5,10,289,11,65,52,109,8]<br>
+put 'cb_recall', 'recall:user:5', 'als:2',[1,2,3,4,5,6,7,8,9,10]<br>
+存储代码如下：<br>
+def save_offline_recall_hbase(partition):<br>
+&quot;&quot;&quot;离线模型召回结果存储<br>
+&quot;&quot;&quot;<br>
+import happybase<br>
+pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)<br>
+for row in partition:<br>
+with pool.connection() as conn:<br>
+# 获取历史看过的该频道文章<br>
+history_table = conn.table('history_recall')<br>
+# 多个版本<br>
+data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),<br>
+'channel:{}'.format(row.channel_id).encode())</p>
+<pre><code>            history = []
+            if len(data) &gt;= 2:
+                for l in data[:-1]:
+                    history.extend(eval(l))
+            else:
+                history = []
+
+            # 过滤reco_article与history
+            reco_res = list(set(row.article_list) - set(history))
+
+            if reco_res:
+
+                table = conn.table('cb_recall')
+                # 默认放在推荐频道
+                table.put('recall:user:{}'.format(row.user_id).encode(),
+                          {'als:{}'.format(row.channel_id).encode(): str(reco_res).encode()})
+
+                # 放入历史推荐过文章
+                history_table.put(&quot;reco:his:{}&quot;.format(row.user_id).encode(),
+                                  {'channel:{}'.format(row.channel_id): str(reco_res).encode()})
+            conn.close()
+
+als_recall.foreachPartition(save_offline_recall_hbase)
+</code></pre>
+<h3 id="离线用户基于内容召回集">离线用户基于内容召回集</h3>
+<p>目标<br>
+知道离线内容召回的概念<br>
+知道如何进行内容召回计算存储规则<br>
+应用<br>
+应用spark完成离线用户基于内容的协同过滤推荐</p>
+<h4 id="基于内容召回实现文章向量之前已经弄好了">基于内容召回实现（文章向量之前已经弄好了）</h4>
+<p>过滤用户点击的文章<br>
+# 基于内容相似召回（画像召回）<br>
+ur.spark.sql(&quot;use profile&quot;)<br>
+user_article_basic = self.spark.sql(&quot;select * from user_article_basic&quot;)<br>
+user_article_basic = user_article_basic.filter(&quot;clicked=True&quot;)</p>
+<pre><code>def save_content_filter_history_to__recall(partition):
+    &quot;&quot;&quot;计算每个用户的每个操作文章的相似文章，过滤之后，写入content召回表当中（支持不同时间戳版本）
+    &quot;&quot;&quot;
+    import happybase
+    pool = happybase.ConnectionPool(size=10, host='hadoop-master')
+
+    # 进行为相似文章获取
+    with pool.connection() as conn:
+
+        # key:   article_id,    column:  similar:article_id
+        similar_table = conn.table('article_similar')
+        # 循环partition
+        for row in partition:
+            # 获取相似文章结果表
+            similar_article = similar_table.row(str(row.article_id).encode(),
+                                                columns=[b'similar'])
+            # 相似文章相似度排序过滤，召回不需要太大的数据， 百个，千
+            _srt = sorted(similar_article.items(), key=lambda item: item[1], reverse=True)
+            if _srt:
+                # 每次行为推荐10篇文章
+                reco_article = [int(i[0].split(b':')[1]) for i in _srt][:10]
+
+                # 获取历史看过的该频道文章
+                history_table = conn.table('history_recall')
+                # 多个版本
+                data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),
+                                           'channel:{}'.format(row.channel_id).encode())
+
+                history = []
+                if len(data) &gt;= 2:
+                    for l in data[:-1]:
+                        history.extend(eval(l))
+                else:
+                    history = []
+
+                # 过滤reco_article与history
+                reco_res = list(set(reco_article) - set(history))
+
+                # 进行推荐，放入基于内容的召回表当中以及历史看过的文章表当中
+                if reco_res:
+                    # content_table = conn.table('cb_content_recall')
+                    content_table = conn.table('cb_recall')
+                    content_table.put(&quot;recall:user:{}&quot;.format(row.user_id).encode(),
+                                      {'content:{}'.format(row.channel_id).encode(): str(reco_res).encode()})
+
+                    # 放入历史推荐过文章
+                    history_table.put(&quot;reco:his:{}&quot;.format(row.user_id).encode(),
+                                      {'channel:{}'.format(row.channel_id).encode(): str(reco_res).encode()})
+
+        conn.close()
+
+user_article_basic.foreachPartition(save_content_filter_history_to__recall)
+</code></pre>
+<h3 id="离线用户召回定时更新">离线用户召回定时更新</h3>
+<h4 id="定时更新代码">定时更新代码</h4>
+<pre><code>import os
+import sys
+# 如果当前代码文件运行测试需要加入修改路径，否则后面的导包出现问题
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+from pyspark.ml.feature import StringIndexer
+from pyspark.ml import Pipeline
+
+from pyspark.ml.recommendation import ALS
+from offline import SparkSessionBase
+from datetime import datetime
+import time
+import numpy as np
+
+
+class UpdateRecall(SparkSessionBase):
+
+    SPARK_APP_NAME = &quot;updateRecall&quot;
+    ENABLE_HIVE_SUPPORT = True
+
+    def __init__(self, number):
+
+        self.spark = self._create_spark_session()
+        self.N = number
+
+    def update_als_recall(self):
+        &quot;&quot;&quot;
+        更新基于模型（ALS）的协同过滤召回集
+        :return:
+        &quot;&quot;&quot;
+        # 读取用户行为基本表
+        self.spark.sql(&quot;use profile&quot;)
+        user_article_click = self.spark.sql(&quot;select * from user_article_basic&quot;).\
+            select(['user_id', 'article_id', 'clicked'])
+
+        # 更换类型
+        def change_types(row):
+            return row.user_id, row.article_id, int(row.clicked)
+
+        user_article_click = user_article_click.rdd.map(change_types).toDF(['user_id', 'article_id', 'clicked'])
+        # 用户和文章ID超过ALS最大整数值，需要使用StringIndexer进行转换
+        user_id_indexer = StringIndexer(inputCol='user_id', outputCol='als_user_id')
+        article_id_indexer = StringIndexer(inputCol='article_id', outputCol='als_article_id')
+        pip = Pipeline(stages=[user_id_indexer, article_id_indexer])
+        pip_fit = pip.fit(user_article_click)
+        als_user_article_click = pip_fit.transform(user_article_click)
+
+        # 模型训练和推荐默认每个用户固定文章个数
+        als = ALS(userCol='als_user_id', itemCol='als_article_id', ratingCol='clicked', checkpointInterval=1)
+        model = als.fit(als_user_article_click)
+        recall_res = model.recommendForAllUsers(self.N)
+
+        # recall_res得到需要使用StringIndexer变换后的下标
+        # 保存原来的下表映射关系
+        refection_user = als_user_article_click.groupBy(['user_id']).max('als_user_id').withColumnRenamed(
+            'max(als_user_id)', 'als_user_id')
+        refection_article = als_user_article_click.groupBy(['article_id']).max('als_article_id').withColumnRenamed(
+            'max(als_article_id)', 'als_article_id')
+
+        # Join推荐结果与 refection_user映射关系表
+        # +-----------+--------------------+-------------------+
+        # | als_user_id | recommendations | user_id |
+        # +-----------+--------------------+-------------------+
+        # | 8 | [[163, 0.91328144]... | 2 |
+        #        | 0 | [[145, 0.653115], ... | 1106476833370537984 |
+        recall_res = recall_res.join(refection_user, on=['als_user_id'], how='left').select(
+            ['als_user_id', 'recommendations', 'user_id'])
+
+        # Join推荐结果与 refection_article映射关系表
+        # +-----------+-------+----------------+
+        # | als_user_id | user_id | als_article_id |
+        # +-----------+-------+----------------+
+        # | 8 | 2 | [163, 0.91328144] |
+        # | 8 | 2 | [132, 0.91328144] |
+        import pyspark.sql.functions as F
+        recall_res = recall_res.withColumn('als_article_id', F.explode('recommendations')).drop('recommendations')
+
+        # +-----------+-------+--------------+
+        # | als_user_id | user_id | als_article_id |
+        # +-----------+-------+--------------+
+        # | 8 | 2 | 163 |
+        # | 8 | 2 | 132 |
+        def _article_id(row):
+            return row.als_user_id, row.user_id, row.als_article_id[0]
+
+        als_recall = recall_res.rdd.map(_article_id).toDF(['als_user_id', 'user_id', 'als_article_id'])
+        als_recall = als_recall.join(refection_article, on=['als_article_id'], how='left').select(
+            ['user_id', 'article_id'])
+        # 得到每个用户ID 对应推荐文章
+        # +-------------------+----------+
+        # | user_id | article_id |
+        # +-------------------+----------+
+        # | 1106476833370537984 | 44075 |
+        # | 1 | 44075 |
+        # 分组统计每个用户，推荐列表
+        # als_recall = als_recall.groupby('user_id').agg(F.collect_list('article_id')).withColumnRenamed(
+        #     'collect_list(article_id)', 'article_list')
+        self.spark.sql(&quot;use toutiao&quot;)
+        news_article_basic = self.spark.sql(&quot;select article_id, channel_id from news_article_basic&quot;)
+        als_recall = als_recall.join(news_article_basic, on=['article_id'], how='left')
+        als_recall = als_recall.groupBy(['user_id', 'channel_id']).agg(F.collect_list('article_id')).withColumnRenamed(
+            'collect_list(article_id)', 'article_list')
+        als_recall = als_recall.dropna()
+
+        # 存储
+        def save_offline_recall_hbase(partition):
+            &quot;&quot;&quot;离线模型召回结果存储
+            &quot;&quot;&quot;
+            import happybase
+            pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)
+            for row in partition:
+                with pool.connection() as conn:
+                    # 获取历史看过的该频道文章
+                    history_table = conn.table('history_recall')
+                    # 多个版本
+                    data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),
+                                               'channel:{}'.format(row.channel_id).encode())
+
+                    history = []
+                    if len(data) &gt;= 2:
+                        for l in data[:-1]:
+                            history.extend(eval(l))
+                    else:
+                        history = []
+
+                    # 过滤reco_article与history
+                    reco_res = list(set(row.article_list) - set(history))
+
+                    if reco_res:
+
+                        table = conn.table('cb_recall')
+                        # 默认放在推荐频道
+                        table.put('recall:user:{}'.format(row.user_id).encode(),
+                                  {'als:{}'.format(row.channel_id).encode(): str(reco_res).encode()})
+                        conn.close()
+
+                        # 放入历史推荐过文章
+                        history_table.put(&quot;reco:his:{}&quot;.format(row.user_id).encode(),
+                                          {'channel:{}'.format(row.channel_id): str(reco_res).encode()})
+                    conn.close()
+
+        als_recall.foreachPartition(save_offline_recall_hbase)
+
+    def update_content_recall(self):
+        &quot;&quot;&quot;
+        更新基于内容（画像）的推荐召回集, word2vec相似
+        :return:
+        &quot;&quot;&quot;
+        # 基于内容相似召回（画像召回）
+        ur.spark.sql(&quot;use profile&quot;)
+        user_article_basic = self.spark.sql(&quot;select * from user_article_basic&quot;)
+        user_article_basic = user_article_basic.filter(&quot;clicked=True&quot;)
+
+        def save_content_filter_history_to__recall(partition):
+            &quot;&quot;&quot;计算每个用户的每个操作文章的相似文章，过滤之后，写入content召回表当中（支持不同时间戳版本）
+            &quot;&quot;&quot;
+            import happybase
+            pool = happybase.ConnectionPool(size=10, host='hadoop-master')
+
+            # 进行为相似文章获取
+            with pool.connection() as conn:
+
+                # key:   article_id,    column:  similar:article_id
+                similar_table = conn.table('article_similar')
+                # 循环partition
+                for row in partition:
+                    # 获取相似文章结果表
+                    similar_article = similar_table.row(str(row.article_id).encode(),
+                                                        columns=[b'similar'])
+                    # 相似文章相似度排序过滤，召回不需要太大的数据， 百个，千
+                    _srt = sorted(similar_article.items(), key=lambda item: item[1], reverse=True)
+                    if _srt:
+                        # 每次行为推荐10篇文章
+                        reco_article = [int(i[0].split(b':')[1]) for i in _srt][:10]
+
+                        # 获取历史看过的该频道文章
+                        history_table = conn.table('history_recall')
+                        # 多个版本
+                        data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),
+                                                   'channel:{}'.format(row.channel_id).encode())
+
+                        history = []
+                            if len(_history_data) &gt; 1:
+                                for l in _history_data:
+                                    history.extend(l)
+
+                        # 过滤reco_article与history
+                        reco_res = list(set(reco_article) - set(history))
+
+                        # 进行推荐，放入基于内容的召回表当中以及历史看过的文章表当中
+                        if reco_res:
+                            # content_table = conn.table('cb_content_recall')
+                            content_table = conn.table('cb_recall')
+                            content_table.put(&quot;recall:user:{}&quot;.format(row.user_id).encode(),
+                                              {'content:{}'.format(row.channel_id).encode(): str(reco_res).encode()})
+
+                            # 放入历史推荐过文章
+                            history_table.put(&quot;reco:his:{}&quot;.format(row.user_id).encode(),
+                                              {'channel:{}'.format(row.channel_id).encode(): str(reco_res).encode()})
+
+                conn.close()
+
+        user_article_basic.foreachPartition(save_content_filter_history_to__recall)
+
+
+if __name__ == '__main__':
+    ur = UpdateRecall(500)
+    ur.update_als_recall()
+    ur.update_content_recall()
+</code></pre>
+<p>定时更新代码，在main.py和update.py中添加以下代码：<br>
+from offline.update_recall import UpdateRecall<br>
+from schedule.update_profile import update_user_profile, update_article_profile, update_recall</p>
+<pre><code>def update_recall():
+    &quot;&quot;&quot;
+    更新用户的召回集
+    :return:
+    &quot;&quot;&quot;
+    udp = UpdateRecall(200)
+    udp.update_als_recall()
+    udp.update_content_recall()
+</code></pre>
+<p>main中添加<br>
+scheduler.add_job(update_recall, trigger='interval', hour=3)</p>
+<h1 id="排序设计">排序设计</h1>
+<h3 id="排序模型">排序模型</h3>
+<p>宽模型 + 特征⼯程<br>
+LR/MLR + 非ID类特征(⼈⼯离散/GBDT/FM)<br>
+spark 中可以直接使用<br>
+宽模型 + 深模型<br>
+wide&amp;deep,DeepFM<br>
+使用TensorFlow进行训练<br>
+深模型：<br>
+DNN + 特征embedding<br>
+使用TensorFlow进行训练</p>
+<h3 id="特征处理原则">特征处理原则</h3>
+<p>离散数据<br>
+one-hot编码<br>
+连续数据<br>
+归一化<br>
+图片/文本<br>
+文章标签/关键词提取<br>
+embedding</p>
+<h3 id="优化训练方式">优化训练方式</h3>
+<p>使用Batch SGD优化<br>
+加入正则化防止过拟合</p>
+<h3 id="spark-lr-进行预估">spark LR 进行预估</h3>
+<p>目的：通过LR模型进行CTR预估<br>
+步骤：<br>
+1、需要通过spark读取HIVE外部表，需要新的sparksession配置<br>
+增加HBASE配置<br>
+2、读取用户点击行为表，与用户画像和文章画像，构造训练样本<br>
+3、LR模型进行训练<br>
+4、LR模型预测、结果评估</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => HBase]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-hbase/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-hbase/">
+        </link>
+        <updated>2020-09-29T04:21:09.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="报错">报错</h1>
+<p>若list 或其他命令 有如下错误：<br>
+ERROR: org.apache.hadoop.hbase.PleaseHoldException: Master is initializing<br>
+则使用如下命令：<br>
+cd $HBASE_HOME/bin<br>
+./hbase zkcli<br>
+ls /<br>
+rmr /hbase<br>
+ls /<br>
+退出 zookeeper cli， 删除hdfs中的 /hbase<br>
+hdfs dfs -rm -r /hbase<br>
+然后重启hbase:<br>
+cd $HBASE_HOME/bin<br>
+./stop-hbase.sh<br>
+./start-hbase.sh<br>
+若stop hbase的时候出现 ..... 停止不掉， 则：<br>
+cd $HBASE_HOME/bin<br>
+./hbase-daemons.sh stop regionserver</p>
+<pre><code># ./start-hbase.sh
+# kill -9 pid来终止hbase的进程
+</code></pre>
+<h1 id="hbase命令">HBase命令</h1>
+<p>https://blog.csdn.net/vbirdbest/article/details/88236575</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[RS => 推荐系统（二）离线画像构建 ]]></title>
         <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/</id>
@@ -2595,763 +3201,6 @@ V @ W ====&gt; [V1, V2, V3]</p>
 <a href="https://github.com/huggingface/transformers">https://github.com/huggingface/transformers</a><br>
 Transformer延申的各种模型，像Bert等也有可调用的API<br>
 <a href="https://huggingface.co/transformers/">https://huggingface.co/transformers/</a></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => Pytorch与Tersorflow2.0简单对比]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-pytorch-yu-tersorflow20-jian-dan-dui-bi/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-pytorch-yu-tersorflow20-jian-dan-dui-bi/">
-        </link>
-        <updated>2020-09-29T04:12:32.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<p>目前一些模型API尚未迁移到TF20中。 eg: CRF，Seq2Seq等<br>
-如果退回TF10，有些伤。<br>
-倒不如转至Torch。<br>
-Pytorch的大部分思想和TF20大致相似。</p>
-<p>至于安装，GPU我前面说过TF20。这里不赘述。<br>
-官档安装：<a href="https://pytorch.org/get-started/locally/#start-locally">https://pytorch.org/get-started/locally/#start-locally</a></p>
-<h3 id="注意">注意</h3>
-<p>本文几乎通篇以代码案例 和 注释标注 的方式解释API。(模型的训练效果不做考虑。只看语法)<br>
-你如果懂Tensorflow2.0（Stable），那么你看本文一定不费劲。<br>
-Torch和TF20 很像！！！<br>
-因此一些地方，我会列出 TF20 与 Torch的细节对比。</p>
-<h1 id="开门案例1-mnist">开门案例1-MNIST</h1>
-<h3 id="模块导入">模块导入</h3>
-<pre><code>import torch
-from torch import nn, optim
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
-</code></pre>
-<h3 id="数据预处理">数据预处理</h3>
-<pre><code>data_preprocess = transforms.Compose([  # 顶预定数据处理函数，类似map()里的函数句柄
-    transforms.Resize(28,28),           # 变形
-    transforms.ToTensor(),              # numpy 转 Tensor
-])
-
-trian_dataset = datasets.MNIST(         # TF20在keras.datasets中,未归一化（0-255）
-    '.',                                # 下载至当前目录， （图片0-1，已经被归一化了）
-    train=True,                         # train=True， 代表直接给你切出 训练集
-    download=True,                      # True，若未下载，则先下载
-    transform=data_preprocess,          # 指定数据预处理函数。第一行我们指定的
-)
-
-test_dataset = datasets.MNIST(
-    '.', 
-    train=False, # False代表测试集       # 就说下这里， False代表 给你切出测试集
-    download=True,
-    transform=data_preprocess,
-)
-
-train = DataLoader(     # 对应TF20中的 tf.data.Dataset对数据二次预处理（分批，乱序）
-    trian_dataset,      # 把上面第一次预处理的数据集 加载进来
-    batch_size=16,      # mini-batch
-    shuffle=True,       # 乱序，增强模型泛化能力
-)
-
-test = DataLoader(
-    test_dataset,
-    batch_size=16,
-    shuffle=True,
-)
-</code></pre>
-<h3 id="mnist模型定义-训练代码">MNIST模型（定义-训练代码）</h3>
-<pre><code># 模型定义部分
-class MyModel(nn.Module):             # TF20是 tk.models.Model
-    def __init__(self):               # TF20 也是 __init__()
-        super().__init__()
-
-        self.model = nn.Sequential(   # tk.models.Sequential , 并且 TF里面 需要加一个 []
-            nn.Linear(28*28, 256),    # tk.layers.Dense(256)
-            nn.ReLU(),                # tk.layers.Relu()
-
-            nn.Linear(256, 128),      # tk.layers.Dense(128)
-            nn.ReLU(),               
-
-            nn.Linear(128, 10),       # tk.layers.Dense(10)            
-        ) 
-    def forward(self, x):  # TF20是 __call__()
-        x = x.view( x.size(0), 28*28 )      # x.view ==&gt; tf.reshape   x.size ==&gt; x.shape[0]
-        y_predict = self.model(x)
-
-        return y_predict
-# -------------------------------华丽分割线---------------------------------     
-# 模型训练部分
-def main():
-    vis = visdom.Visdom()
-    model = MyModel()
-    loss_ = nn.CrossEntropyLoss()     # 会将 y_predict自动加一层 softmax
-    optimizer = optim.Adam(model.parameters())     # TF20: model.trainable_variables
-    
-    # visdom可视化
-    # 这步是初始化坐标点，下面loss会用这个直接更新
-    vis.line(
-        [0],                    # x坐标
-        [0],                    # y坐标
-        win='loss',             # 窗口名称
-        opts={'title': 'loss'}, # 窗口标题
-    )
-    
-    for epoch in range(10):   # epochs
-        for step, (x, y_true) in enumerate(train):
-            y_predict = model(x)
-            loss = loss_(y_predict, y_true)
-            optimizer.zero_grad()           #  优化器清零 
-            loss.backward()                 #  梯度计算
-            optimizer.step()                #  梯度下降更新 tp.gradient(loss, variables)。 
-            
-            # 在上面的定义的基础上更新追加画点-连成线
-            vis.line(
-                [loss.item()],
-                [step],
-                win='loss',
-                update='append', # 追加画点，而不是更新覆盖
-            )
-        print(loss.item())                  #  .item()  =&gt; 相当于 tensorflow 的 numpy()
-        
-        if epoch % 2 == 0:
-            total_correct_samples = 0       # 用于记录（预测正确的样本的 总数量）
-            total_samples = 0               # 用于记录（样本的 总数量）
-
-            for x_test, y_test in test:
-                y_pred = model(x_test)
-                y_final_pred = y_pred.argmax(dim=1)     # TF20的坐标轴参数是 axis
-                
-                 # 每一批是 batch_size=16，我们要把它们都加在一起
-                total_correct_samples += torch.eq(y_final_pred, y_test).float().sum().item()
-                
-                # 这里提一下 eq() 和 equal() 的返回值的区别， 自己看，我们通常用 eq
-                # print( torch.equal( torch.Tensor([[1,2,3]]), torch.Tensor([[4,5,6]] ) ) ) 
-                #结果:  False
-                # print( torch.eq( torch.Tensor([[1,2,3]]), torch.Tensor([[4,5,6]] ) ) ) 
-                #结果:  tensor([[0, 0, 0]], dtype=torch.uint8)
-
-                per_sample = x_test.size(0)   # 再说一次， size(0) 相当于TF xx.shape[0]
-                # 获取每批次样本数量, 虽然我们知道是 16
-                # 但是最后一个batch_size 可能不是16，所以要准确获取。
-                total_samples += per_sample
-
-            acc = total_correct_samples / total_samples
-            print(f'epoch: {epoch}, loss: {loss}, acc: {acc}')   
-            
-            # 测试部分
-            vis.line(
-                [acc],
-                [step],
-                win='acc',
-                update='append', # 追加画点，而不是更新覆盖
-            )
-
-            x, label = iter(test).next()
-            target_predict = model(x).argmax(dim=1)
-            
-            # 画出测试集图片
-            viz.images(x, nrow=16, win=&quot;test_x&quot;, opts={'title': &quot;test_x&quot;}) 
-            vis.text(    # 显示预测标签文本
-                str(target_predict.detach().numpy() ),
-                win = 'target_predict',
-                opts = {&quot;title&quot;: target_predict}
-            )
-            vis.text(    # 显示真值文本
-                str(label.detach().numpy() ),
-                win = 'target_true',
-                opts = {&quot;target_true&quot;: target_predict}
-            )
-main()
-</code></pre>
-<h3 id="模型可视化visdom">模型可视化（visdom)</h3>
-<h5 id="安装-和-运行-和-使用">安装 和 运行 和 使用</h5>
-<pre><code>安装
-    pip install visdom
-运行
-    python -m visdom.server  （第一次可能会有点慢）
-    
-# 语法和Tensorboard很像
-
-使用
-    import visdom
-    见上代码 vis.xxxxx
-</code></pre>
-<h1 id="案例2-cifar10cnn">案例2-CIFAR10+CNN</h1>
-<h3 id="说明">说明</h3>
-<p>模块导入和数据预处理部分和案例1的 MNIST一模一样。<br>
-只要稍稍修改 datasets.MNIST ==&gt;  datasets.CIFAR10 即可， 简单的不忍直视~~</p>
-<h3 id="代码如下">代码如下：</h3>
-<p>模型定义部分：<br>
-class MyModel(nn.Module):        # 温馨提示， 这是 Mmodule, 不是model<br>
-def <strong>init</strong>(self):<br>
-&quot;&quot;&quot;<br>
-先注明一下：<br>
-TF中输入图片形状为       (样本数, 高，宽，图片通道)<br>
-PyTorch中输入图片形状为  (样本数, 图片通道，高，宽)<br>
-&quot;&quot;&quot;</p>
-<pre><code>        super().__init__()
-        self.conv = nn.Sequential( # 再强调一遍，没有 []
-            nn.Conv2d(
-                in_channels=3,    # 对应TF  图片通道数（或者上一层通道）
-                out_channels=8,   # 对应TF  filters, 卷积核数量
-                kernel_size=3,    # 卷积核大小
-                stride=1,         # 步长, TF 是 strides，  特别注意
-                padding=0,        # no padding, 默认
-            ),
-            nn.ReLU(),
-            nn.MaxPool2d(
-                kernel_size=3,    # 滑动窗口大小
-                stride=None,      # 默认为None， 意为和 kernel_size相同大小
-            ),
-
-            nn.Conv2d(
-                in_channels=8,    # 对应TF  图片通道数（或者上一层通道）
-                out_channels=16,   # 对应TF  filters, 卷积核数量
-                kernel_size=3,    # 卷积核大小
-                stride=1,         # 步长, TF 是 strides，  特别注意
-                padding=0,        # no padding, 默认
-            ),
-            nn.ReLU(),
-            nn.MaxPool2d(
-                kernel_size=2,    # 滑动窗口大小
-                stride=None,      # 默认为None， 意为和 kernel_size相同大小
-            ),
-        )
-        self.dense = nn.Sequential(
-            nn.Linear(16*4*4, 128),    # 对应TF Dense
-            nn.Linear(128, 64),
-            nn.Linear(64, 10),
-        )
-    def forward(self, x):
-        conv_output = self.conv(x)
-        # (16, 16, 4.4)
-        conv_output_reshape = conv_output.view(-1, 16*4*4)
-        dense_output = self.dense(conv_output_reshape)
-
-        return dense_output
-</code></pre>
-<p>模型训练（模型调用+模型训练的定义）<br>
-def main():<br>
-vis = visdom.Visdom()</p>
-<pre><code>    epochs = 100
-
-    device = torch.device('cuda')  # 预定义 GPU 槽位（一会往里面塞 模型和数据。）
-
-    model = MyModel().to(device)   # 模型转为 GPU 计算
-    
-    # CrossEntropyLoss 会自动把下面的 dense_output ，也就是y_predict 加一层 softmax
-    loss_ = nn.CrossEntropyLoss().to(device)  
-    optimizer = optim.Adam( model.parameters() )
-
-    for epoch in range(epochs):
-        for step, (x_train, y_train) in enumerate(train):
-            x_train, y_train = x_train.to(device), y_train.to(device)
-            dense_output = model(x_train)
-
-            loss = loss_(dense_output, y_train)
-
-            optimizer.zero_grad()   # 上一个例子提到过，梯度清零
-            loss.backward()         # 反向传播， 并将梯度累加到 optimizer中
-            optimizer.step()        # 相当于做了 w = w - lr * 梯度
-
-        print(loss.item())          # item() 意思就是 tensor转numpy,TF中的 API是 xx.numpy()
-
-        sample_correct_numbers = 0
-        sample_total_numbers = 0
-
-        with torch.no_grad():   # 测试部分不需要计算梯度，因此可以包裹在上下文中。
-            for x_test, y_test in test:
-                x_test, y_test = x_test.to(device), y_test.to(device)
-                
-                # softmax 的 y_predict  与  y_test的 one-hot做交叉熵
-                y_predict = model(x_test).argmax(dim=1) 
-                sample_correct_numbers += torch.eq(y_predict, y_test).float().sum().item()
-                sample_total_numbers += x_test.size(0)  # 每批样本的总数加在一起
-            acc = sample_correct_numbers / sample_total_numbers
-            print(acc)
-
-main()
-</code></pre>
-<h1 id="案例3cifar10resnet-18">案例3：CIFAR10+ResNet-18</h1>
-<p>###结构图体系：<br>
-<img src="/img/bVbyS1X" alt="image.png" loading="lazy"><br>
-上述结构说明：<br>
-1conv + (2+2+2+2)*2 + 1 fc = 18层<br>
-1conv + (3+4+6+3)*2 + 1 fc = 34层<br>
-1conv + (3+4+6+3)*3 + 1 fc = 50层<br>
-1conv + (3+4+23+3)*3 + 1 fc = 101层<br>
-1conv + (3+8+36+3)*3 + 1 fc = 152层</p>
-<h3 id="代码实现">代码实现</h3>
-<p>模块导入<br>
-import cv2<br>
-import torch<br>
-from torch import nn, optim<br>
-from torchvision import datasets, transforms<br>
-from torch.utils.data import DataLoader<br>
-import visdom<br>
-import torch.nn.functional as F<br>
-数据导入预处理<br>
-data_preprocess = transforms.Compose([<br>
-transforms.Resize(32,32),<br>
-transforms.ToTensor(),<br>
-transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))<br>
-])</p>
-<pre><code>train_dataset = datasets.CIFAR10(
-    '.',
-    train=True,
-    download=True,
-    transform=data_preprocess,
-)
-
-
-test_dataset = datasets.CIFAR10(
-    '.',
-    train=False, # False代表测试集
-    download=True,
-    transform=data_preprocess,
-)
-
-
-train = DataLoader(
-    train_dataset,
-    batch_size=16,
-    shuffle=True,
-)
-
-test = DataLoader(
-    test_dataset,
-    batch_size=16,
-    shuffle=True,
-)
-</code></pre>
-<p>基础块定义（BasicBlock）：<br>
-class BasicBlock(nn.Module):<br>
-&quot;&quot;&quot;单个残差块 2个卷积+2个BN&quot;&quot;&quot;<br>
-def <strong>init</strong>(self, input_channel, output_channel, stride=1):<br>
-super().<strong>init</strong>()<br>
-self.major = nn.Sequential(<br>
-# 第一个Conv的步长为指定步长，允许降采样，允许输出输出通道不一致<br>
-nn.Conv2d(input_channel,output_channel,kernel_size=3,stride=stride, padding=1),<br>
-nn.BatchNorm2d(output_channel),<br>
-nn.ReLU(inplace=True),<br>
-# 第二个Conv的步长为定长1， 输入输出通道不变（缓冲输出）<br>
-nn.Conv2d(output_channel, output_channel, kernel_size=3, stride=1, padding=1),<br>
-nn.BatchNorm2d(output_channel),<br>
-# 第二个Conv就不用ReLU了， 因为一会需要和 x加在一起，最后最一层大的Relu<br>
-)<br>
-# 若输入通道==输出通道，且步长为1，意味着图片未被降采样，则残差网络课直接为普通网络</p>
-<pre><code>        self.shortcut = nn.Sequential()
-        # 若输入输出通道不匹配，这时需要将图片做同样的变换，才能加在一起。
-        if input_channel != output_channel or stride != 1:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(
-                    input_channel,
-                    output_channel,
-                    kernel_size=(1,1),
-                    stride = stride
-                ),
-                nn.BatchNorm2d(output_channel)
-            )            
-
-    def forward(self, x):
-        major_out = self.major(x)        # 主干网络的输出
-        shotcut_out = self.shortcut(x)   # 残差网络的输出
-        # 上面这两个网络是平行的关系，  因为 它们的输出不是链式的， 而是  都是同样的 x。
-
-        # 拼接主干网络+残差网络，F 相当于TF20的 tf.nn 里面单独有各种 loss函数
-        return F.relu(major_out + shotcut_out)  # 最后在拼接后的网络外面加一层relu 
-</code></pre>
-<p>ResNet+ResBlock定义：<br>
-class ResNet(nn.Module):<br>
-def <strong>init</strong>(self, layers):  # layers用来接受，用户想要指定 ResNet的形状<br>
-super().<strong>init</strong>()</p>
-<pre><code>        self.conv1 = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(inplace=True),
-        )        
-
-        self.res_net = nn.Sequential(
-            *self.ResBlock(32,64, layers[0],stride=2),    # 16
-            *self.ResBlock(64,128, layers[1],stride=2),   # 8
-            *self.ResBlock(128,256, layers[2],stride=2),  # 4
-            *self.ResBlock(256,512, layers[3],stride=2),  # 2
-        )
-        # 因为我们一会需要展平，里面填&quot;通道*宽度*高度&quot;, &quot;输出通道&quot;
-        self.dense = nn.Linear(512 * 2 * 2, 10)  
-        
-    def forward(self, x):
-        out = self.conv1(x)
-        out = self.res_net(out)
-
-        out = out.view(x.size(0), -1)# 卷积展平操作 ， torch中没有flatten所以我们就得手工
-        out = self.dense(out)
-        return out
-
-    def ResBlock(self, input_channel, output_channel, block_nums=2, stride=2):
-        # 自定义规定，第一个block缩小的(对应通道翻倍)，其余block大小不变
-        # 通道翻倍，步长*2，特征减半
-        all_block = [BasicBlock(input_channel, output_channel,stride=stride)]   
-
-        for x in range(1,block_nums):
-            all_block.append(BasicBlock(output_channel, output_channel,stride=1))
-        return all_block
-
-# resnet = ResNet(layers=[2,2,2,2])
-# out = resnet(torch.randn(4,3,32,32))
-# print(out.shape)
-</code></pre>
-<p>模型训练：<br>
-def main():<br>
-vis = visdom.Visdom()</p>
-<pre><code>    epochs = 5
-
-    device = torch.device('cuda')
-
-    model = ResNet(layers=[2,2,2,2]).to(device) 
-    
-    # 会自动把下面的 dense_output ，也就是y_predict 加一层 softmax，y_true做one-hot
-    loss_ = nn.CrossEntropyLoss().to(device)  
-    optimizer = optim.Adam( model.parameters(), lr=0.0001)
-
-    for epoch in range(epochs):
-        total_loss = 0.0
-        for step, (x_train, y_train) in enumerate(train):
-            x_train, y_train = x_train.to(device), y_train.to(device)
-            dense_output = model(x_train)
-
-            loss = loss_(dense_output, y_train)
-
-            optimizer.zero_grad()   # 上一个例子提到过，梯度清零
-            loss.backward()         # 反向传播， 并将梯度累加到 optimizer中
-            optimizer.step()        # 相当于做了 w = w - lr * 梯度
-            total_loss += loss.item() # item()就是 tensor转numpy, TF中的 API是 xx.numpy()
-            if step % 50 == 49:
-                print('epoch:',epoch, 'loss:', total_loss / step) 
-
-        sample_correct_numbers = 0
-        sample_total_numbers = 0
-
-        with torch.no_grad():   # 测试部分不需要计算梯度，因此可以包裹在上下文中。
-            for x_test, y_test in test:
-                x_test, y_test = x_test.to(device), y_test.to(device)
-                # softmax 的 y_predict  与  y_test的 one-hot做交叉熵
-                y_predict = model(x_test).argmax(dim=1) 
-                sample_correct_numbers += torch.eq(y_predict, y_test).float().sum().item()
-                sample_total_numbers += x_test.size(0)  # 每批样本的总数加在一起
-            acc = sample_correct_numbers / sample_total_numbers
-            print(acc)
-    torch.save(model, 'model.pkl')  # 保存整个模型
-main()
-</code></pre>
-<p>测试数据预处理(我随便在网上下载下来的 1 张图片)：<br>
-# 这是Cifar-10数据的标准标签<br>
-label = ['airplane','automobile','bird','cat','deer','dog','frog','horse','ship','truck']</p>
-<pre><code>plane = cv2.imread('plane.jpg')              # 我用的opencv
-plane = cv2.cvtColor(plane, cv2.COLOR_BGR2RGB) # opencv读的数据格式是BGR，所以转为RGB
-
-plane = (plane - 127.5) / 127.5    # 二话不说，保持模型输入数据的概率分布，先做归一化
-plane = cv2.resize(plane, (32,32)) # 图片缩小到32x32,和模型的输入保持一致
-plane = torch.Tensor(plane)        # 转换成 tensor
-plane = plane.view(1,32,32,3)      # 增加一个维度
-plane = plane.repeat(16,1,1,1)     # 我就用一张图片，为了满足模型的形状16，我复制了16次     
-plane = plane.permute([0,3,1,2])   # 虽然torch也有 像TF那样的transpose，但是只能操作2D
-
-device = torch.device('cuda')      # 先定义一个cuda设备对象
-plane = plane.to(device)           # 我们训练集用的cuda， 所以预测数据也要转为cuda
-</code></pre>
-<p>正式输入模型预测：<br>
-model = torch.load('model.pkl')    # 读取出 我们训练到最后整个模型<br>
-# 说明一下，如果你的预测是另一个脚本中，class ResNet 的代码定义部分也要复制过来</p>
-<pre><code>out = model(plane)                 # 预测结果，形状为[16,10] 16个样本，10个预测概率，
-label_indexes = out.argmax(dim=1)  # 取10个概率最大值的索引。 （1轴），形状为 [16,1]
-print(label_indexes)
-for i in label_indexes:            # i为每个样本预测的最大概率值 的 索引位置。
-    print(label[i])                # 拿着预测标签的索引  去 真实标签中找到真实标签</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => Tensorflow2.0语法 - keras_API的使用(三)]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-keras_api-de-shi-yong-san/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-keras_api-de-shi-yong-san/">
-        </link>
-        <updated>2020-09-29T04:12:09.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<p>keras接口大都实现了 _<em>call</em>_ 方法。<br>
-母类 _<em>call</em>_ 调用了 call()。<br>
-因此下面说的几乎所有模型/网络层 都可以在定义后，直接像函数一样调用。<br>
-eg:<br>
-模型对象(参数)<br>
-网络层对象(参数)<br>
-我们还可以实现继承模板</p>
-<h1 id="导入">导入</h1>
-<pre><code>from tensorflow import keras
-</code></pre>
-<h1 id="metrics-统计平均">metrics (统计平均)</h1>
-<p>里面有各种度量值的接口<br>
-如：二分类、多分类交叉熵损失容器，MSE、MAE的损失值容器， Accuracy精确率容器等。<br>
-下面以Accuracy伪码为例：<br>
-acc_meter = keras.metrics.Accuracy() # 建立一个容器<br>
-for _ in epoches:<br>
-for _ in batches:<br>
-y = ...<br>
-y_predict = ...<br>
-acc_meter.update_state(y, y_predict) # 每次扔进去数据，容器都会自动计算accuracy，并储存</p>
-<pre><code>        if times % 100 == 0: # 一百次一输出, 设置一个阈值/阀门
-            print(acc_meter.result().numpy())   # 取出容器内所有储存的数据的，均值准确率
-    acc_meter。reset_states()    # 容器缓存清空， 下一epoch从头计数。
-</code></pre>
-<h1 id="激活函数损失函数优化器">激活函数+损失函数+优化器</h1>
-<p>导入方式：<br>
-keras.activations.relu()    # 激活函数：以relu为例，还有很多<br>
-keras.losses.categorical_crossentropy() # 损失函数：以交叉熵为例，还有很多<br>
-keras.optimizers.SGD()      # 优化器：以随机梯度下降优化器为例<br>
-keras.callbacks.EarlyStopping()  # 回调函数： 以‘按指定条件提前暂停训练’回调为例</p>
-<h1 id="sequential继承自model属于模型">Sequential(继承自Model)属于模型</h1>
-<h3 id="模型定义方式">模型定义方式</h3>
-<p>定义方式1：<br>
-model = keras.models.Sequential( [首层网络,第二层网络。。。] )<br>
-定义方式1：<br>
-model = keras.models.Sequential()<br>
-model.add(首层网络)<br>
-model.add(第二层网络)</p>
-<h3 id="模型相关回调配置">模型相关回调配置</h3>
-<pre><code>logdir = 'callbacks'
-if not os.path.exists(logdir):
-    os.mkdir(logdir)
-save_model_file = os.path.join(logdir, 'mymodel.h5')
-
-callbacks = [
-    keras.callbacks.TensorBoard(logdir),    # 写入tensorboard
-    keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),  # 模型保存
-    keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)  # 按条件终止模型训练
-    # 验证集，每次都会提升，如果提升不动了，提升小于这个min_delta阈值，则会耐心等待5次。
-    # 5次过后，要是还提升这么点。就提前结束。
-]
-# 代码写在这里，如何传递调用， 下面 “模型相关量度配置” 会提到
-</code></pre>
-<h3 id="模型相关量度配置损失优化器准确率等">模型相关量度配置：(（损失，优化器，准确率等)</h3>
-<p>说明，下面的各种量度属性，可通过字符串方式，也可通过上面讲的导入实例化对象方式。<br>
-model.compile(<br>
-loss=&quot;sparse_categorical_crossentropy&quot;,    # 损失函数，这是字符串方式<br>
-optimizer= keras.optimizers.SGD()          # 这是实例化对象的方式，这种方式可以传参<br>
-metrics=['accuracy']  # 这项会在fit()时打印出来<br>
-)  # compile() 操作，没有真正的训练。<br>
-model.fit(<br>
-x,y,<br>
-epochs=10,                              # 反复训练 10 轮<br>
-validation_data = (x_valid,y_valid),    # 把划分好的验证集放进来（fit时打印loss和val）<br>
-validation_freq = 5,                    # 训练5次，验证一次。  可不传，默认为1。<br>
-callbacks=callbacks,                    # 指定回调函数， 请衔接上面‘模型相关回调配置’</p>
-<pre><code>)   # fit()才是真正的训练 
-</code></pre>
-<h3 id="模型-验证测试">模型 验证&amp;测试</h3>
-<p>一般我们会把 数据先分成三部分（如果用相同的数据，起不到测试和验证效果，参考考试作弊思想）：</p>
-<ol>
-<li>训练集: （大批量，主体）</li>
-<li>测试集: （模型所有训练结束后， 才用到）</li>
-<li>验证集: （训练的过程种就用到）<br>
-说明1：（如何分离？）
-<ol>
-<li>它们的分离是需要（x,y）组合在一起的，如果手动实现，需要随机打散、zip等操作。</li>
-<li>但我们可以通过 scikit-learn库，的 train_test_split() 方法来实现 （2次分隔）</li>
-<li>可以使用 tf.split()来手动实现<br>
-具体分离案例：参考上一篇文章： https://segmentfault.com/a/1190000020447666</li>
-</ol>
-</li>
-</ol>
-<p>说明2：（为什么我们有了测试集，还需要验证集？）</p>
-<ol>
-<li>测试集是用来在最终，模型训练成型后（参数固定），进行测试，并且返回的是预测的结果值！！！！</li>
-<li>验证集是伴随着模型训练过程中而验证）<br>
-代码如下：<br>
-loss, accuracy = model.evaluate( (x_test, y_test) ) # 度量， 注意，返回的是精度指标等<br>
-target = model.predict( (x_test, y_test) )          # 测试， 注意，返回的是 预测的结果！</li>
-</ol>
-<h3 id="可用参数">可用参数</h3>
-<pre><code>model.trainable_variables    # 返回模型中所有可训练的变量
-# 使用场景： 就像我们之前说过的 gradient 中用到的 zip(求导结果, model.trainable_variables)
-</code></pre>
-<h1 id="自定义model">自定义Model</h1>
-<p>Model相当于母版， 你继承了它，并实现对应方法，同样也能简便实现模型的定义。</p>
-<h1 id="自定义layer">自定义Layer</h1>
-<p>同Model， Layer也相当于母版， 你继承了它，并实现对应方法，同样也能简便实现网络层的定义。</p>
-<h1 id="模型保存与加载">模型保存与加载</h1>
-<p>###方法1：之前callback说的<br>
-###方法2：只保存weight(模型不完全一致)<br>
-保存：<br>
-model = keras.Sequential([...])<br>
-...<br>
-model.fit()<br>
-model.save_weights('weights.ckpt')<br>
-加载：<br>
-假如在另一个文件中。（当然要把保存的权重要复制到本地目录）<br>
-model = keras.Sequential([...])    # 此模型构建必须和保存时候定义结构的一模一样的！<br>
-model.load_weights('weights.ckpt')<br>
-model.evaluate(...)<br>
-model.predict(...)</p>
-<p>###方法3：保存整个模型（模型完全一致）<br>
-保存：<br>
-model = keras.Sequential([...])<br>
-...<br>
-model.fit()<br>
-model.save('model.h5')    # 注意 这里变了，是 save<br>
-加载:（直接加载即可，不需要重新复原建模过程）<br>
-假如在另一个文件中。（当然要把保存的模型要复制到本地目录）<br>
-model = keras.models.load_model('model.h5')  # load_model是在 keras.models下<br>
-model.evaluate(...)<br>
-model.predict(...)<br>
-###方法4：导出可供其他语言使用（工业化）<br>
-保存： （使用tf.saved_model模块）<br>
-model = keras.Sequential([...])<br>
-...<br>
-model.fit()<br>
-tf.saved_model.save(model, '目录')<br>
-加载：（使用tf.saved_model模块）<br>
-model = tf.saved_model.load('目录')</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => 知识图谱之Neo4j-Cypher]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-zhi-shi-tu-pu-zhi-neo4j-cypher/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-zhi-shi-tu-pu-zhi-neo4j-cypher/">
-        </link>
-        <updated>2020-09-29T04:11:21.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="crud">CRUD</h1>
-<h3 id="创建">创建</h3>
-<p>普通无属性创建（默认给你创建一个ID）<br>
-create (p:person)-[:eat]-&gt;(f:food)<br>
-带有属性的创建（ {} ）<br>
-create (p:person{name:'zhangsan'})-[:eat]-&gt;(f:food{name:'apple'})</p>
-<p>给两个孤独的实体创建关系：<br>
-match<br>
-(a:animal),(c:color)<br>
-create    （如果这里改为 merge 则是 “有则查询，无则创建”）<br>
-(a)-[h:have]-&gt;(c) return h</p>
-<pre><code>对应查询：
-	match 
-		(a:animal),(c:color) 
-	return  a,c
-</code></pre>
-<h3 id="删除-delete">删除 (delete)</h3>
-<pre><code>match
-	(a:animal)-[h:have]-&gt;(c:color) 
-delete a,h,c
-</code></pre>
-<h3 id="更新修改set">更新修改（set）</h3>
-<pre><code>match
-	(f:food) 
-set f.age=20
-</code></pre>
-<h3 id="查询">查询</h3>
-<p>主体查询结构<br>
-match<br>
-(p:)-[:关系名]-[别名2:实体名]<br>
-return 别名1,别名2</p>
-<p>普通条件查询1（whree）<br>
-match<br>
-(n:User)<br>
-where<br>
-n.name='Tom'<br>
-return n<br>
-普通条件查询2：（ {} ）<br>
-match<br>
-(p:person{name:'zhangsan'})-[:eat{level:1}]-&gt;(f:food{name:'apple'})<br>
-return p,f<br>
-正则条件查询(~)<br>
-match<br>
-(n:User)<br>
-where<br>
-n.name=~'T.*'<br>
-return n<br>
-包含条件查询（contains）<br>
-match<br>
-(n:User)<br>
-where<br>
-n.name contains 'T'<br>
-return n</p>
-<p>多度查询<br>
-match (t:teacher)-[]-(s:student)-[]-(ss:score) return t,s,ss</p>
-<pre><code># 注意1： [] 里面不写，代表所有关系
-# 注意2： -  没有箭头，代表任意方向
-# 注意3： 别名不可以重复指定， 所以我设置了 ss
-
-多度关系： （通常是基于人脉来讲的）
-1度关系：我 -&gt; 你
-2度关系：我 -&gt; 你 -&gt; 他
-
-理解技巧： 算几度关系时，把自己（节点）捂住不看， 然后剩下几个人员节点，就是几度关系
-
-特别注意：
-    多度查关系时，比如你查 3度关系的结果。
-    neo4j的图可能会把， 2度关系也画出来，why? 因为他通过2度关系也可直接得出结果。
-    （可理解为 条条大路通罗马。）
-    ！！！但是最终有效的返回路径只是你最初想要的 3度。   （2度就不算了）
-</code></pre>
-<p>查询最短路径：<br>
-match (t:teacher), (s:student),<br>
-p=shortestpath( (t)-[*..]-(s) )<br>
-return p</p>
-<pre><code># 注意： p= 之前有个逗号 ，
-</code></pre>
-<p>查询所有最短路径：<br>
-match (t:teacher), (s:student),<br>
-p=allshortestpaths( (t)-[*..]-(s) )<br>
-return p</p>
-<pre><code># 注意1： 前面多个 all ，后面多个s
-# 注意2： 所有最短路径的都会列出来。 人人平等~
-</code></pre>
-<h1 id="索引">索引</h1>
-<h3 id="创建索引-create">创建索引 (create)</h3>
-<pre><code>create index on  :food(name)      
-
-# food为实体名，name为属性名， 同时注意这个 :    
-</code></pre>
-<h3 id="删除索引drop">删除索引（drop）</h3>
-<pre><code>drop index on  :food(name)
-</code></pre>
-<h1 id="约束">约束</h1>
-<h3 id="创建约束">创建约束</h3>
-<pre><code>create constraint on (gf:girlfriend) assert (gf.name) is unique
-</code></pre>
-<h3 id="删除约束">删除约束</h3>
-<pre><code>create constraint on (o:others) assert (o.name) is unique
-</code></pre>
-<h1 id="聚合">聚合</h1>
-<h3 id="统计个数count">统计个数（count）</h3>
-<pre><code>match ... return count(别名)        
-</code></pre>
-<h3 id="限制取多少条-limit">限制取多少条 （limit）</h3>
-<pre><code>match ... return 别名 limit 5    # 只取5条
-</code></pre>
-<h1 id="知识图谱流程">知识图谱流程</h1>
-<ol>
-<li>数据抓取</li>
-<li>知识模型设计</li>
-<li>NER （远程监督）</li>
-<li>关系抽取（Bootstrap）</li>
-<li>知识推理</li>
-<li>图谱存储（Neo4j Cypher）</li>
-<li>检索/问答/推荐</li>
-</ol>
-<h3 id="实体抽取">实体抽取</h3>
-<p>BILSTM+CRF</p>
-<h3 id="关系抽取">关系抽取</h3>
-<p>Bootstrap方法：<br>
-1. 构建种子实体： &quot;猫&quot;， &quot;老鼠&quot;。</p>
-<pre><code>2. 寻找包含 &quot;猫&quot;  &quot;老鼠&quot; 的 句子：
-    找到句子：&quot;猫和老鼠是好朋友&quot;  
-    可抽取关系: 和...是好朋友
-
-3. 拿着抽取的关系再次寻找新句子：
-    找到新句子：&quot;张三和里李四是好朋友&quot;
-    提取出新实体: &quot;张三&quot;, &quot;李四&quot;
-    
-4. 寻找包含 &quot;张三&quot;  &quot;李四&quot; 的 句子：
-    找到句子：&quot;张三经常和李四一起玩&quot;  
-    可抽取关系:  经常和... 一起玩
-
-5. 拿着抽取的关系再次寻找新句子：
-    找到新句子：&quot;王五和赵六是好朋友&quot;
-    提取出新实体: &quot;王五&quot;, &quot;赵六&quot;
-...
-...
-循环反复</code></pre>
 ]]></content>
     </entry>
 </feed>

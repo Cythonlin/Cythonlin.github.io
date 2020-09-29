@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 
-<title>PY =&gt; 自编魔法&#34;鬼&#34;句 | Cython_lin</title>
+<title>PY =&gt; HBase | Cython_lin</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
@@ -18,9 +18,12 @@
 
 
 
-    <meta name="description" content="鬼句1：
-女朋友 = type('A',(), {'eq': lambda _,: 'True' if  _ is not __ else 'False', 'ne': lambda _,: 'True' if  _ is __ else ..." />
-    <meta name="keywords" content="Python" />
+    <meta name="description" content="报错
+若list 或其他命令 有如下错误：
+ERROR: org.apache.hadoop.hbase.PleaseHoldException: Master is initializing
+则使用如下命令：
+cd $HBASE_HOME..." />
+    <meta name="keywords" content="RS" />
   </head>
   <body>
     <div id="app" class="main">
@@ -91,31 +94,40 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">PY =&gt; 自编魔法&#34;鬼&#34;句</h2>
+            <h2 class="post-title">PY =&gt; HBase</h2>
             <div class="post-date">2020-09-29</div>
             
             <div class="post-content" v-pre>
-              <p>鬼句1：<br>
-女朋友 = type('A',(), {'<strong>eq</strong>': lambda _,<strong>: 'True' if  _ is not __ else 'False', '<strong>ne</strong>': lambda _,</strong>: 'True' if  _ is __ else 'False'})()<br>
-天使 = type('天使')</p>
-<pre><code>print(女朋友 == 女朋友)
-print(女朋友 != 女朋友)
-print(女朋友 == 天使)
-print(女朋友 != 天使)
+              <h1 id="报错">报错</h1>
+<p>若list 或其他命令 有如下错误：<br>
+ERROR: org.apache.hadoop.hbase.PleaseHoldException: Master is initializing<br>
+则使用如下命令：<br>
+cd $HBASE_HOME/bin<br>
+./hbase zkcli<br>
+ls /<br>
+rmr /hbase<br>
+ls /<br>
+退出 zookeeper cli， 删除hdfs中的 /hbase<br>
+hdfs dfs -rm -r /hbase<br>
+然后重启hbase:<br>
+cd $HBASE_HOME/bin<br>
+./stop-hbase.sh<br>
+./start-hbase.sh<br>
+若stop hbase的时候出现 ..... 停止不掉， 则：<br>
+cd $HBASE_HOME/bin<br>
+./hbase-daemons.sh stop regionserver</p>
+<pre><code># ./start-hbase.sh
+# kill -9 pid来终止hbase的进程
 </code></pre>
-<p>鬼句2：数列<br>
-import math</p>
-<pre><code>数列 = type('数列', (), {'__getitem__': lambda self,_: list(range(_[0], _[4]+1, _[1]-_[0])) if _[1]-_[0]==_[2]-_[1] else (lambda a1,e:  [a1 * e**(_) for _ in range(0,int(math.log(_[4]/a1, e))+1)])(_[0],_[1]/_[0])})()
-
-print(数列[1,3,9,...,729])
-print(数列[1,3,5,...,21])</code></pre>
+<h1 id="hbase命令">HBase命令</h1>
+<p>https://blog.csdn.net/vbirdbest/article/details/88236575</p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
-                    Python
+                  <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="tag">
+                    RS
                   </a>
                 
               </div>
@@ -123,9 +135,9 @@ print(数列[1,3,5,...,21])</code></pre>
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://cythonlin.github.io/post/py-greater-centos-tou-lan-an-zhuang-python374/">
+                <a href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/">
                   <h3 class="post-title">
-                    PY =&gt; CentOS偷懒安装Python3.7.4
+                    RS =&gt; 推荐系统（二）离线画像构建 
                   </h3>
                 </a>
               </div>
