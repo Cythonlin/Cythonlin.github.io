@@ -2,13 +2,52 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T01:14:58.719Z</updated>
+    <updated>2020-09-29T01:21:51.156Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[GO => JetBrains全家桶初始化默认配置]]></title>
+        <id>https://cythonlin.github.io/post/go-greater-jetbrains-quan-jia-tong-chu-shi-hua-mo-ren-pei-zhi/</id>
+        <link href="https://cythonlin.github.io/post/go-greater-jetbrains-quan-jia-tong-chu-shi-hua-mo-ren-pei-zhi/">
+        </link>
+        <updated>2020-09-29T00:55:32.000Z</updated>
+        <summary type="html"><![CDATA[<p>GO =&gt; JetBrains全家桶初始化默认配置<br>
+golandpycharmjetbrains<br>
+发布于 9月21日<br>
+声明<br>
+我只用过 Pycharm 和 Goland且有效。<br>
+其他像 IDEA, WS 等血缘产品应该同样有效~~~~。</p>
+<p>原因<br>
+改语法提示组合键，改崩了。</p>
+<p>恢复默认配置<br>
+File -&gt;<br>
+Manage IDE Settings -&gt;<br>
+Restore Default Settings<br>
+插曲<br>
+&quot;找配置文件,并删除&quot; if &quot;你不嫌麻烦&quot; else &quot;老老实实按照上面做&quot;</p>
+]]></summary>
+        <content type="html"><![CDATA[<p>GO =&gt; JetBrains全家桶初始化默认配置<br>
+golandpycharmjetbrains<br>
+发布于 9月21日<br>
+声明<br>
+我只用过 Pycharm 和 Goland且有效。<br>
+其他像 IDEA, WS 等血缘产品应该同样有效~~~~。</p>
+<p>原因<br>
+改语法提示组合键，改崩了。</p>
+<p>恢复默认配置<br>
+File -&gt;<br>
+Manage IDE Settings -&gt;<br>
+Restore Default Settings<br>
+插曲<br>
+&quot;找配置文件,并删除&quot; if &quot;你不嫌麻烦&quot; else &quot;老老实实按照上面做&quot;</p>
+<!-- more -->
+<p>3213</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[新文章]]></title>
         <id>https://cythonlin.github.io/post/xin-wen-zhang/</id>
