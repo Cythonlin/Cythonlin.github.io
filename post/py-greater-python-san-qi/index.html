@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python三器 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="可迭代对象、生成器、迭代器三者的关系
+1. 迭代器一定是可迭代对象
+2. 生成器是迭代器的一种
+3. 可迭代对象：必须实现 __iter__方法
+4. 迭代器：必须实现 __iter__方法  和 __next__ 方法 
+5. 生成器：必..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python三器</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="可迭代对象-生成器-迭代器三者的关系">可迭代对象、生成器、迭代器三者的关系</h3>
+<pre><code>1. 迭代器一定是可迭代对象
+2. 生成器是迭代器的一种
+3. 可迭代对象：必须实现 __iter__方法
+4. 迭代器：必须实现 __iter__方法  和 __next__ 方法 
+5. 生成器：必须实现 __iter__方法  和 __next__ 方法，yield 代替了这两个方法
+6. 工具包： from collections import Iterable,Iterator
+7. 查看抽象接口： 
+    In [265]: Iterable.__abstractmethods__
+    Out[265]: frozenset({'__iter__'})
+    In [266]: Iterator.__abstractmethods__
+    Out[266]: frozenset({'__next__'})
+8. 可迭代对象都可以被 for循环 所遍历，  另外 实现了 __getitem__的类 其对象也可for遍历
+   关于 __getitem__等魔法方法，以后会单独写一篇文章。
+</code></pre>
+<h3 id="生成器">生成器</h3>
+<pre><code>生成器有两种写法：
+    形式一：
+        In [230]: def f():
+             ...:     for x in range(10):
+             ...:         yield x
+        In [231]: y = f()
+    形式二:
+        In [239]: y = ( x for x in range(10) )
+        In [240]: y
+        Out[240]: &lt;generator object &lt;genexpr&gt; at 0x0000024A4D3AFB48&gt;
+    
+'推动生成器' 迭代有三种方式：
+    方式1：
+        In [232]: next(y)
+        Out[232]: 0
+    方式2：
+        In [233]: y.__next__()
+        Out[233]: 1
+    方式3：
+        In [236]: y.send(None)
+        Out[236]: 2
+        
+        前两种方式是等价的，第三种方式有些差别，且听我说：
+        In [248]: def f():
+             ...:     print(1)
+             ...:     a = yield 2
+             ...:     print(a) 
+        In [249]: y = f()
+        In [250]: y.send(None)
+        1      # 这里是 print(1)的结果
+        Out[250]: 2
+        In [251]: y.send(100)
+        100    # 这里是print(a)的结果
+        
+        不知道阁下能否看出和两种的差别：
+            1. yield 2  # 这行多了个赋值操作
+            2. send(100)   # send() 函数里面放了个，然后print(a) 打印的就是100
+            举个例子：
+            1. a = yield 2 # 相当于一个士兵等待指令，等号左边还未执行，程序就被封锁了
+            2. send(100)   # 长官输入了一个100，士兵收到后就把程序解封，并执行等号左边
+            3. 于是 就相当于 a 被赋值为 100
+</code></pre>
+<h3 id="迭代器">迭代器</h3>
+<pre><code>先看两个简单的函数：
+    In [294]: iter([1,2,3])
+    Out[294]: &lt;list_iterator at 0x24a4e7f5780&gt;
+    In [295]: reversed([1,2,3])
+    Out[295]: &lt;list_reverseiterator at 0x24a4d38a6a0&gt;
+
+自定义迭代器：
+    In [283]: class A(Iterator):  # 注意这里：继承了Iterator就不用实现 __iter__接口了
+     ...:     def __init__(self, value):
+     ...:         self.value = value
+     ...:         self.index = -1
+     ...:     def __next__(self): # 注意这里：__next__是写逻辑的主要接口，每次返回单个值
+     ...:         self.index += 1
+     ...:         return self.value[self.index]
+
+    
+    In [284]: a = A(['Tom', 'Jerry'])     
+    In [285]: next(a)
+    Out[285]: 'Tom'
+    In [286]: next(a)
+    Out[286]: 'Jerry'  
+    
+串联合并迭代器：
+    1. 普通序列迭代器串联
+        In [287]: from itertools import chain
+        In [289]: chain(range(1),range(2),range(3))
+        Out[289]: &lt;itertools.chain at 0x24a4d2c77f0&gt;
+        In [290]: list(chain(range(1),range(2),range(3)))
+        Out[290]: [0, 0, 1, 0, 1, 2]
+
+    2. 字典序列迭代器串联
+        In [288]: from collections import ChainMap
+        In [291]: ChainMap({1:1},{2:2,3:3})
+        Out[291]: ChainMap({1: 1}, {2: 2, 3: 3})
+        In [292]: dict(ChainMap({1:1},{2:2,3:3}))
+        Out[292]: {1: 1, 2: 2, 3: 3}
+</code></pre>
+<h3 id="装饰器">装饰器</h3>
+<pre><code>装饰器如果按钻牛角尖的方式来理解的确是很头疼的事情。先说个例子吧：
+In [296]: def f(func):
+ ...:         def f1():
+ ...:             print('原函数之前加点功能')
+ ...:             func()                    # 这就是原函数
+ ...:             print('原函数之后加点功能')
+ ...:     return f1
+
+In [299]: @f #这句等价于=&gt; func = f(func)
+ ...:     def func():
+ ...:         print('我是原函数哦')
+In [300]: func()
+    &gt;&gt;    原函数之前加点功能    
+    &gt;&gt;    我是原函数哦
+    &gt;&gt;    原函数之后加点功能
+解释
+    用大白话来讲，装饰器就是在原函数的前后加功能。也就是给原函数加个外壳。看上去是调用的原函数，
+    实则调用的是外壳函数，外壳函数里面包括原函数和 一些其他的自定义功能
+例子：
+    面包不好吃啊，但是你还想吃这个面包，咋整？ 上下抹点奶油，就变成了三明治（我没吃过。。）
+    吃其他面包的时候继续抹上奶油就行了（封装性）
+        面包-原函数
+        三明治-被装饰器装饰后的函数
+        
+    各种功能（吃法）快速拼接：
+    @奶油
+    def 面包1():
+        pass
+    @奶油
+    def 面包2():
+        pass
+    @沙拉
+    def 面包1():
+        pass
+    @沙拉
+    def 面包2():
+        pass
+  
+存在问题：
+    @f #这句等价于=&gt; func = f(func)
+    这是我上面说过的一句话，你仔细看看：
+        func之前指向的是（原函数）面包的空间，恩，func函数名 也就是(__name__) 是func（面包）
+        现在他指向的是（新函数）三明治的空间，恩，它的函数名是f1(三明治)
+        
+    函数名变了，有些张冠李戴的感觉，如果不想让它变，并保持本身的函数名，看我操作：
+    In [301]: from functools import wraps
+    In [316]: def f(func):
+     ...:         @wraps(func)   ### 没错 这里是最主要的，基本格式固定写法，照着写即可
+     ...:         def f1():
+     ...:             print(func.__name__)
+     ...:             print('原函数之前加点功能')
+     ...:             func()
+     ...:             print('原函数之后加点功能')
+     ...:         return f1
+    
+        
+    
+标准装饰器使用（原函数带有返回值 和 参数）：
+    In [323]: def f(func):
+     ...:     @wraps(func)
+     ...:     def f1(*args, **kwargs):
+     ...:         print('报年龄和性别~~~')
+     ...:         return func(*args, **kwargs)
+     ...:     return f1
+
+    In [324]: @f                    #每次都要记住 test=f(test) 这个隐含的变形，熟了就好了
+         ...: def test(name,age):
+         ...:     print(name, age)  
+         
+    In [325]: test('Tom',18)
+    -------------------------------下面是打印部分
+    报年龄和性别~~~
+    Tom 18
+
+带参数的装饰器：           
+   构造如下：
+       def foo(arg):  # 其实就是在原来的基础上再再再次包装个外壳，仅此而已
+           # 之前讲的装饰器f实现代码原封不动全放在这里面，看下面帮你写好了。
+           def f(func):
+               @wraps(func)
+               def f1(*args, **kwargs):
+                   return func(*args, **kwargs)
+               return f1    
+       return f
+       
+   调用形如：
+       @foo('123')  #多了个参数，可分解为foo的返回值f 放在 @ 的后面，是不是一切又回到了从前？
+       def func():
+           pass
+
+装饰类：
+   应用场景：
+        Python WEB框架 Flask/Django都有 FBV和CBV模式  (以后我也会写这方面的文章)
+        FBV: Function Based View 简单来说，逻辑视图用函数来写
+            ----那么需要装饰器的时候，直接用普通函数装饰器装饰到函数上即可
+        CBV: Class Based View 简单来说，逻辑视图用类来写
+            ----这种没有函数，是用类写的，那么这时候就需要对类进行装饰了
+   核心思想：
+       还是记住上面讲的隐式变形，只不过这次传给装饰器的是类，对类的操作可就太多了。
+       里面一大堆黑魔法，下面我就来写一下类初始化功能性装饰器。（以后也会单独写黑魔法的文章）
+       In [1]: def f(c):
+                   def f1(*args, **kwargs):
+                       return c(*args,**kwargs)
+                   return f1
+       In [2]: @f
+          ...: class A:
+          ...:     def __init__(self,name):
+          ...:         print(name)
+       In [3]: A('Tom')
+       Tom   # 这是print打印的输出
+       Out[3]: &lt;__main__.A at 0x2948e8fb828&gt;
+       
+类装饰器：
+    这个场景真没遇到过，不过实现也很容易的。
+    In [8]: class A:
+       ...:     def __init__(self,func):
+       ...:         self.func = func
+       ...:     def __call__(self,*args,**kwargs):
+       ...:         print('类装饰填充了啊')
+       ...:         self.func(*args, **kwargs)
+       ...:
+    
+    In [9]: @A
+       ...: def test():
+       ...:     print('我是原函数')
+       ...:
+    
+    In [10]: test()
+    类装饰填充了啊
+    我是原函数
+说明：后面关于类的装饰器如果理解困难当做了解即可，用的也少。</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-gao-jie-han-shu-cao-zuo/">
+                  <h3 class="post-title">
+                    PY =&gt; Python高阶函数操作
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

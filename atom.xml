@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-09-29T03:04:55.439Z</updated>
+    <updated>2020-09-29T03:26:53.359Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -10,118 +10,3462 @@
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
     <entry>
-        <title type="html"><![CDATA[PY => Python基本数据类型]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-python-ji-ben-shu-ju-lei-xing/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-python-ji-ben-shu-ju-lei-xing/">
+        <title type="html"><![CDATA[PY => Python版-Redis分布式锁简单实现]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-python-ban-redis-fen-bu-shi-suo-jian-dan-shi-xian/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-python-ban-redis-fen-bu-shi-suo-jian-dan-shi-xian/">
         </link>
-        <updated>2020-09-29T03:00:46.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="数据结构">数据结构</h1>
-<h3 id="可变类型与不可变类型重头戏">可变类型与不可变类型（重头戏）</h3>
-<pre><code>    基操：
-        可变类型：[], {}                # 可增删改 查
-        不可变类型: int float str ()    # 无法增删改， 只可查
+        <updated>2020-09-29T03:26:31.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="定义代码如下">定义代码如下</h2>
+<pre><code>import redis
+import contextlib
+import pickle
+import os, socket, threading
 
-    升操： + 与 += 的区别：
-        也许很多人会说 + 和 += 是完全等价的，或者知道区别，但也说不出个所以然
-        看我操作：（忽略Python小整数池的内存固定分配问题）
-            +: 
-                无论是可变类型 还是 不可变类型， 都是新指向的空间
-            +=: 
-                对于可变类型：原地操作，原指向，原空间
-                对于不可变类型：异地操作，新指向，新空间
-                
 
-        我这里故意搞你一下思绪：见过 a=+1 么，可以运行试试。
-        不要疑惑，告诉你答案：这个+1 代表 正负号的 正1。 虽然一点技术含量没有，但是你要懂
+class RedisLock:
+    def __init__(self, lock_name, host='', port=6379, db=0):
+        self.lock_name = lock_name
+        self.redis = redis.Redis(connection_pool=redis.ConnectionPool(host=host, port=port, db=db))
+
+    def acquire_lock(self, lock_id, expire=None):
+        lock_id = lock_id if lock_id else self.get_lock_id()
+        return True if self.redis.set(self.lock_name, pickle.dumps(lock_id), nx=True, ex=expire) else False
+
+        # Above 1 line code can replace with follow codes to debug
+        # if self.redis.set(self.lock_name, pickle.dumps(lock_id), nx=True, ex=expire):
+        #     print('Lock Succeed')
+        #     return True
+        # else:
+        #     print('Lock Failed')
+        #     return False
+
+    def release_lock(self, lock_id=None):
+        lock_id = lock_id if lock_id else self.get_lock_id()
+        if lock_id == pickle.loads(self.redis.get(self.lock_name)):
+            self.redis.delete(self.lock_name)
+            # print('Unlock Succeed')
+            return True
+        else:
+            # print('Unlock Failed')
+            return False
+
+    @contextlib.contextmanager
+    def lock(self, lock_id=None, expire=None):
+        if not self.acquire_lock(lock_id, expire):
+            exit(0)
+        yield self
+        self.release_lock(lock_id)
+
+    def get_lock_id(self):
+        &quot;&quot;&quot; hostname+processID+threadName&quot;&quot;&quot;
+        return f'{socket.gethostname()}{os.getpid()}{threading.current_thread().name}'
 </code></pre>
-<h3 id="序列">序列</h3>
-<pre><code>    也许叫可迭代对象更为合适，但是我喜欢叫序列。
-    我认知的序列包括 [], {}, ()   # 请记住这个序列，数据处理最为重要
-    此外说明一下：
-        1. 我的代码大多都是Ipython运行完贴上去的， 所以你看见的out格式就代表print了，要懂~
-        2. 所写的大多都是实际经验中常用的 或者 冷门但是好用的
-        3. 列出的函数API有的嫌弃麻烦没有写参数，你要懂，（我这里没有顾及0入门的小白，谅解）
+<h2 id="调用代码如下">调用代码如下</h2>
+<pre><code>redis_lock = RedisLock('lockname', host='Your IP') # 第一个匿名参数必传，作为 redis的key
+with redis_lock.lock() as lock:
+    print('You Can Do Something Here')
 </code></pre>
-<h3 id="元祖">元祖</h3>
-<pre><code>    基操：
-        元祖属于不可变类型，不能增删改，所以函数少的可怜
-        我用help查了一下，只有下面这2个函数。。。。。。
-        a = (1,2,3)
-        count() # 统计元素个数
-        index() # 查找元素，并返回位置
-    升操：
-        a = (1)  # 哥们注意，这不是元祖，这是 整形1 .....
-        a = (1,) # 这才是元祖，单元素元祖需要加逗号，记住即可，不必纠结      
+<h2 id="注意说明">注意说明</h2>
+<pre><code>1. 注释部分是我写的时候，调试用的代码，最后写完的时候都替换为简洁的语法.
+
+2. 因为锁具有互斥特性， 所以选择 set() 的 nx 参数来实现，
+    nx参数：我个人一直这样记（读作 not exist）  ====&gt; 不存在
+    理解：
+        不存在则添加，存在就不添加了。
+        举一反三，没有锁就加个锁。有锁就不加锁了。
+
+3. set方法 的 ex 参数， 可代替expire方法的来设置过期时间
+
+4. redis 有 很多指令变形。 比如 set(nx=, ex=)  可拆分为 setnx setex
+   但 &quot;set() 这种指令更优&quot;， 能用就尽量用， 理由如下：
+       &quot;set指令 好处是 set具有原子性&quot;, 避免了解决资源竞争的同时引发自身可能出现的资源竞争
+   
+5. 我使用装饰器版 的 上下文管理器，对代码做了封装， 所以调用时，用&quot;with语句&quot;即可
+
+6. with redis_lock.lock() as lock ，&quot;lock() 这里可以自己指定2个参数&quot;：
+    lock_id=None   # 这是区分不同线程的唯一标识符，默认为（主机名+进程ID+线程名），可自传
+    expire=None    # 过期时间，秒为单位
+
+7. 需要注意一个点，与redis通信是以二进制形式。 所以我在代码内部对 lock_id 做了&quot;pickle序列化&quot;
+   当然如果是字符串用 encode() 与 decode() 来实现也是可以的。
 </code></pre>
-<h3 id="常用字符串操作">常用字符串操作:</h3>
-<pre><code>    基操：
-        a = ' 你2好 '
-        a.find('你')  # 搜索目标字符串，找到 则 返回索引，找不到 则 返回-1 （推荐使用）
-        a.split(2)    # 注意：不给参数，默认按所有 空白符 切割
-        a.strip()  
-    升操： 
-        1. string库的灵活使用
-            In [1]: import string
-            In [2]: string.digits
-            Out[2]: '0123456789'
+<h4 id=""></h4>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Python版-Docker使用Appium简单实验]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-python-ban-docker-shi-yong-appium-jian-dan-shi-yan/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-python-ban-docker-shi-yong-appium-jian-dan-shi-yan/">
+        </link>
+        <updated>2020-09-29T03:25:35.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="docker-appium安装">Docker-Appium安装</h2>
+<h4 id="github-docker-appium地址-httpsgithubcomappiumappium-docker-android">Github docker-appium地址  ： https://github.com/appium/appium-docker-android</h4>
+<h4 id="创建临时容器用于简单命令测试">创建临时容器（用于简单命令测试）</h4>
+<pre><code>docker run --privileged -d -p 4723:4723 -v ~/.android:/root/.android -v /dev/bus/usb:/dev/bus/usb --name container-appium appium/appium
+</code></pre>
+<h2 id="若使用模拟器等非usb连接">若使用模拟器等（非USB连接）</h2>
+<h4 id="模拟器的adb将usb模式转为tcp连接方式">模拟器的adb将USB模式转为TCP连接方式：</h4>
+<pre><code>adb -s 127.0.0.1:62001 tcpip 1119
+</code></pre>
+<h4 id="远程docker连接此模拟器">远程Docker连接此模拟器：</h4>
+<pre><code>docker exec -it container-appium adb connect 192.168.0.103:1119
+</code></pre>
+<h4 id="查看虚拟设备是否连接成功">查看虚拟设备是否连接成功</h4>
+<pre><code>docker exec -it container-appium adb devices
+</code></pre>
+<h2 id="若使用真机usb连接可直接使用如下配置">若使用真机（USB连接）可直接使用如下配置</h2>
+<h2 id="dockerfile内容如下">Dockerfile内容如下</h2>
+<pre><code>FROM python
+RUN pip install -i http://pypi.douban.com/simple \
+    requests  retrying  appium-python-client --trusted-host pypi.douban.com
+</code></pre>
+<h2 id="docker-composeyaml内容如下">docker-compose.yaml内容如下</h2>
+<pre><code>version: &quot;3.7&quot;
+services:
+  myspider:
+    build: .
+    volumes:
+      - /root/mycode:/root/mycode
+    command: python /root/mycode/1.py
+    depends_on:
+      - appium
+  appium:
+    image: appium/appium # 拉取镜像完成自动化全套配置
+    ports:
+      - &quot;4723:4723&quot;
+    privileged: true
+    hostname: appium
+#    command: adb connect 192.168.0.103:1119
+#    command:
+#      - /bin/sh
+#      - -c
+#      - |
+#        adb connect 192.168.0.103:1119
+#        adb devices
+#    entrypoint: adb connect 192.168.0.103:1119
+    volumes:
+      - ~/.android:/root/.android
+      - /dev/bus/usb:/dev/bus/usb
+</code></pre>
+<h3 id="爬虫脚本代码1py如下">爬虫脚本代码1.py如下</h3>
+<pre><code>from appium import webdriver
+from retrying import retry
+import requests
+import time
+
+config = {}
+config['platformName'] ='Android'
+config['platformVersion'] = '7.1.1'
+config['deviceName'] = '坚果 Pro 2'
+config['noReset'] = True
+config['appPackage'] = 'org.mozilla.firefox'
+config['appActivity'] = 'org.mozilla.gecko.BrowserApp'
+################### 查看 appPackage 和 appActivity #################
+## 注意：
+##     这两个值是针对某一软件的配置，你需要在手机上打开你这个软件，然后再执行此命令：
+##     我此例就是用的 手机里面的火狐浏览器。
+##     那么我首先需要，将火狐打开。
+##     然后再执行如下命令才能查到想对应的配置。
+##     否则，查的是你手机运行状态的主界面应用程序的配置信息
+## 命令如下：
+##     docker exec -it container-appium adb shell    # 进入 adb shell
+##     dumpsys activity | grep mFocusedActivity       
+##         返回结果  / 前面的是  appPackage  的值
+##         返回结果  / 后面的是  appActivity 的值
+
+@retry(
+    stop_max_attempt_number = 1000000,
+    stop_max_delay = 10*1000,
+)
+def verify_request():
+    response = requests.get(&quot;http://appium:4723/wd/hub&quot;,timeout=0.5)
+    print(response)
+verify_request()
+
+with webdriver.Remote(
+    command_executor='http://appium:4723/wd/hub',
+    desired_capabilities=config
+) as driver:
+    driver.get('https://tieba.baidu.com/index.html')
+    time.sleep(5)
+
+    with open('/root/mycode/test.html', 'w') as f:
+        f.write(driver.page_source)
+        print('写入成功')
+    time.sleep(3)
+</code></pre>
+<h2 id="前情链接">前情链接</h2>
+<h4 id="pycharm-与-docker-相关操作httpssegmentfaultcoma1190000020050218">Pycharm 与 Docker 相关操作：https://segmentfault.com/a/1190000020050218</h4>
+<h4 id="docker-中-selenium的使用-httpssegmentfaultcoma1190000020067591">Docker 中 Selenium的使用： https://segmentfault.com/a/1190000020067591</h4>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Pycharm连接Docker及代码自动上传与运行]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/">
+        </link>
+        <updated>2020-09-29T03:24:14.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="一-pycharm创建docker客户端">一、Pycharm创建Docker客户端</h1>
+<figure data-type="image" tabindex="1"><img src="/img/bVbwhXy" alt="clipboard.png" loading="lazy"></figure>
+<h1 id="二-修改docker客户端配置">二、修改Docker客户端配置</h1>
+<h4 id="在pycharm底部点这个打开配置">在pycharm底部点这个打开配置</h4>
+<figure data-type="image" tabindex="2"><img src="/img/bVbwhXP" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="填写docker服务端的ip地址及端口tcp-不能少">填写Docker服务端，的IP地址及端口（tcp:// 不能少）</h4>
+<figure data-type="image" tabindex="3"><img src="/img/bVbwh9e" alt="clipboard.png" loading="lazy"></figure>
+<pre><code>上面这个配置完后，下面会出现 connected successfully，说明配置成功。
+如果配置失败，有几种情况：
+    一、 你当前主机环境 无法 ping 通 Docker所在服务器（云服务器、防火墙、的端口没放通）
+    二、 Docker未做 IP配置
+        如何配置参考下面链接的解决方案即可配置成功。
+        https://segmentfault.com/q/1010000020042977
+        配置完成后，记得重启 Docker服务
+</code></pre>
+<h1 id="三-pycharm-sftp向docker所在主机上传代码">三、Pycharm sftp向Docker所在主机上传代码</h1>
+<figure data-type="image" tabindex="4"><img src="/img/bVbwhZa" alt="clipboard.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="/img/bVbwhZG" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="连接测试成功后-不要点ok-选最上面的-mappings项继续配置">连接测试成功后， 不要点OK， 选最上面的 Mappings项,继续配置</h4>
+<figure data-type="image" tabindex="6"><img src="/img/bVbwhZ4" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="上面配置完后点ok然后开始上传">上面配置完后，点OK，然后开始上传</h4>
+<figure data-type="image" tabindex="7"><img src="/img/bVbwh9K" alt="clipboard.png" loading="lazy"></figure>
+<h1 id="四-创建docker里的python解释器">四、创建Docker里的Python解释器</h1>
+<h4 id="ctrlalts打开配置-然后按下图操作添加解释器">ctrl+alt+s打开配置， 然后按下图操作添加解释器</h4>
+<figure data-type="image" tabindex="8"><img src="/img/bVbwh1j" alt="clipboard.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="/img/bVbwh13" alt="clipboard.png" loading="lazy"></figure>
+<h1 id="五-给脚本指定解释器-及-相关配置">五、给脚本指定解释器 及 相关配置</h1>
+<figure data-type="image" tabindex="10"><img src="/img/bVbwh17" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="下面其他都是默认配好的-主要配置下面红框部分的-2-处内容">下面其他都是默认配好的， 主要配置下面红框部分的 2 处内容</h4>
+<figure data-type="image" tabindex="11"><img src="/img/bVbwh3d" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="切记-上面的第一个红框-path-mappings项-必须配不然就会出现下图的错误">切记： 上面的第一个红框： Path mappings项 必须配，不然就会出现下图的错误</h4>
+<p><img src="/img/bVbwhLU" alt="clipboard.png" loading="lazy"><br>
+这个错误，stack, github都没找到解决办法。 （明明已经是绝对路径了，还是让你提供绝对路径）<br>
+后来无奈之下，随手把 Path mappings 这项映射配了。  居然就成功了。。。。。！！</p>
+<h1 id="六-最后直接执行本地python文件即可">六、最后直接执行本地python文件即可</h1>
+<h4 id="就是我们平时在pycharm正常写代码的执行操作">就是我们平时在pycharm正常写代码的执行操作。。。</h4>
+<h1 id="总结-解惑">总结 + 解惑</h1>
+<h4 id="总结">总结</h4>
+<ol>
+<li>我们创建了Docker客户端,并修改了相关配置</li>
+<li>sftp上传代码（我们映射部分，填的是路径， 它会自动把该路径下的文件上传到云服务器）</li>
+<li>创建python解释器，并做出详细配置（各种映射）</li>
+</ol>
+<h4 id="疑惑解析">疑惑解析：</h4>
+<ol>
+<li>为啥修改代码保存一次，远程服务器也会同步自动修改？？？？？？？？？<br>
+因为我们在sftp的时候，mapppings选项中 配置了客户端和云服务器的代码目录 映射。<br>
+并且，我们在第一次同步代码的时候勾选了，自动同步选项 （Automatic upload）</li>
+<li>为啥可以操作远程的Docker里面的python解释器？？？？？？<br>
+首先我们创建了 docker 的客户端。并做出了 连接远程服务器的配置。<br>
+基于上述条件，我们在建解释器时做了如下操作:
+<ol>
+<li>选定云服务器的Docker,</li>
+<li>选定Docker中的镜像</li>
+<li>选定Docker中的镜像中的python解释器</li>
+</ol>
+</li>
+<li>python镜像是Docker（内部），为什么我们可以直接访问云服务器（外部）来达到需求 ？？？？？？<br>
+因为我们在配置解释器的时候， 配置了数据卷映射（第 五 章截图内Docker Container settings项）<br>
+当然这属于Docker数据卷（volume）知识点范畴。<br>
+Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#articleHeader37</li>
+</ol>
+<h1 id="end">END</h1>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Docker语法全面回忆]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-docker-yu-fa-quan-mian-hui-yi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-docker-yu-fa-quan-mian-hui-yi/">
+        </link>
+        <updated>2020-09-29T03:23:45.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="hello-docker">Hello Docker</h1>
+<pre><code>官方安装教程：https://docs.docker.com/install/linux/docker-ce/ubuntu/
+进去选好对应系统/发行版， 照着命令复制-粘贴-运行。  就可以安装成功（根本不需要多余操作）
+</code></pre>
+<h1 id="image镜像">Image（镜像）</h1>
+<ul>
+<li>
+<h3 id="docker-search">docker search</h3>
+<pre><code> docker search python    # 列出dockerhub 提供的 image
+</code></pre>
+</li>
+<li>
+<h3 id="docker-pull下载">docker pull（下载）</h3>
+<pre><code> docker pull python:3.7  # 从 dockerhub下载 image    冒号:数字  用来指定版本（不指定就是最新版本）   
+</code></pre>
+</li>
+<li>
+<h3 id="docker-images列出">docker images（列出）</h3>
+<pre><code> docker images           # 列出本地镜像 （或 docker image ls）
+ docker images py*       # 也可以通过名称来筛选查看 image， 也可使用通配符
+</code></pre>
+</li>
+<li>
+<h3 id="docker-rmi删除">docker rmi（删除）</h3>
+<pre><code> docker rmi &quot;image名&quot; 或 &quot;imageID&quot;    # 删除 image
+ docker rmi python -f                # 强制删除（当image内有容器运行无法删除时，可通过-f强制删除）
+     如果两个image有相同 &quot;imageID&quot;，会删除失败， 这时可以考虑用 &quot;image名&quot; 来删除
+     如果两个image有相同的 &quot;image名&quot;， 那么可以考虑用  &quot;image名:Tag&quot;  来删除
+</code></pre>
+</li>
+<li>
+<h3 id="docker-save保存备份">docker save（保存备份）</h3>
+<pre><code> 方式1：docker save python &gt; python.tar        # 可追加多个image来 把多个image打包保存  
+ 方式2: docker save python -o python.tar
+ python.tar文件 可分享传输，给别人还原加载使用
+ 注： 上令为例，如果有多个python版本， 那么会将所有python images 都会打包在一起保存
+      如果你有多个镜像， 为了避免混淆，一定要指定一下版本号  docker save python:latest  
+</code></pre>
+</li>
+<li>
+<h3 id="docker-load还原">docker load（还原）</h3>
+<pre><code> 方式1： docker load -i python.tar
+ 方式2： docker load &lt; python.tar
+</code></pre>
+</li>
+<li>
+<h3 id="docker-tag改名改版本号">docker tag（改名，改版本号）</h3>
+<pre><code> docker tag python:latest py:3.7        #  把 &quot;python:latest&quot;  改为  &quot;py:3.7 &quot;
+ 注1： 若image名不为&lt;none&gt;, 那么首先会将 image 复制创建一份，然后改名
+ 注2： 若原image名为 &lt;none&gt; ，那么 改名后，会直接在原有image上直接改名
+</code></pre>
+</li>
+<li>
+<h3 id="docker-inspect查看详细信息">docker inspect（查看详细信息）</h3>
+<pre><code> docker inspect python
+</code></pre>
+</li>
+<li>
+<h3 id="docker-history查看分层历史信息">docker history（查看分层历史信息）</h3>
+<pre><code> docker history mypython:3.7
+</code></pre>
+</li>
+</ul>
+<h1 id="container容器">Container（容器）</h1>
+<ul>
+<li>
+<h3 id="docker-create创建">docker create（创建）</h3>
+<pre><code> docker create --name py-con python:latest    #  --name后自定义名字，  最后指定哪一个镜像
+ docker create -it python:latest  python       #  创建带有标准输入环境的容器，并执行python命令
+     -t 为了给容器创建一个 terminal
+     -i 为了给容器提供一个 标准输入流 （否则，容器终端里无法输入）
+ 注：创建默认是 created状态， 需要下面 docker start 命令来启动     
+</code></pre>
+</li>
+<li>
+<h3 id="docker-start开启">docker start（开启）</h3>
+<pre><code> docker start -ai 容器ID        # 以标标准环境开启容器
+     -a 代表提供标准输出
+     -i 同create -i ，提供标准输入
+</code></pre>
+</li>
+<li>
+<h3 id="docker-run创建启动-推荐">docker run（创建+启动, 推荐）</h3>
+<pre><code> docker run -it python:latest python      # 一套搞定  create+start 的繁杂过程， -it同上不解释
+     # 命令防混淆解释： 根据python:latest镜像 ，创建并执行容器，同时执行 python命令
+ docker run  -d -it python:latest python
+     # 其他不变，多加一个 -d， 可以创建并放入 &quot;后台&quot; 执行 （不加-d , 默认&quot;前台&quot;）
+ docker run -dit --rm python:latest python
+     # --rm 参数代表 容器停止，即（exited状态），  就会自动删除。 
+ docker run --network bridge -itd mypython:latest python
+     # --network 代表指定网络（若不指定，默认也是bridge，见下面 网络章节）
+ docker run -dit -p 6006:6379 redis
+     # 端口映射， 宿主机（6006）：容器(6379)        (-P代表容器内部所有端口 与宿主机随即映射)
+ docker run --restart always
+     # --restart always 代表 docker服务重启时， 里面的容器也会跟着重启
+</code></pre>
+</li>
+<li>
+<h3 id="docker-stop终止结束">docker stop（终止，结束）</h3>
+<pre><code> docker ps             # 查看一下   &quot;运行中容器ID&quot;
+ docker stop 容器ID    # 停止 &quot;运行中&quot; 的容器  ( 默认 10秒钟后 才停止)
+ docker stop -t 0 374  # -t指定时间 0秒后， 即瞬间就可以停止
+ 扩展（停止所有正在运行的容器）：
+     docker stop $(docker ps -q)    # -q参数代表只显示容器ID
+</code></pre>
+</li>
+<li>
+<h3 id="docker-restart重启">docker restart（重启）</h3>
+<pre><code> docker restart -t 0  281    # 0秒重启
+</code></pre>
+</li>
+<li>
+<h3 id="docker-pause暂停">docker pause（暂停）</h3>
+<pre><code> docker pause 281    # 暂停容器内的所有进程， 注意是暂停， 不是终止
+</code></pre>
+</li>
+<li>
+<h3 id="docker-unpause继续">docker unpause（继续）</h3>
+<pre><code> docker unpause 281    # 把暂停的容器，继续开启
+</code></pre>
+</li>
+<li>
+<h3 id="docker-ps查看">docker ps（查看）</h3>
+<pre><code> docker ps         # 列出所有 &quot;运行中&quot; 的容器
+ docker ps -a      # 列出所有 容器
+</code></pre>
+</li>
+<li>
+<h3 id="docker-logs查看输出日志">docker logs（查看输出日志）</h3>
+<pre><code> docker logs 281   # 查看容器内部输出日志
+ docker logs -f 281   # -f 代表阻塞监控，   (和 tail -f 一个道理)
+</code></pre>
+</li>
+<li>
+<h3 id="docker-rename重命名">docker rename（重命名）</h3>
+<pre><code> docker rename 281 python    # 把 281的容器  改名为  python
+</code></pre>
+</li>
+<li>
+<h3 id="docker-inspect查看容器详细信息">docker inspect（查看容器详细信息）</h3>
+<pre><code> docker inspect 374    # 查看容器所有信息
+</code></pre>
+</li>
+<li>
+<h3 id="docker-rm删除">docker rm（删除）</h3>
+<pre><code> docker rm 容器ID        # 删除已停止的容器
+ docker rm 容器ID -f     # 强制删除（运行中）等特殊情况的容器
+</code></pre>
+</li>
+<li>
+<h3 id="docker-attach进入到容器命令执行处">docker attach（进入到容器命令执行处）</h3>
+<pre><code> docker run -itd python:latest python    # 新创建容器，名执行 python命令
+ docker attach 281     # 直接进入281这个容器，并直接跳到 python控制台内部 
+ &quot;注： 进入python控制台后，再退出去，就意味着， 容器的退出。&quot;
+</code></pre>
+</li>
+<li>
+<h3 id="docker-exec执行命令">docker exec（执行命令）</h3>
+<pre><code> docker exec -it 281 python    # 在&quot;容器外部&quot;, 执行&quot;内部容器&quot;的 python命令
+ &quot;注： 与上一条attach不同的是，退出python控制台后，容器依旧运行！（因为是在容器外面执行的python命令）&quot;
+</code></pre>
+</li>
+</ul>
+<h1 id="container-and-images容器与镜像关联">Container and Images（容器与镜像关联）</h1>
+<ul>
+<li>
+<h3 id="docker-commit-把容器封装成一个新镜像">docker commit (把容器&quot;封装&quot;成一个新镜像)</h3>
+<pre><code> docker commit 4d mypython:3.7   # 把4d这个容器所有内容,封装为一个&quot;名字:版本&quot;叫&quot;mypython:3.7&quot;的镜像
+</code></pre>
+</li>
+<li>
+<h3 id="docker-export-容器导出为一个文件">docker export (容器导出为一个文件)</h3>
+<pre><code> docker export fc8 -o mypython.tar  # 把此容器导出为一个.tar文件 ，和前面说过的 image的 save类似
+</code></pre>
+</li>
+<li>
+<h3 id="docker-import-把export导出的文件导出并生成一个镜像">docker import (把export导出的文件导出，并&quot;生成&quot;一个镜像）</h3>
+<pre><code> docker import mypython.tar mypython:latest
+     注： 把export导出的 mypython.tar文件导入 并 直接创建一个  mypython:latest 的 镜像
+</code></pre>
+</li>
+<li>
+<h3 id="docker-commit-docker-import区别">docker commit &amp; docker import区别</h3>
+<pre><code> 前面说过：
+     docker commit 是 直接把一个container 封装为一个image
+     docker import 是 把export导出的container.tar文件 再 导入进来，并重新生成一个 新 image
+ docker commit 是继承封装的，并创建具有分层历史记录 （docker history imageID 即可查看） 
+ docker import 是直接生成的，不具有分层记录     （docker history imageID 即可查看） 
+</code></pre>
+</li>
+</ul>
+<h1 id="网络">网络</h1>
+<ul>
+<li>
+<h3 id="docker-network-ls-查看">docker network ls （查看）</h3>
+<pre><code> docker network ls
+     bridge（网桥）：容器默认网络模式
+         容器-容器网络连接：
+             container1(etho0)--veth1--Docker(bridge)--veth2--container2(etho0)
+         容器-宿主机网络连接：
+             container1(etho0)--veth1--Docker(bridge)--宿主机(etho0)
+             注： veth是创建网络时，自动创建的，不需要手动管理
+             
+     host（主机）：  容器网络和主机使用同一个网络
+         容器-容器网络连接：
+             container1(etho0)--宿主机--container2(etho0)
+         容器-宿主机网络连接：    
+             container1(etho0)--宿主机
+         容器网络（特殊host）：    
+             container1--container2    # 就是 ‘每个容器互相把对方认作为 宿主机’ 这个意思
+             使用方法：
+                 docker run -it --network container:24f1 mypython:latest ls
+                 # container:24f1   的container是语法关键词   24f1是连接的对方容器（）
+                                         
+     null（无网络）：所有容器无网络
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-create-创建">docker network create （创建）</h3>
+<pre><code> docker network create -d bridge mybridge    # 可创建多个bridge
+ docker network create -d host myhost        # 只可创建一个host（默认就有一个，故无法创建）
+ docker network create -d null mynull        # 只可创建一个null（默认就有一个，故无法创建） 
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-rm-删除">docker network rm （删除）</h3>
+<pre><code> docker network rm ab5
+ 注：默认自带的网络不可以删除（null host 和 自带的一个 bridge）
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-connect-给容器绑定网络">docker network connect (给容器绑定网络)</h3>
+<pre><code> docker network connect mybridge 4c4  # 给4c4这个容器绑定一个  mybridge网络（自定义的bridge）
+ docker inspect 4c4    # 查看一下容器信息，最下面就是网络
+ 注：一个container 可以绑定 多个bridge 网络， 
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-disconnect-给容器-解除绑定的网络">docker network disconnect (给容器 解除绑定的网络)</h3>
+<pre><code> docker network disconnect mybridge 4c4    # 给容器解除绑定网络mybridge
+ 注： 一个container 中 bridge 和 none 网络不可以共存， （若冲突，则先disconnect再connect）
+ 注2：host 网络不能 connect 和 disconnect
+</code></pre>
+</li>
+</ul>
+<h1 id="数据卷-volume">数据卷 (volume)</h1>
+<ul>
+<li>
+<h3 id="docker-volume-create创建数据卷">docker volume create（创建数据卷）</h3>
+<pre><code> docker volume create myvolume
+ 注： myvolume为数据卷名
+</code></pre>
+</li>
+<li>
+<h3 id="docker-volume-ls列出数据卷">docker volume ls（列出数据卷）</h3>
+<pre><code> docker volume ls
+ 注： 若数据卷未指定名字，当 使用docker run -v 方式时，则会新建数据卷ID，并以此ID命名。
+</code></pre>
+</li>
+<li>
+<h3 id="docker-volume-prune删除未被容器使用的-所有-数据卷">docker volume prune（删除未被容器使用的 所有 数据卷）</h3>
+<pre><code> docker volume prune
+ 注：容器占用的数据卷，删不了
+</code></pre>
+</li>
+<li>
+<h3 id="docker-volume-rm-删除-一个-或-多个-指定数据卷">docker volume rm （删除 一个 或 多个 指定数据卷）</h3>
+<pre><code> docker volume rm myvolume
+ 注： 删除 myvolume这个数据卷，当然也可以连续参数，追加删除多个数据卷
+</code></pre>
+</li>
+<li>
+<h3 id="挂载数据卷">挂载数据卷</h3>
+<pre><code> &quot;&quot;&quot;意义： 可以让 宿主机 与 容器 数据联通共享&quot;&quot;&quot;
+ 方式1 （-v参数）
+     -v使用方式1：（指定路径映射挂载）
+         docker run -itd -v /root:/root mypython:latest python  # -v  宿主机路径:容器路径
+         测试：
+             cd /root
+             touch aaa.txt                  # 宿主机创建文件 aaa.txt
+             docker exec -it cfb ls /root   # 结果可看见容器里面也有 aaa.txt 文件
+             
+     -v使用方式2：（指定数据卷对象 映射挂载）
+         docker run -itd -v myvolume:/root mypython:latest python    # 冒号前面 变成了myvolume
+         注1： 这个myvolume就是一个数据卷对象， 执行上面这条命令，就会为我们自动创建这个数据卷对象
+         注2： 由于没有宿主映射路径，那么映射的宿主路径 是什么呢？？
+             docker volume inspect myvolume  # 结果Mountpoint后面的就是，宿主机映射的 默认钩子路径
+             cd /var/lib/docker/volumes/myvolume11/_data    # 此路径和volume名有关
+             touch bbb.txt                   # 宿主机创建文件 bbb.txt
+             docker exec -it 916 ls /root    # 打印结果可见，容器内部也有bbb.txt，说明成功共享。
+         
+ 方式2：（--mount参数，同样包括 -v的两种使用方式， 另外还新增另一种 文件&quot;缓存&quot;挂载方式） 
+     docker run -itd --mount type=volume,src=myvolume11,dst=/root mypython:latest python
+     注：
+         type: 指定类型（路径映射: bind）或 (数据卷对象映射: volume) 或（内存映射：tmpfs）
+         src: 对应上面方式1（宿主机路径）  或 对应上面方式2（数据卷名） 或 省略此项（对应新增）
+         dst: 容器路径
+         逗号分隔，其他没变
+     docker run -itd --mount type=tmpfs,dst=/root mypython:latest python  (tmpfs&quot;缓存&quot;挂载)
+     
+ &quot;综上,可总结为3种挂载选择用途&quot;：
+     一. &quot;宿主路径 与 容器路径&quot;  映射挂载
+     二. &quot;数据卷   与 容器路径&quot;  映射挂载
+     三. &quot;宿主内存 与 容器路径&quot;  映射挂载
+     
+ &quot;综上,可总结为2种挂载参数使用&quot;：
+     一、 &quot;-v 参数&quot;        2种用途 (路径映射 和 数据卷对象映射)
+     二、 &quot;--mount 参数&quot;   3种用途 (路径映射 和 数据卷对象映射 和 内存映射)
+</code></pre>
+</li>
+<li>
+<h3 id="容器之间共享数据">容器之间共享数据</h3>
+<pre><code> &quot;&quot;&quot;借助已经拥有数据卷的容器   来 创建一个新容器&quot;&quot;&quot;
+ docker run -itd --volumes-from 6252 python:latest     # 借助6252容器创建新容器，来共享数据卷
+ 验证：
+      docker exec -it 97db touch /root/abc    # 新容器 创建一个文件abc
+      docker exec -it 6252 ls /root           # 旧容器查看 ，也有新文件abc，共享成功
+</code></pre>
+</li>
+<li>
+<h3 id="细节注意事项">细节注意事项</h3>
+<pre><code> 一、若将 &quot;空数据卷&quot;   挂载到 容器非空目录中，则&quot;此容器目录下的内容 会copy一份到 数据卷中&quot;
+ 二、若将 &quot;非空数据卷&quot; 挂载到 容器任意目录中，则&quot;数据卷的数据 会copy到这个目录中，并将此目录原数据隐藏&quot; 
+ 更通俗一点理解就是：
+     数据卷大哥说：&quot;如果我这里有数据， 你的容器来挂载，你的数据就会被我这里面的数据覆盖。。&quot;
+     数据卷大哥又说：&quot;如果我这里是空的（没有数据），那么 你的容器来挂载， 你的数据就要提供一份给我&quot;
+</code></pre>
+</li>
+</ul>
+<h1 id="dockerhub仓库">DockerHub（仓库）</h1>
+<ul>
+<li>
+<h2 id="无认证-私有仓库">无认证 私有仓库</h2>
+</li>
+<li>
+<h3 id="搭建仓库">搭建仓库</h3>
+<pre><code> docker pull registry    # 拉取 registry镜像
+ docker run -itd \
+     --restart always \                    # docker重启时，此容器也跟着重启
+     --name myregistry \                   # 指定容器名
+     -p 6006:5000 \                        # 端口映射 （registry服务默认为5000端口，映射为6006）
+     -v /root:/var/lib/registry \          # 绑定数据卷 （持久化存储）， 冒号后面的容器路径时默认的
+     registry                              # 拉取的 registry镜像
+ 验证：（一种web服务，所以通过固定Url访问即可）
+     外部浏览器验证： 浏览器输入    服务器外网IP:6006/v2/_catalog  即可  
+     服务器内部验证： curl 127.0.0.1:6006/v2/_catalog
+</code></pre>
+</li>
+<li>
+<h3 id="上传镜像">上传镜像</h3>
+<pre><code> 一、先把要上传的镜像改名
+     docker tag   mypython:latest    127.0.0.1:6006/mython_hub
+     注： 目标名固定格式（需注意，必须此格式）：   IP:Port/新镜像名
+ 二、开始上传
+     docker push 127.0.0.1:6006/mython_hub    # docker push 镜像名，注意这里用ID不好使，必须用这名
+ 三、验证
+     同上面搭建仓库时的验证方法， 可看见结果 repositories列表中多了一个 刚刚上传的镜像
+     curl 127.0.0.1:6006/v2/_catalog
+</code></pre>
+</li>
+<li>
+<h3 id="下载镜像">下载镜像</h3>
+<pre><code> docker pull  127.0.0.1:6006/mython_hub
+ 注： 这个名就是上传时候的 那个名， 一样的
+</code></pre>
+</li>
+</ul>
+<h1 id="dockerfile配置文件式">Dockerfile（配置文件式）</h1>
+<ul>
+<li>
+<h2 id="dockerfile认知">Dockerfile认知</h2>
+<pre><code> Docker 与 docker命令的关系就相当于  shell编程 与 单条命令
+ 主要就是把上面讲的所有命令连起来，脚本式执行，  当然dockerfile也有自己的语法关键词。
+ Dockerfile是基于缓存，所以里面的文件内容(某条命令) &quot;如果未发生改变，则不会重新执行（用的是缓存）&quot;
+ 
+ Dockerfile机制：
+     一、若在结尾每&quot;追加&quot;一条新命令,重新构建Dockerfile时，&quot;只会执行这个新命令，其他旧命令都会使用缓存&quot;
+     二、若新命令 是在&quot;中间插入编写的&quot;，则此条新命令&quot;之前的命令用缓存&quot;, &quot;之后&quot;的命令都会重新执行一遍，
+     三、FROM 关键字是 Dockerfile的入口。
+         新命令只要不是 写在 &quot;FROM的下一条&quot;, 那么所有新命令及其之后的命令都会在 构建Dockerfile时--&gt;
+         触发&quot;层层封装&quot;机制  ，即每条&quot;非缓存命令&quot;运行一遍，都会commit封装一层镜像    
+</code></pre>
+</li>
+<li>
+<h2 id="dockerfile构建">Dockerfile构建</h2>
+<pre><code> docker build /Dockerfile所在路径 -t mypython:v2
+ 注1： 指定Dockerfile所在路径即可，build会自动帮我们找到dockerfile文件
+ 注2： 如果Dockerfile就在当前路径下，那么可以用 . 来替代绝对路径
+ 注3： -t 给镜像指定名字   
+</code></pre>
+</li>
+<li>
+<h2 id="dockerfile语法">Dockerfile语法</h2>
+</li>
+<li>
+<h3 id="from">FROM</h3>
+<pre><code> &quot;下载镜像,类似 docker pull&quot;
+ FROM python:latest    # 同样可以指定版本号
+</code></pre>
+</li>
+<li>
+<h3 id="run-cmd-entrypoint">RUN | CMD | ENTRYPOINT</h3>
+<pre><code> 这三个 命令 都有共同的 2种书写方式：
+     一、（exec）格式--当前进程执行
+         eg:  python -V        # 就是玩linux的命令正常写
+     二、（shell） 格式--子进程执行
+         eg:  [&quot;python&quot;, &quot;-V&quot;]    # 命令与作为字符串列表来书写， 和py的scrapy的shell类似
+         
+ RUN: 
+     &quot;构建镜像过程中&quot;执行的命令， 比如安装东西之类的。。（可写多个）
+ CMD:
+     启动容器时 执行的命令， 就和 之前说过的 docker run 跟的命令是一样的
+     &quot;但是 docker run 要是指定了一个命令，那么  这个CMD配置就会失效&quot;
+ ENRTYPOINT:
+     和CMD类似， 不过 在docker run 指定新命令是，  ENTRYPOINT的命令是不会被覆盖的。都会执行
+</code></pre>
+</li>
+<li>
+<h3 id="add-copy">ADD | COPY</h3>
+<pre><code> &quot;&quot;&quot;将宿主机文件 拷贝 到镜像的某个目录中&quot;&quot;&quot;
+ COPY aaa.txt /root    # 将aaa.txt  拷贝到  镜像的/root目录中
+ ADD aaa.txt /root     # 和COPY一样，不过 ADD可以将压缩文件拷贝进去后，&quot;自动解压&quot;
+</code></pre>
+</li>
+<li>
+<h3 id="env">ENV</h3>
+<pre><code> &quot;&quot;&quot;就相当于编程语言的 变量赋值&quot;&quot;&quot;
+ ENV name=python       
+ ENV nickname=$name    # $name 意为取出 name变量的值
+</code></pre>
+</li>
+<li>
+<h3 id="workdir">WORKDIR</h3>
+<pre><code> &quot;&quot;&quot;切换目录 类似cd命令&quot;&quot;&quot;
+ WORKDIR /root
+</code></pre>
+</li>
+<li>
+<h3 id="volume">VOLUME</h3>
+<pre><code> &quot;&quot;&quot;添加数据卷&quot;&quot;&quot;
+ VOLUME /root   # 就相当于前面说过的docker run -v /root, 即自动创建一个数据卷映射到 容器的/root
+</code></pre>
+</li>
+<li>
+<h3 id="expose">EXPOSE</h3>
+<pre><code> &quot;&quot;&quot;暴露端口&quot;&quot;&quot;
+ EXPOSE 6379  
+ EXPOSE 3306    # 可以用多个 EXPOSE 暴露多个端口
+ 注1： 暴露端口后，可以通过 前面说的  docker run -P 来做自动端口映射
+ 注2： 或者不暴露端口，直接使用手动映射-p，都是可以的。
+</code></pre>
+</li>
+<li>
+<h3 id="官方模板参考网址">官方模板参考网址</h3>
+<pre><code> 官方文档：https://docs.docker.com/engine/reference/builder/
+ 各种开源Dockerfile模板：https://github.com/docker-library/docs/tree/master/
+</code></pre>
+</li>
+</ul>
+<h1 id="docker-compose">Docker Compose</h1>
+<ul>
+<li>
+<h3 id="docker-compose认知">Docker-Compose认知</h3>
+<pre><code> 一、Dockerfile 可以看作是 Docker命令的组合
+ 二、Docker-Compose 可以看作是 Dockerfile的组合（也称作 容器编排工具）
+ 三、Docker-Compose 文件默认名为  docoker-compose.yaml
+ 四、docoker-compose.yaml 文件指令中间都有空格  eg:  version: 3.7（3.7之前是有空格的）
+ 五、docoker-compose.yaml 采用缩进对格式语法进行区分
+</code></pre>
+</li>
+<li>
+<h3 id="docker-compose安装">Docker-Compose安装</h3>
+<pre><code> 官方安装教程：https://docs.docker.com/compose/install/
+ 从上往下，命令复制-粘贴-运行。。。Easy略
+</code></pre>
+</li>
+<li>
+<h3 id="docker-compose文件指令">Docker-Compose文件指令</h3>
+<pre><code> version: &quot;3.7&quot;    # 必有
+     # 此版本号与docker版本对应地址： https://docs.docker.com/compose/compose-file/  
+     
+ services:         # services关键字，写上就行， 必有
+     mypython:     # mypython是我随便起个名
+         build: .  # Dockerfile的路径位置， build是构建Dockerfile文件的
+         ports:
+             -&quot;6006:3003&quot;    # 注意-后面是有空格的，markdown语法充冲突，我就没写空格
+         command: xxxx    # 覆盖Dockerfile中的 CMD
+         depends_on:      # 依赖的服务，  （被依赖的先执行，也就是myredis先执行）
+             -myredis     # -后有空格
+     myredis:      # 同理 myredis 也是我随便起的名
+         image: redis    # 指定一个成品镜像  类似DockerfilE的 FROM指令
+         container_name: myredis    # 指定容器名
+         networks:     # 使用下面创建的mynet网络
+             -mynet    # (同-后有空格，避免markdown语法冲突) 
+         volumes:      # 使用下面创建的myvolume数据卷,并映射到容器的/root目录
+             -myvolume:/root  # -后有空格，（特别注意 :后面不允许有空格）
+         hostname: myredis    
+             # 因为容器创建时IP可能动态改变，指定名称，则可通过名称来代替IP
+             # 若不指定 hostname， 则默认为服务名， 即 myredis
+             
+ networks:    # 创建网络
+     mynet:   # 给网络起名为 mynet 
+         driver: &quot;bridge&quot;    # 指定为桥接模式
+ volumes:     # 创建数据卷
+     myvolume:    # 给数据卷起名为 myvolume
+         driver: &quot;local&quot;     # 默认就是local，即数据卷存储在宿主机的目录下
+</code></pre>
+</li>
+<li>
+<h3 id="预检查docker-composeyml文件语法格式是否有误">预检查docker-compose.yml文件语法格式是否有误</h3>
+<pre><code> docker-compose config
+ 注：需要在 docker-compose.yml 所在目录下执行
+</code></pre>
+</li>
+<li>
+<h3 id="启动停止-docker-comopse">启动/停止 docker comopse</h3>
+<pre><code> docker-compose up    # 前台终端阻塞执行（就是执行之后，你不能在终端输入东西了）
+ docker-compose up -d # 后台终端非阻塞执行 （作为服务一样后台执行）
+ 
+ docker-compose stop  # 停止编排（即停止 所有 编排运行的容器）
+</code></pre>
+</li>
+</ul>
+<h1 id="end">END</h1>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Redis与Python操作Redis语法对比解析]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-redis-yu-python-cao-zuo-redis-yu-fa-dui-bi-jie-xi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-redis-yu-python-cao-zuo-redis-yu-fa-dui-bi-jie-xi/">
+        </link>
+        <updated>2020-09-29T03:22:42.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
+<pre><code>R: 代表 redis-cli
+P: 代表 python的redis
+</code></pre>
+<h1 id="准备">准备</h1>
+<pre><code>pip install redis
+pool = redis.ConnectionPool(host='39.107.86.223', port=6379, db=1)
+redis = redis.Redis(connection_pool=pool)
+redis.所有命令
+下面命令所有命令我都省略了， 有和Python内置函数冲突的我会加上 redis.
+</code></pre>
+<h1 id="全局命令">全局命令</h1>
+<ul>
+<li>
+<h3 id="dbsize返回key的数量">dbsize（返回key的数量）</h3>
+<pre><code> R: dbsize
+ P: print(redis.dbsize())
+</code></pre>
+</li>
+<li>
+<h3 id="exists是否存在某key">exists（是否存在某key）</h3>
+<pre><code> R: exists name
+ P: exists('name')
+</code></pre>
+</li>
+<li>
+<h3 id="keys列出所有key可使用通配符">keys（列出所有key,可使用通配符）</h3>
+<pre><code> R: keys na*
+ P: keys('na*')
+ 注：时间复杂度为 O(n)
+</code></pre>
+</li>
+<li>
+<h3 id="scan-对应keys迭代取出所有keys">scan (对应keys，迭代取出所有keys)</h3>
+<pre><code> R: scan 0 match '*' count 4       
+ P: keys_iter = redis.scan_iter(match='*', count=4)  
+ 注：这种scan，API后面也会有， 所以我全部放在最后的结束语中讲
+</code></pre>
+</li>
+<li>
+<h3 id="info-查看资源信息">info (查看资源信息)</h3>
+<pre><code> R: info            # 也可以填参数  info memory     info cpu 等
+ P: redis.info()    # redis.info('CPU')     redis.info('MEMORY')
+</code></pre>
+</li>
+<li>
+<h3 id="type-列出类型">type (列出类型)</h3>
+<pre><code> R: type name
+ P: redis.type('name')   # type和python的冲突了，所以这里我写全了    
+ redis中类型有：  none string list    set zset     hash
+</code></pre>
+</li>
+</ul>
+<h1 id="过期时间">过期时间</h1>
+<ul>
+<li>
+<h3 id="expire设置">expire(设置)</h3>
+<pre><code> R: expire name 秒数
+ P: expire('name',  秒数)
+</code></pre>
+</li>
+<li>
+<h3 id="ttl查询">ttl(查询)</h3>
+<pre><code> R: ttl name     
+ P: ttl('name')
+ 
+ # 返回剩余过期时间值
+ # 返回值为 -2 则代表 无此 key
+ # 返回值为 -1 则代表 有此 key ， 但未设置过期时间
+</code></pre>
+</li>
+<li>
+<h3 id="persist删除">persist(删除)</h3>
+<pre><code> R: persist name
+ P: persist('name')
+</code></pre>
+</li>
+<li>
+<h3 id="自增自减">自增，自减</h3>
+<pre><code> incr incrby     加上一个整数
+     R: incr age   或 incrby age 1
+     P: incr age 1 或 incrby age 1        # python实现 的 incr 被 重定向为 incrby，所以用哪个都行
+     
+ decr decrby     减去一个整数
+     同上
+ 
+ incrbyfloat     加减一个浮点数
+     同上
+</code></pre>
+</li>
+</ul>
+<h1 id="字符串相关操作">字符串相关操作</h1>
+<ul>
+<li>
+<h3 id="set-设置值">set 设置值</h3>
+<pre><code> R: set name lin
+ P: redis.set('name', 'lin') 
+
+ set选项（原子操作）
+     nx（设置默认值）
+         R: set name lin nx    
+         P: redis.set('name', 'lin', nx=True)
+             注： nx 代表key不存在才会将值设置成功， 类似python dict的 setdefault，即给key设置默认值
+         
+     xx（更新值）
+         R: set name Tom xx
+         P: redis.set('name', 'lin', xx=True)
+             注： xx 代表key存在才会将值更新成功。 如果key不存在， 则更新失败。
+</code></pre>
+</li>
+<li>
+<h3 id="get-获取值">get 获取值</h3>
+<pre><code> R: get name
+ P: redis.get('name')
+ 注：通过py redis客户端的 get取出的都是 字节二进制类型， 所以需要手动转为对应类型
+     前面提到的 incr decr 等， 操作返回结果直接就是 int， 而非 字节类型
+</code></pre>
+</li>
+<li>
+<h3 id="mset-批量设置">mset 批量设置</h3>
+<pre><code> R: mset name lin age 18
+ p: redis.mset( {'name': 'lin', 'age': 18} )
+</code></pre>
+</li>
+<li>
+<h3 id="mget-批量获取">mget 批量获取</h3>
+<pre><code> R: mget name age
+ p: redis.mget('name', 'age')    # 返回值为 字节类型的 列表
+</code></pre>
+</li>
+<li>
+<h3 id="getset-设置新值并返回旧值">getset 设置新值并返回旧值</h3>
+<pre><code> R: getset name zhang
+ P: print( redis.getset('name', 'zhang') )
+</code></pre>
+</li>
+<li>
+<h3 id="append-字符串追加拼接">append 字符串追加拼接</h3>
+<pre><code> R: append name abc
+ P: redis.append('name', 'abc')
+</code></pre>
+</li>
+<li>
+<h3 id="strlen-获取字符串长度">strlen 获取字符串长度</h3>
+<pre><code> R: strlen name
+ P: print( redis.strlen('name') )
+ 注： 与编程语言的普遍API不同的是， strlen返回的字符串 长度是 字符对应编码的长度。。。。
+     中文 utf-8 占 3个字节
+</code></pre>
+</li>
+<li>
+<h3 id="getrange-字符串切片-从0开始前闭后闭">getrange 字符串切片 （从0开始，前闭后闭）</h3>
+<pre><code> R: getrange name 1 2
+ P: redis.getrange('name', 1, 2)
+</code></pre>
+</li>
+<li>
+<h3 id="setrange-字符串按索引赋值覆盖">setrange 字符串按索引赋值（覆盖）</h3>
+<pre><code> R: setrange name 0 abc     # 把第0个位置开始， 逐个覆盖赋值为 abc， 多余的不变
+ P: redis.setrange('name', 0, 'abc')
+</code></pre>
+</li>
+<li>
+<h3 id="del-删除键值">del 删除键值</h3>
+<pre><code> R: del k1 k2
+ P: redis.delete(k1, k2)
+</code></pre>
+</li>
+</ul>
+<h1 id="hash相关操作可对应为-文档-属性-值">Hash相关操作(可对应为 文档-属性-值)</h1>
+<ul>
+<li>
+<h3 id="hset-设置-1条文档1个属性-值">hset 设置 1条文档，1个属性-值</h3>
+<pre><code> R: hset user name lin
+ P: redis.hset('user', 'name', 'lin')
+</code></pre>
+</li>
+<li>
+<h3 id="hget-获取-1条文档1个属性">hget 获取 1条文档，1个属性</h3>
+<pre><code> R: hget user name
+ P: print(redis.hget('user', 'name'))        
+</code></pre>
+</li>
+<li>
+<h3 id="hmset-设置-1条文档-多个属性-值">hmset 设置 1条文档， 多个属性-值</h3>
+<pre><code> R: hmset user name lin age 18
+ P: redis.hmset('user', {'user': 'lin', 'age': 18})
+</code></pre>
+</li>
+<li>
+<h3 id="hmget-获取-1条文档-多个属性-值">hmget 获取 1条文档， 多个属性-值</h3>
+<pre><code> R: hmget user name age
+ P: print(redis.hmget('user', 'name', 'age'))
+</code></pre>
+</li>
+<li>
+<h3 id="hkeys-获取所有-key">hkeys 获取所有 key</h3>
+<pre><code> R: hkeys user
+ P: print(redis.hkeys('user'))
+</code></pre>
+</li>
+<li>
+<h3 id="hvals-获取所有-values">hvals 获取所有 values</h3>
+<pre><code> R: hvals user
+ P: print(redis.hvals('user'))
+</code></pre>
+</li>
+<li>
+<h3 id="hgetall-获取-一条文档所有属性值慎用见下一条api">hgetall 获取 一条文档，所有属性值（慎用，见下一条API）</h3>
+<pre><code> R: hgetall user                    # 返回为列表， 偶数索引为key，奇数索引为vaLue(从0开始)
+ P: print(redis.hgetall('user'))    # 返回为 dict格式
+ 
+ 注： hgetall 会将所有key-value取出来，所以数据量庞大可能会造成性能影响。
+     大批量数据在python是怎么处理来着？？？？？？？
+     没错，就是迭代器，当然python的redis模块已为我们封装好一个API，hscan_iter, 见一条API
+</code></pre>
+</li>
+<li>
+<h3 id="hscan-hash迭代大体上可代替-hgetall使用">hscan （hash迭代，大体上可代替 hgetall使用）</h3>
+<pre><code> R: hscan user 0 match * count 200        # 按游标，按数量取
+     # 0代表游标从头开始
+     # match是关键字 
+     # * 是key的通配符
+     # count 是一次接待的条数
+ P: result_iter = redis.hscan_iter('user', match= 'na*', count=2)    
+     # python的 cursor参数没有，是因为源码中被固定设置为 0了， 其他参数解释同上
+     # 返回结果为可迭代对象，可遍历取出。
+</code></pre>
+</li>
+<li>
+<h3 id="hexists-检测是否存在某key">hexists 检测是否存在某key</h3>
+<pre><code> R: hexists user name1                   # 存在返回 1，不存在返回 0
+ P: print(redis.hexists('user', 'name')) # 存在返回True
+</code></pre>
+</li>
+<li>
+<h3 id="hlen-统计获取一个文档所有属性的-总数">hlen 统计获取一个文档，所有属性的 总数</h3>
+<pre><code> R: hlen user
+ P: print(redis.hlen('user'))        
+</code></pre>
+</li>
+<li>
+<h3 id="hdel-删除指定字段">hdel 删除指定字段</h3>
+<pre><code> R: hdel key field
+ P: redis.hdel('key', 'field')
+</code></pre>
+</li>
+</ul>
+<h1 id="list相关操作">List相关操作</h1>
+<ul>
+<li>
+<h3 id="lpush-左压栈">lpush (左压栈)</h3>
+<pre><code> R: lpush list1 1 2 3
+ P: redis.lpush('list1', 1,2,3)
+</code></pre>
+</li>
+<li>
+<h3 id="rpush-右压栈同左压栈略">rpush (右压栈，同左压栈，略)</h3>
+</li>
+<li>
+<h3 id="lpop-左弹栈">lpop (左弹栈)</h3>
+<pre><code> R: lpop list2
+ P: print(redis.lpop('list2'))
+</code></pre>
+</li>
+<li>
+<h3 id="rpop-右弹栈同左弹栈略">rpop  (右弹栈，同左弹栈，略)</h3>
+</li>
+<li>
+<h3 id="blpop-左阻塞弹栈列表为空时就阻塞了">blpop  (左阻塞弹栈，列表为空时，就阻塞了)</h3>
+<pre><code> R: blpop list2 1000      # 1000为过期时间为1000秒，1000秒后自动解除阻塞，有值加入也会解除阻塞
+ P: redis.blpop('list2', timeout=1000)
+</code></pre>
+</li>
+<li>
+<h3 id="brpop-右阻塞弹栈同左阻塞弹栈略">brpop  (右阻塞弹栈，同左阻塞弹栈，略)</h3>
+</li>
+<li>
+<h3 id="linsert-在指定-值-的-前后-插入值">linsert ( 在指定 值 的 前后 插入值)</h3>
+<pre><code> R: linsert list2 before Tom jerry                # 在Tom前插入 jerry, before代表之前
+ P: redis.linsert('list2', 'after', 'b', 'Tom')   # 在b的后面插入Tom,  after代表之后
+</code></pre>
+</li>
+<li>
+<h3 id="lset-按索引赋值-注意索引不要越界">lset (按索引赋值, 注意索引不要越界)</h3>
+<pre><code> R：lset list2 4 zhang
+ P: redis.lset('list2', 4, 'zhang')
+</code></pre>
+</li>
+<li>
+<h3 id="lindex-按索引取值-索引可正可负">lindex (按索引取值, 索引可正可负)</h3>
+<pre><code> R: lindex list2 -3
+ P: print(redis.lindex('list2', 3))
+</code></pre>
+</li>
+<li>
+<h3 id="llen-获取列表元素个数">llen （获取列表元素个数）</h3>
+<pre><code> R: llen list2
+ P: print(redis.llen('list2'))    
+</code></pre>
+</li>
+<li>
+<h3 id="ltrim-注意在原数据上切片不返回值">ltrim (注意：在原数据上切片，不返回值。)</h3>
+<pre><code> R: ltrim list2 3 10                     # 保留 索引 3-10 的列表数据，其他都删除
+ P: print(redis.ltrim('list2', 2, -1))   # 索引前闭后闭，可正可负
+</code></pre>
+</li>
+<li>
+<h3 id="lrem-删除指定值">lrem (删除指定值)</h3>
+<pre><code> R: lrem list2 0 Tom    
+     # 0 这个位置的参数代表删除值的个数
+         # 0 代表全部删除， 删除全部Tom值
+         # 正数代表 从左到右 删除n个。  eg:  lrem list2 5 Tom    即为 从左到右 删除5个Tom值
+         # 负数代表 从右到左 删除n个。  eg:  lrem list2 -5 Tom   即为 从右到左 删除5个Tom值
+ P: print(redis.lrem('list2', -5, 1))    # 解释同上
+</code></pre>
+</li>
+<li>
+<h3 id="lrange遍历正负索引都可前闭后闭">lrange(遍历，正负索引都可，前闭后闭)</h3>
+<pre><code> R: lrange list1 0 -1 
+ P: print(redis.lrange('list2', 0, -1))
+</code></pre>
+</li>
+</ul>
+<h1 id="set相关操作">Set相关操作</h1>
+<ul>
+<li>
+<h3 id="sadd-插入元素">sadd （插入元素）</h3>
+<pre><code> R: sadd set1 1 2 3
+ P: redis.sadd('set1', *[1,2,3])
+</code></pre>
+</li>
+<li>
+<h3 id="srem-删除指定值的元素">srem （删除指定值的元素）</h3>
+<pre><code> R: srem set1 Tom
+ P: redis.srem('set1', 'Tom')
+</code></pre>
+</li>
+<li>
+<h3 id="scard-获取集合中元素个数">scard （获取集合中元素个数）</h3>
+<pre><code> R: scard set1
+ P: redis.scard('set1')
+</code></pre>
+</li>
+<li>
+<h3 id="sismember-判断某元素是否在集合">sismember (判断某元素是否在集合)</h3>
+<pre><code> R: sismember set1 Tom
+ P: redis.sismember('set1', 'Tom')
+</code></pre>
+</li>
+<li>
+<h3 id="srandmember-随机取出集合指定个数元素">srandmember (随机取出集合指定个数元素)</h3>
+<pre><code> “”“类似py的 random.choices，注意有s”“
+ R: srandmember set1 2             # 从集合随机中取出2个元素
+ P: redis.srandmember('set1', 2)
+</code></pre>
+</li>
+<li>
+<h3 id="smembers-取出集合中所有元素">smembers (取出集合中所有元素)</h3>
+<pre><code> R: smembers set1
+ P: redis.smembers('set1')
+ 注： 同 hgetall， 如果一次性取出，可能会出问题，所以需要迭代获取，见下 sscan
+</code></pre>
+</li>
+<li>
+<h3 id="sscan-游标迭代取出集合所有元素">sscan (游标/迭代取出集合所有元素)</h3>
+<pre><code> R: sscan set1 0 match * count 200
+ P: result_iter = redis.sscan_iter('set1', match='*', count=200)    # 遍历迭代
+</code></pre>
+</li>
+<li>
+<h3 id="sdiff-差集">sdiff  (差集)</h3>
+<pre><code> R: sdiff sset1 sset2
+ P: print(redis.sdiff('sset1', 'sset2'))
+</code></pre>
+</li>
+<li>
+<h3 id="sinter交集">sinter（交集）</h3>
+<pre><code> R: sinter sset1 sset2
+ P: print(redis.sinter('sset1', 'sset2'))
+</code></pre>
+</li>
+<li>
+<h3 id="sunion-并集">sunion (并集)</h3>
+<pre><code> R: sunion sset1 sset2
+ P: print(redis.sunion('sset1', 'sset2'))
+</code></pre>
+</li>
+</ul>
+<h1 id="zset-有序集合相关操作">zset 有序集合相关操作</h1>
+<ul>
+<li>
+<h3 id="zadd-有序插入">zadd (有序插入)</h3>
+<pre><code> R: zadd zset 100 Tom 90 Jerry    #  100是权重，Tom是数据值， 注意redis-cli  权重在前，值在后
+ P: redis.zadd('zset', {'Tom': 100, 'Jerry': 90})    # 注意，py语法，权重作为字典的value
+ 注特别注意：
+     zadd的默认机制是同值，不同权重时，会更新值的权重
+     eg: 上面再插入一条 Tom, 不过这次的权重是 50 （ zadd zset 50 Tom），则Tom的权重会更新为50
+     
+ 这时就延申出2个参数，（应该还记得前面讲的 set的 nx 和 xx参数吧，没错 zadd也有）
+ nx: （不存在才更新（添加）， 存在则更新（添加） 失败）
+     R: zadd zset nx 1000 Tom            
+     P: redis.zadd('zset',{'Tom': 1000}, nx=True)    
+     注：
+         如果Tom这个值之前存在，则这个1000就不会被更新了
+         若不存在，则就会新创建，并把这个1000设置成功
+         
+ nx：（存在才更新（添加），  不存在则更新（添加） 失败）
+     R: zadd zset xx 1000 Tom            
+     P：redis.zadd('zset',{'Tom': 1000}, xx=True)    
+     注：
+         如果Tom这个值之前存在，则1000才会更新成功
+         如果不存在，比如 {'张三':500}, 张三本来就不存在，用了xx, 他不会被添加进来，更何谈更新
+</code></pre>
+</li>
+<li>
+<h3 id="zrange-遍历">zrange (遍历)</h3>
+<pre><code> R: zrange zset 0 -1
+ P: print(redis.zrange('zset', 0, -1))    # 返回值为列表
+
+ withscores 参数（把权重也带出来返回）：
+     R: zrange zset 0 -1 withscores    # 注意，  返回时 奇数位 是值， 偶数位是权重
+     P: print(redis.zrange('zset', 0, -1, withscores=True))  # 返回列表嵌套元组，[(值，权重)]
+</code></pre>
+</li>
+<li>
+<h3 id="zrevrange-逆序-降序遍历">zrevrange (逆序-降序，遍历)</h3>
+<pre><code> 这条API就是多了 &quot;rev&quot; 三个字母,   reversed单词 熟悉把， python内置逆序高阶函数。。就是那个意思
+ 操作同zrange，略
+</code></pre>
+</li>
+<li>
+<h3 id="zrangebyscore-根据权重来遍历">zrangebyscore (根据权重来遍历)</h3>
+<pre><code> R: zrangebyscore zset 40 99 limit 1 3   # 查出权重在40-99之内的数据，并从第1条开始，返回3条
+     # 40-99都是闭区间， 要想变成开区间这样写即可   (40 (99
+ P: print(redis.zrangebyscore('zset', 40, 99, start=1, num=3))
+</code></pre>
+</li>
+<li>
+<h3 id="zrevrangebyscore-根据权重来-逆序遍历">zrevrangebyscore (根据权重来 逆序遍历)</h3>
+<pre><code> 操作同 zrangebyscore， 略
+ 这API设计的，还不如，直接弄成一条命令，然后加一个逆序参数，吐槽！！！！
+</code></pre>
+</li>
+<li>
+<h3 id="zrem-删除某值">zrem (删除某值)</h3>
+<pre><code> R: zrem zset Tom        # 删除Tom这个值
+ P: print(redis.zrem('zset','Tom'))
+</code></pre>
+</li>
+<li>
+<h3 id="zremrangebyscore-删除-权重-范围内的值">zremrangebyscore (删除 权重 范围内的值)</h3>
+<pre><code> R: zremrangebyscore zset 70 90        # 把权重在70-90分的所有数据删除
+ P: redis.zremrangebyscore('zset', 70, 90)
+</code></pre>
+</li>
+<li>
+<h3 id="zremrangebyrank-删除-索引-范围内的值">zremrangebyrank (删除 索引 范围内的值)</h3>
+<pre><code> R: zremrangebyrank zset 0 -1    # 删除所有值 （ 0到-1的索引就代表所有值啦！）
+ P: redis.zremrangebyrank('zset', 0, -1)    # redis的API风格真的。。。没办法python也无奈同名
+</code></pre>
+</li>
+<li>
+<h3 id="zcard-获取有序集合的-所有-元素个数">zcard (获取有序集合的 所有 元素个数)</h3>
+<pre><code> R: zcard zset
+ P: print(redis.zcard('zset'))
+</code></pre>
+</li>
+<li>
+<h3 id="zcount-统计有序集合的-某权重范围的-元素个数">zcount (统计有序集合的 某权重范围的 元素个数)</h3>
+<pre><code> R: zcount zset 10 69         # 同样默认闭区间， ( 可改为开区间
+ P: print(redis.zcount('zset',50, 69))  
+</code></pre>
+</li>
+<li>
+<h3 id="zrank-获取某元素的索引">zrank (获取某元素的索引)</h3>
+<pre><code> R: zrank zset Jerry       # 不用猜，索引肯定从0开始
+ P: print(redis.zrank('zset', 'Jerry'))
+</code></pre>
+</li>
+<li>
+<h3 id="zrevrank-逆序-获取某元素的索引">zrevrank (逆序 获取某元素的索引)</h3>
+<pre><code> 逆序获取索引，比如最后一个，索引就是0
+ 具体操作，同 zrank， 略
+</code></pre>
+</li>
+<li>
+<h3 id="zscore-获取某元素对应的权重">zscore (获取某元素对应的权重)</h3>
+<pre><code> R: zscore zset Jerry
+ P: print(redis.zscore('zset', 'Jerry'))
+</code></pre>
+</li>
+<li>
+<h3 id="zscan-迭代方式和返回-所有元素及其权重">zscan (迭代方式和返回 所有元素及其权重)</h3>
+<pre><code> &quot;&quot;&quot;
+     嗯?似曾相识燕归来？ 
+     前面说过的 scan hsacn sscan 还有接下来要说的 zscan 都是一个样子的，都是为了应对大数据来迭代处理
+     python版的redis给了我们一个简化函数,那就是 _iter结尾的， eg: hscan_iter()
+     这种 _iter结尾的函数，不用我们来传游标cursor参数， 为啥呢??
+         一. 因为python有生成器-迭代器机制阿！（当然 _iter等函数的源码就是用yield为我们实现的）
+         二. cursor游标不易于管理
+ &quot;&quot;&quot;
+ R: zscan zset 0 match * count 5 
+ P: zset_iter = redis.zscan_iter('zset', match='*', count=5)   # 同理返回可迭代对象
+ 注：还要说明一下：
+     match参数:  
+         过滤查询数据（其实过滤完了，数据量小了也没必要用scan了，此参数主要用在&quot;hscan&quot;之类的）
+         &quot;因此match参数可不写&quot;,  &quot;match='*' 和 不传是一个效果的。&quot;
+     count参数： 
+         Py源码解释   ``count`` allows for hint the minimum number of returns
+         意思就是：   这个参数是一次迭代&quot;最少&quot;取5个&quot;，但不管怎么说，最终还是会取出全部数据！！
+</code></pre>
+</li>
+<li>
+<h3 id="zpopmax-弹出最大优先级数据对redis5新增">zpopmax (弹出最大优先级数据对，redis5.+新增)</h3>
+<pre><code> R: zpopmax zset1 2        # 2代表弹出最大的2对key:score,不写，默认只弹一对key:score
+ P: data = redis.zpopmax(zset1, count=None)    # 原理同上
+ zpopmax可等价于下面两条命令的加起来的效果： 
+     data = redis.zrange(zset1, -1, -1)
+     zrem(zset1, data)
+ 注：无论count指定几个或不指定，py返回值为  [(key, score)]  列表嵌元组这种格式。
+</code></pre>
+</li>
+<li>
+<h3 id="zpopmin-弹出最小优先级数据对redis5新增">zpopmin (弹出最小优先级数据对，redis5.+新增)</h3>
+<pre><code> 用法同zpopmax
+ zpopmax可等价于下面两条命令的加起来的效果：
+     data = redis.zrange(zset1, 0, 0) # 就这里变了，默认升序，故最小值需要从第0条开始弹
+     zrem(zset1, data)
+ 注：    
+     zpopmax 和 zpopmin 这两个方法是 redis5.+才有的。
+     前面也说了这种方法 = zrange + zrem
+     很明显，由原来的多行操作。变成了原子操作。
+     我想，redis新增这两条命令，应该正是解决资源竞争的这一问题！！！！！！
+</code></pre>
+</li>
+</ul>
+<h1 id="redis两种持久化的方式">Redis两种持久化的方式</h1>
+<ul>
+<li>
+<h2 id="生成rdb文件-三种方法">生成RDB文件 （三种方法）</h2>
+<pre><code> &quot;&quot;&quot;RDB机制就是 触发生成RDB文件，将Redis数据以二进制形式写入其中， 触发方式有如下三种&quot;&quot;&quot;
+ RDB基本配置：
+     vi /etc/redis/redis.conf
+         dbfilename dump.rdb    # 配置RDB文件名
+         dir /var/lib/redis     # 配置RDB文件存放目录 （ll 命令查看 dump.rdb是否为最新时间）
+         appendonly no          # 若为yes, 会优先按照aof文件来恢复，或不恢复
+ 上述配置，可在下面三种方法实现的时候，自动触发生成RDB文件。并在redis启动时恢复RDB文件
+</code></pre>
+</li>
+<li>
+<h3 id="触发方式1save-阻塞">触发方式1：save （阻塞）</h3>
+<pre><code> R: save
+ P: redis.save()
+</code></pre>
+</li>
+<li>
+<h3 id="触发方式2bgsave-开fork进程异步非阻塞">触发方式2：bgsave （开fork进程，异步,非阻塞）</h3>
+<pre><code> R: bgsave
+ P: redis.bgsave()
+</code></pre>
+</li>
+<li>
+<h3 id="触发方式3自动动态生成rdb文件配置文件">触发方式3：自动动态生成RDB文件（配置文件）</h3>
+<pre><code> 在上面RDB基本配置基础上，追加如下配置
+ vi /etc/redis/redis.conf
+     save 100 10    # 100秒钟改变10条数据就会，自动生成RDB文件
+</code></pre>
+</li>
+<li>
+<h3 id="rdb缺点">RDB缺点</h3>
+<pre><code> 大数据耗时，RDB文件写入影响IO性能。宕机数据不可控
+</code></pre>
+</li>
+<li>
+<h2 id="生成aof文件三种方法">生成AOF文件（三种方法）</h2>
+<pre><code> &quot;&quot;&quot;AOF机制就是 每执行一条命令，都会记录到缓冲区，在根据某种策略刷新到AOF文件中，策略有如下三种&quot;&quot;&quot;
+ AOF基本配置：
+     vi /etc/redis/redis.conf
+         appendonly yes    # 开关，先要打开
+         appendfilename &quot;appendonly.aof&quot;    # AOF文件名
+         dir /var/lib/redis     # AOF文件目录（和RDB是一样的）
+</code></pre>
+</li>
+<li>
+<h3 id="刷新策略1always">刷新策略1：always</h3>
+<pre><code> always 即缓冲区有一条命令，就会刷新追加到AOF文件中 （安全可靠，耗IO）
+</code></pre>
+</li>
+<li>
+<h3 id="刷新策略2everysec-默认">刷新策略2：everysec （默认）</h3>
+<pre><code> everysec 即每过1秒 就会把缓冲区的命令 刷新追加到AOF文件中
+         如果就在这一秒钟宕机，那么数据就丢失了。。。（1秒不可控）
+</code></pre>
+</li>
+<li>
+<h3 id="刷新策略3no">刷新策略3：no</h3>
+<pre><code> no 即 什么时候刷新，全听操作系统自己的 （完全不可控）
+</code></pre>
+</li>
+<li>
+<h3 id="aof重写机制-两种方法异步">AOF重写机制 （两种方法,异步）</h3>
+</li>
+<li>
+<h3 id="重写清洁过程">重写清洁过程：</h3>
+<pre><code> 如上可知，越来越多的命令会追加到AOF中，其中可能会有一些类似
+     一、键值覆盖： 
+             set name tom
+             set name jerry
+     二、超时时间过期
+     三、多条插入（可用一条命令代替）
+ 如上无用命令，会让AOF文件变得繁杂。
+ 可通过 AOF重写策略优化来达到化简，提高恢复速度等。
+</code></pre>
+</li>
+<li>
+<h3 id="重写原理查找资料-个人理解">重写原理（查找资料 + 个人理解）：</h3>
+<pre><code> 一、 开fork子进程 新弄一份AOF文件，它的任务就是把当前redis中的数据重新按照上面的
+     ”重写清洁过程“ 捋一遍，并记录到这个新AOF文件中
+ 二、 此时主进程可以正常接受用户的请求及修改，（这时可能子进程AOF，和数据库内容不一致,往下看）
+ 三、 其实---第一条开fork的时候，顺便也开了一份内存空间A（名为重写缓冲区） 用来平行记录 用户新请求的命令
+ 四、 当子进程AOF重写完事后， 会把上面 空间A中 中的数据命令追加到 AOF中（类似断点复制）
+ 五、 新AOF替代 旧的AOF
+ 
+ 打个比方（针对于 二、三、四）：
+     就是，你给我一个任务，我正做着，你又给我很多任务，我当然忙不过来
+     那这样，你先拿个清单记录下来，一会等我忙完了，咱们对接一下就好了）
+</code></pre>
+</li>
+<li>
+<h3 id="重写方式1bgrewriteaof">重写方式1：bgrewriteaof</h3>
+<pre><code> R: bgrewriteaof
+ P: redis.bgrewriteaof()
+</code></pre>
+</li>
+<li>
+<h3 id="重写方式2配置文件实现自动重写">重写方式2：配置文件实现自动重写</h3>
+<pre><code> 在上面AOF基本配置的基础上，追加如下配置
+ vi /etc/redis/redis.conf
+     appendfsync everysec    # 就是上面说的三种策略，选一种  always no
+     auto-aof-rewrite-min-size 64mb     # 当AOF文件超过64mb就会自动重写
+     auto-aof-rewrite-percentage 100    # 100为增长率， 每一次的限制大小是之前的100%,也就是二倍
+
+     no-appendfsync-on-rewrite yes     # yes 就是不把 “重写缓冲区” 的内容 刷新到 磁盘
+     注意这个参数:
+         这就是针对上面 ’重写原理‘ 中的第三条 中的 内存空间A（重写缓冲区）
+         如果这个 重写缓冲区 不刷新持久化到磁盘中， 要是宕机了，那么这个缓冲区的数据就会丢失。
+         丢失多少呢？  据悉（linux中 最多最多 会丢失 30秒的数据）
+         
+         如果你将其 设置为 no，那么 重写缓冲区 就会像 前面讲的 原始AOF一样地 刷新持久化到硬盘中。
+         但是你想想， 如果 重写缓冲区  和 原始AOF 都做持久化刷新
+             那么 它们就会 竞争 IO，性能必定大打折扣，特殊情况下，还可能 堵塞。
+             
+         so, 要性能（设为yes）， 要数据完整安全(设为no)， 自己选....
+</code></pre>
+</li>
+</ul>
+<h1 id="结束语">结束语</h1>
+<pre><code>本文主要写了关于 redis 以及 python操作redis的语法对比详细解释！！
+python的redis API 也是非常够意思了，函数名几乎完全还原 原生Redis！！
+
+语法部分印象比较深刻的就是 &quot;redis的 scan家族函数&quot; 以及 &quot;python的 scan_iter&quot;家族函数：
+    上面陆陆续续讲了那么多数据结构，都有它们各自的&quot;遍历所有数据的操作&quot;
+    但对于大量数据的情况下， 这些遍历函数就都变成渣渣了， 可能会造成&quot;OOM（内存溢出）等情况&quot;
+    这时 redis 机智的为我们 提供了一些列 &quot;scan家族函数&quot; , 当然这些函数是都需要游标控制的。
+    &quot;游标cursor&quot;是比较头疼的东西， 因此 python本着 人性化的思想：
+        将 &quot;scan家族函数&quot; 封装为 &quot;scan_iter家族函数&quot;， 让我们省去了游标的操作，可以愉快编程！
+    那我就列出全部大家族 以及 对应 原始遍历函数：
+        原始遍历    redis    python
+        keys       scan     scan_iter
+        hgetall    hscan    hscan_iter
+        smembers   sscan    sscan_iter
+        zrange     zscan    zscan_iter
+        沿着这个对应规律，之前我发现一件事情：
+            为什么 &quot;list 的 lrange 没有对应的 lscan？&quot;
+        我像zz一样还去ov查了一遍， 居然还看到一位外国朋友和我有一样的疑问。。。
+        解答者的一句话，我直接就清醒了， &quot;Instead, you should use LRANGE to iterate the list&quot;
+            由于顺着规律，思维定势，却忘记了 &quot;lrange本身就可以带索引来迭代 &quot;   lrange list1 0 n
             
-            In [8]: string.ascii_letters
-            Out[8]: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'           
-              
-            In [9]: string.ascii_lowercase
-            Out[9]: 'abcdefghijklmnopqrstuvwxyz'
-            
-            In [10]: string.ascii_uppercase
-            Out[10]: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            
-            In [12]: string.punctuation
-            Out[12]: '!&quot;#$%&amp;\'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~'
-            
-        2. python3.6 - f模板字符串
-            新语法引出来，只为刷三观，具体自己去学
-            学过ES6可能会很熟悉 -&gt; 其实就是模板字符串 (ES6和python语法真的很像)
-            In [15]: name = '张三'     
-            In [16]: f'名字:{name}'
-            Out[16]: '名字:张三'
-            
-            如果你想学习更多f原语，请参考这位老哥-&gt;
-            https://blog.csdn.net/sunxb10/article/details/81036693
+        这时我突然又想起 zrange不也是和 lrange语法一样么？？？
+        为何 zrange单独设立了一个 zscan， 而 list却没？？？
+            (查了一下好像是list底层性能之类的原因，我也没愿意继续看了。。。)
+    
+    scan 与 iter家族函数，各自的数据结构章节都有写， 并且在&quot;zset&quot;那节的 &quot;zscan&quot;那里做出了详细的分析
+END</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => MongoDB与PyMongo语法对比解析]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-mongodb-yu-pymongo-yu-fa-dui-bi-jie-xi/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-mongodb-yu-pymongo-yu-fa-dui-bi-jie-xi/">
+        </link>
+        <updated>2020-09-29T03:18:15.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="阅读须知">阅读须知</h1>
+<pre><code>由于是对比书写:
+    M: 代表 Mongo原生语法
+    P: 代表 PyMongo书写方法
+    
+    后面提到：”同上“ 字眼：
+        意思就是 Mongo 和 PyMongo 语句是一模一样的， 一个字都不差，复制上去，可以直接运行
+        （也许你很好奇，为什么 一个是Python语言里的PyMongo，一个是Mongo）
+        他们的语句为什么可以做到一模一样 ？？
+        答：因为 Mongo和Python都可以 给变量赋值， PyMongo的语法设计也是模仿Mongo的。
+            所以：我巧妙的 把二者的变量设为同一个，函数90%都一致， 所以整条语句就一模一样了！
+    
+    主要语法区别：
+        1. 函数命名
+            Mongo  方法函数大都以 驼峰命名
+            PyMongo方法函数大都以 _ 下划线分割命名
+        2. 函数参数
+            Mongo :  基本都是 {} + [] 各组组合格式 
+            PyMongo：同上， 但{}的 key需要使用字符串格式， 有些情况，还需要使用命名参数代替 {}
+        3. 空值 与 Bool
+            Mongo: null  true false
+            PyMongo: None True False
 </code></pre>
-<h3 id="常用列表操作">常用列表操作:</h3>
-<pre><code>    a = [4,3,2,1]
-    基操：
-        a.extend() # 参数如果是序列，则把这个序列解开，一个一个插入
-        a.append() # 参数写什么,插入的就是什么
-    升操：
-        a[::] # 开辟空间 复制列表
-        a.sort(key=)   # 记住这个key,可以写函数名 （后面也会写高阶函数的文章）
+<h1 id="前置安装配置环境">前置安装配置环境</h1>
+<ul>
+<li>
+<h3 id="客户端连接">客户端连接：</h3>
+<pre><code>   pip install pymongo
+   import pymongo
+      
+   M: Mongo
+   P: cursor = pymongo.MongoClient('ip',port=27017) 
 </code></pre>
-<h3 id="常用字典操作">常用字典操作:</h3>
-<pre><code>    基操：
-        a = {1:2}
-        a.update({key:value})   # 有则更新，无则添加(Key-Value算一个整体)
-        a.setdefault(key, value) # 有此Key则不变 并返回value，无则插入key,value并返回None
-        a.keys()     # 返回所有 key （注意：返回值可以理解为 集合对象）
-        a.values()   # 返回所有 value (同上，返回值可理解为 集合对象)
-        a.items()    # 返回所有 键值对 （同上，返回值可理解为 集合对象）
-    升操：
-        1. Key是字典作为序列的默认首选项
-            解释对列表、元祖等序列等一系列操作如果应用在 字典上 就会只操作 Key
-        2. 双层序列 和 字典 转换：
-            seq2dict: dict( ((1,2),(3,4)) )
-            dict2seq: tuple( {1:2,3:4}.items() )
+</li>
+<li>
+<h3 id="选择数据库">选择数据库：</h3>
+<pre><code>   M: use test
+   P: db = cursor['test']       # 记住这个db，  下面复用这个参数
 </code></pre>
-<h3 id="常用集合操作">常用集合操作：</h3>
-<pre><code>    大前提： 集合=无序=去重
-    基操：add | pop | remove | update 和 &amp; | - ^
-    升操：(集合的初始化方式的差异)
-        In [57]: s1 = set('abcd') # 理解方式： 此初始化方式 会先遍历 整个 字符串
-        In [58]: s1
-        Out[58]: {'a', 'b', 'c', 'd'}
+</li>
+<li>
+<h3 id="选择集合-记住table变量名下面就直接用他们了-注意注意注意">选择集合：   (记住table变量名，下面就直接用他们了)  注意，注意，注意</h3>
+<pre><code>   M: table = db.zhang                         
+   P: table = db['zhang']  
+
+   注：选择库，选择集合的时候 注意事项：
+   Mongo中：  xx.xx  用 . 的语法
+   PyMongo中：也可以 用 xx.xx 这样,  但是这样用在PyCharm中没有语法提示
+   
+   所以提倡     xx['xx']      用索引的方式使用
+</code></pre>
+</li>
+<li>
+<h3 id="mongo-与-pymongo-返回结果的游标比较">Mongo 与 PyMongo 返回结果的游标比较</h3>
+<pre><code>   Mongo中：
+       大多数查询等结果返回都是游标对象
+       如果不对游标遍历，那么Mongo的游标会默认为你取出 前 20 个 值
+       当然，你也可以索引取值
+       关闭操作： .close()                   
+   PyMongo中：
+       同样，大多数查询等结果返回都是游标对象（如果你学过ORM，可以理解游标就像 ORM的查询集）
+       所以必须通过 list() 或 遍历 或 索引 等操作才能真正取出值
+       关闭操作： .close()  或者 用 Python 的 with 上下文协议
+</code></pre>
+</li>
+</ul>
+<h1 id="增">增</h1>
+<ul>
+<li>
+<h3 id="save">save()</h3>
+<pre><code>  M: table.save({})    # 估计要废弃了
+  P: 将要被废弃 用insert_one代替它
+</code></pre>
+</li>
+<li>
+<h3 id="insert">insert()</h3>
+<pre><code>  M: table.insert()         # 包括上面两种，可以一个 {}，可以多个 [{},{}]
+  P: PyMongo源码明确说明，insert()语法将被废弃，请用 insert_one({}) 和 insert_many([])代替
+</code></pre>
+</li>
+<li>
+<h3 id="insert_one-和-insert_many">insert_one() 和 insert_many()</h3>
+<pre><code>  M: 
+     table.insertOne( {} )            # 驼峰
+     table.insertMany([ {},{} ])      # 驼峰
+  P:
+     table.insert_one( {} )           # 下划线
+     table.insert_many([ {},{} ])     # 下划线
+</code></pre>
+</li>
+</ul>
+<h1 id="删">删</h1>
+<ul>
+<li>
+<h3 id="remove">remove()</h3>
+<pre><code>  参数1：删除查询条件
+  参数2：删除选项
+  M: table.remove({'name':'zhangsan'}, {'justOne': true})   # 我更喜欢用delete的
+  P: PyMongo中,此方法将被废弃。 将会被 delete_one() 和 delete_many() 代替
+</code></pre>
+</li>
+<li>
+<h3 id="deleteone-只删除一条">deleteOne()    # 只删除一条</h3>
+<pre><code>  M: table.deleteOne({'name': 'lin3'})
+  P: table.delete_one({'name': 'lin3'})    # 
+</code></pre>
+</li>
+<li>
+<h3 id="deletemany-删除多条">deleteMany()   # 删除多条</h3>
+<pre><code>  M: table.deleteMany({'name': 'lin3'})
+  P: table.delete_many({'name': 'lin3'})
+
+  注意：
+      不知道这两个函数是否让你想起了前面讲的  insertOne 和 insertMany，他们看起来很像，语法不同：
+          insertMany([]) # 参数需要用   [] 包起来
+          deleteMany({}) # 参数不需要
+  注意2：
+      table.deleteMany({})    # 空 {}， 代表删除所有文档 （慎行，慎行，慎行）
+</code></pre>
+</li>
+<li>
+<h3 id="删除整个集合">删除整个集合：</h3>
+<pre><code>  table.drop()    # 删除集合（连同 所有文档， 连同 索引，全部删除）
+</code></pre>
+</li>
+</ul>
+<h1 id="改">改</h1>
+<pre><code>&quot;&quot;&quot;
+    文档修改,  注意： _id 不可修改
+&quot;&quot;&quot;
+</code></pre>
+<ul>
+<li>
+<h2 id="三种更新方法">三种更新方法：</h2>
+<ol>
+<li>
+<p>update(将要废弃，可跳过，直接看2，3点的方法)<br>
+update({查询条件},  {更新操作符} , {更新选项})</p>
+<p>M: table.update({'name': {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 12: regex&#039;:&#039;li&#039;}̲},{&#039;'>regex&#039;:&#039;li&#039;}},{&#039;</span>set':{'name':'lin2'}}, {multi: true})<br>
+P: table.update({'name': {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 13: regex&#039;: &#039;li&#039;}̲}, {&#039;'>regex&#039;: &#039;li&#039;}}, {&#039;</span>set': {'name': 'lin3'}},multi=True)</p>
+<p>注意1: 第三个参数 multi如果不设置，默认只更新一条文档，设置为 true ，就会更新多条文档<br>
+注意2：<br>
+Mongo写法： {multi: true}        # Mongo 和往常一样，采用json格式， true小写<br>
+Python写法： multi = True        # python是采用命名参数来传递， True大写</p>
+</li>
+<li>
+<p>updateOne(更新一条)<br>
+M: updateOne( {查询条件},  {更新操作符} )<br>
+P: update_one</p>
+</li>
+<li>
+<p>updateMany(更新多条)<br>
+M: updateMany( {查询条件},  {更新操作符} )     其实参数是一模一样的，只不过方法名区分<br>
+P: update_many</p>
+</li>
+</ol>
+<pre><code>注： 这三个方法的参数 是基本一模一样的
+     所以下面讲具体  {查询条件},  {更新操作符} 时
+     就统一用 update()来写了
+</code></pre>
+</li>
+<li>
+<h2 id="普通更新操作符">普通更新操作符：</h2>
+</li>
+<li>
+<h3 id="set更新">$set(更新)</h3>
+<h1 id="注规则就是有则改之-无则添加">注：规则就是：&quot;有则改之， 无则添加&quot;</h1>
+<p>M: table.update({'5':5},{'$set': {'lin': [5,6,7,8]} })<br>
+P: 同上</p>
+<p>微扩展(关于内嵌数组)：<br>
+table.update({'5':5},{'$set': {'lin.0': '呵呵' })  # lin.0代表数组的第一个元素<br>
+当数组的索引越界，这个时候就视为数组的添加操作。<br>
+eg: 假定我们给 lin.10 一个值，那么 中间空出的那么多索引，会自动填充 null</p>
+</li>
+<li>
+<h3 id="unset删除">$unset(删除)</h3>
+<h1 id="注删除的键对应的value可以随便写写啥都会删除-写-只是为了语义明确规范">注：删除的键对应的value可以随便写，写啥都会删除， 写 '' 只是为了语义明确（规范）</h1>
+<p>M: table.update({'6':6}, {'$unset': {'6':''}})     # 把此条记录的 '6' 字段删除<br>
+P: 同上</p>
+<p>微扩展(关于嵌套数组)：<br>
+table.update({'5':5}, {'$unset': {'lin.0':''}}) # lin.0同样代表数组第一个元素<br>
+注：数组的删除 并不是真正的删除， 而是把值 用 null 替换</p>
+</li>
+<li>
+<h3 id="rename改名替换">$rename(改名，替换)</h3>
+<p>M: table.update({'name':'lin'}, {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 24: …{&#039;name&#039;:&#039;nick&#039;}}̲)  # name变成了nic…'>rename&#039;:{&#039;name&#039;:&#039;nick&#039;}})  # name变成了nick
+   P: 同上
+   微扩展（文档嵌套）：
+       如果文档是嵌套的 eg:   { a: {b:c} } 
+           M: table.update({&#039;lin&#039;:&#039;lin&#039;}, {&#039;</span>rename': {'a.b':'d'}})<br>
+P: 同上<br>
+结果 =&gt; {&quot;a&quot; : {  }, &quot;d&quot; : &quot;c&quot; }<br>
+解析：<br>
+b   属于 子文档<br>
+a.b 表示 通过父文档的a 来取出 子文档的b<br>
+如果整体a.b被 rename为 d，那么 d会被安排到父文档的层级里，而a设为空。<br>
+举个栗子：<br>
+你有一个箱子，里面 有一个 儿子级别 和 孙子级别 的箱子 （共3层）<br>
+现在你把 孙子级别的箱子 单独拿出来， 把整个箱子替换掉<br>
+就是这种思想。。。自己体会吧</p>
+<pre><code>          （这种语法，好像Python列表的切片赋值。。形容可能不太恰当）
+</code></pre>
+</li>
+<li>
+<h3 id="inc">$inc：</h3>
+<p>{$inc: { 'age': -2}}    # 减少两岁，正数表示加法，负数表示减法，简单，不举例了<br>
+特例：如果字段不存在，那么，此字段会被添加， 并且值就是你设定的值(0+n=n)</p>
+</li>
+<li>
+<h3 id="mul">$mul:</h3>
+<p>{$mul: { 'age': 0.5}}   # 年龄除以2，整数表示乘法，小数表示除法，简单，不举例了<br>
+特例：如果字段不存在，那么，此字段会被添加， 并且值为0 (0*n=0)</p>
+</li>
+<li>
+<h3 id="min">$min</h3>
+<p>{$min: { 'age': 30}}    # 30比原有值小：就替换， 30比原有值大，则不做任何操作</p>
+</li>
+<li>
+<h3 id="max">$max</h3>
+<p>{$max: { 'age': 30}}    # 30比原有值大：就替换， 30比原有值小，则不做任何操作<br>
+特例：min和max特例相同，即如果字段不存在，那么，此字段会被添加， 并且值就是你设定的值</p>
+</li>
+<li>
+<h2 id="数组更新操作符">数组更新操作符：</h2>
+<p>&quot;&quot;&quot;<br>
+单数组:   xx<br>
+内嵌数组: xx.索引<br>
+&quot;&quot;&quot;</p>
+</li>
+<li>
+<h3 id="addtoset有序无重复尾部添加">$addToSet（有序，无重复，尾部添加）</h3>
+<p>原始数据： {'1':1}</p>
+<p>M: table.update({'1':1}, {'$addToSet':{'lin':[7,8]}})<br>
+P: 同上</p>
+<p>结果 =&gt; {&quot;1&quot;: 1,&quot;lin&quot;: [ [7, 8 ] ]}   # [7,8] 整体插入进来， 特别注意这是二级列表</p>
+</li>
+<li>
+<h3 id="each-给78加个-each注意看结果变化">$each ( 给[7,8]加个 $each，注意看结果变化 )</h3>
+<p>M: table.update({'1': 1}, {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;}&#039;, got &#039;EOF&#039; at end of input: …et&#039;: {&#039;lin&#039;: {&#039;'>addToSet&#039;: {&#039;lin&#039;: {&#039;</span>each':[7, 8]} }})<br>
+P: 同上<br>
+结果 =&gt; {&quot;1&quot;: 1, &quot;lin&quot;: [7,8]}  # 7,8单独插入进来，参考python的 * 解构</p>
+</li>
+<li>
+<h3 id="push数据添加-比addtoset强大可任意位置可重复"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi><mi>u</mi><mi>s</mi><mi>h</mi><mo>(</mo><mi mathvariant="normal">数</mi><mi mathvariant="normal">据</mi><mi mathvariant="normal">添</mi><mi mathvariant="normal">加</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">比</mi></mrow><annotation encoding="application/x-tex">push(数据添加， 比</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">p</span><span class="mord mathdefault">u</span><span class="mord mathdefault">s</span><span class="mord mathdefault">h</span><span class="mopen">(</span><span class="mord cjk_fallback">数</span><span class="mord cjk_fallback">据</span><span class="mord cjk_fallback">添</span><span class="mord cjk_fallback">加</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">比</span></span></span></span>addToSet强大，可任意位置,可重复)</h3>
+<p>&quot;&quot;&quot;<br>
+补充说明:<br>
+$addToSet:添加数据有重复，会自动去重<br>
+$push    :添加数据有重复，不会去重，而是直接追加<br>
+&quot;&quot;&quot;<br>
+原始数据: {'1':1}</p>
+<p>M: table.update(<br>
+{ '1': 1 },<br>
+{<br>
+'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;}&#039;, got &#039;EOF&#039; at end of input: …
+             &#039;'>push&#039;: {
+          &#039;lin&#039;: {
+             &#039;</span>each': [ {'a': 5, 'b': 8 }, { 'a': 6, 'b': 7 }, {'a': 7, 'b': 6 } ],<br>
+'<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mi>o</mi><mi>r</mi><msup><mi>t</mi><mo mathvariant="normal">′</mo></msup><mo>:</mo><mrow><msup><mrow></mrow><mo mathvariant="normal">′</mo></msup><msup><mi>a</mi><mo mathvariant="normal">′</mo></msup><mo>:</mo><mo>−</mo><mn>1</mn></mrow><msup><mo separator="true">,</mo><mo mathvariant="normal">′</mo></msup></mrow><annotation encoding="application/x-tex">sort&#x27;: { &#x27;a&#x27;: -1 },
+             &#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.751892em;vertical-align:0em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord"><span class="mord mathdefault">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.946332em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord"><span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord">−</span><span class="mord">1</span></span><span class="mpunct"><span class="mpunct">,</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span>position': 0,<br>
+'$slice': 2<br>
+}}})    # 这里为了清晰点，我就把所有括号折叠起来了<br>
+P: 同上</p>
+<p>结果 =&gt;   {&quot;1&quot; : 1, &quot;lin&quot; : [ { &quot;a&quot; : 7, &quot;b&quot; : 6 }, { &quot;a&quot; : 6, &quot;b&quot; : 7 } ] }<br>
+终极解析：<br>
+1. 添加数组： 先走 $sort =&gt; 根据a 逆序排列<br>
+2. 再走 $position,  0表示：索引定位从0开始<br>
+3. 再走 $slice, 2表示： 取2个<br>
+4. 最后走 $each,把数组元素逐个放进另一个数组，说过的，相当于python的 * 解构操作，</p>
+</li>
+<li>
+<h3 id="pop只能-删除-头或尾-元素">$pop（只能 删除 头或尾 元素）</h3>
+<p>M: table.update({'a': a}, {'$pop': {'lin': 1}})        # 删除最后一个<br>
+P: 同上</p>
+<p>注1：$pop参数， 1代表最后一个，  -1代表第一个。 这个是值得注意一下的，容易记反<br>
+注2：如果全部删没了，那么会剩下空[]， 而不是彻底删除字段</p>
+</li>
+<li>
+<h3 id="pull-删除-任何位置-的-指定的元素">$pull (删除 任何位置 的 指定的元素)</h3>
+<p>M: table.update({'1': 1},{'$pull':{ 'lin':[7,8]}})   # 删除数组中[7,8]这个内嵌数组<br>
+P: 同上</p>
+</li>
+<li>
+<h3 id="pullall基本和-pull-一致">$pullAll(基本和 $pull 一致)</h3>
+<p>M: table.update({'1': 1},{'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 28: …lin&#039;:[ [7,8] ]}}̲)   # 同'>pullAll&#039;:{ &#039;lin&#039;:[ [7,8] ]}})   # 同</span>pull，但多了个 []<br>
+P: 同上</p>
+<p>注： $pull 和 $pullAll 针对于 内嵌文档 和 内嵌数组 有细小差别， 差别如下：<br>
+内嵌数组：<br>
+$pull 和 $pullAll 都严格要求内嵌数组的 排列顺序，顺序不一致，则不返回<br>
+内嵌文档:<br>
+$pullAll : 严格要求内嵌文档的顺序， 顺序不一致，则 不返回<br>
+$pull    : 不要求内嵌文档的循序，   顺序不一致，一样可以返回</p>
+</li>
+</ul>
+<h1 id="查">查</h1>
+<pre><code>&quot;&quot;&quot;
+    第一个参数的条件是 筛选出 数据的记录（文档）
+    第二个参数的条件是 筛选出 数据的记录中的 属性（字段），不配置 就是 默认 取出所有字段
+    find({查询条件}, {投影设置}) 
+&quot;&quot;&quot;
+</code></pre>
+<ul>
+<li>
+<h3 id="投影解释">投影解释</h3>
+<pre><code> 哪个字段 设置为 0， 此字段就不会被投影， 而其他字段全部被投影
+ 哪个字段 设置为 1， 此字段就会被单独投影， 其他字段不投影
+ {'name': 0, 'age': 0}      # 除了 name 和 age  ，其他字段 都 投影
+ {'name': 1, 'age': 1}      # 只投影 name 和 age, 其他字段 不 投影，（_id除外）
+
+ 注意:所有字段必须满足如下要求：
+     一： 你可以不设置，默认都会被投影
+     二： 如果你设置了，就必须同为0，或者同为1,不允许0，1 混合设置(_id除外)
+     三： _id虽然可以参与混合设置，但是它只可以设为0， 不可以设为1，因为1是它默认的
+
+ 通俗理解（0和1的设定）：另一种理解思想 ====&gt; 
+     设置为1：  就是 加入 白名单 机制
+     设置为0，  就是 加入 黑名单 机制
+  
+ 注： _id字段是 MongoDB的默认字段，它是会一直被投影的(默认白名单)
+     但是，当你强制指定 {'_id': 0}    ，强制把 _id指定为0，他就不会被投影了（变为黑名单）
+
+ 语法：
+     M: queryset = table.find({}, {'name': 0})
+     P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="投影-数组切片slice">投影-数组切片($slice)</h3>
+<pre><code> &quot;&quot;&quot;针对投影时的value为数组的情况下，对此数组切片，然后再投影&quot;&quot;&quot;
+ 数据条件： {'arr1': [5,6,7,8,9] }
+ 整形参数：
+     M: queryset = table.find({},{'arr1':{'$slice': 2}})     # 2表示前2个, -2表示后两个
+     P: 同上，一模一样，一字不差
+     结果: { 'arr1': [5,6] }
+ 数组参数： [skip, limit]    
+     M: queryset = table.find({},{'arr1':{'$slice': [2,3]}}) # 跳过前2个，取3个
+     P: 同上，一模一样，一字不差
+
+     输出结果 =&gt;  { 'arr1': {7,8,9] }
+  
+     注： 这种数组参数，你可以用 skip+limit 方式理解
+          也可以用, python的索引+切片方式理解 （skip开始查索引（0开始数）, 然后取limit个）
+</code></pre>
+</li>
+<li>
+<h3 id="投影-数组过滤elemmatch">投影-数组过滤($elemMatch)</h3>
+<pre><code> &quot;&quot;&quot;
+  针对投影时 的value为数组的情况下，根据指定条件 对 数组 过滤，然后再投影
+  注意这个过滤机制： 从前向后找，遇到一个符合条件的就立刻投影(类似 python正则的 search)
+ &quot;&quot;&quot;
+ 数据条件: {'arr1': [6,7,8,9]}
+ 
+ M: queryset = table.find({}, {'arr1': {'$elemMatch': {'$gt':5}} })
+ P: 同上
+
+ 输出结果 =&gt; &quot;arr1&quot; : [ 6 ]
+
+ 解析：（我自己总结的伪流程，可参考理解）
+     1. 准备投影
+     2. 发现数组，先处理数组，可看到数组中有 elemMatch条件
+        elemMatch在投影中定义为： 
+        ”你给我一个条件，我把符合条件的 数组每个元素从前向后筛选
+         遇到第一个符合条件的就返回, 剩下的都扔掉  （这里的返回你可以理解为 return）
+        “
+     3. 把 2 步骤 返回的数据 投影
+</code></pre>
+</li>
+<li>
+<h3 id="limit">limit()</h3>
+<pre><code> limit: （只取前n条）
+     M: queryset = table.find({'name':'lin'}).limit(n)    # n就是取的条数
+     P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="skip">skip()</h3>
+<pre><code> skip: （跳过n条，从第n+1条开始取）
+     M: queryset = table.find({'name':'lin'}).skip(n)    # 从0开始数
+     P: 同上
+  
+     解释一下skip这个参数n：
+         假如n等于2 ，就是从第三个（真实个数）开始取   =&gt; 你可以借鉴数组索引的思想 a[2]
+</code></pre>
+</li>
+<li>
+<h3 id="count">count()</h3>
+<pre><code> count: （统计记录数）
+     M: count_num = table.find({'name':'lin'}).skip(1).limit(1).count()
+     P: count_num = table.count_documents(filter={'name':'lin'}, skip=1, limit=1)
+  
+     分析：
+         find()   -&gt; 查出 3 条数据
+         skip(1)  -&gt; 跳过一条，就是从第二条开始取
+         limit(1) -&gt; 接着上面的来，从第二条开始取（算本身哦），取一个，实际上取的就是第二条
+         count()  -&gt; 3    # 也许你很惊讶，按常理来说，结果应该为 1(看下面)
+  
+     count(applySkipLimit=false)    # 这是 API原型，这个参数默认为False
+         applySkipLimit: 看名字你就知道这函数作用了吧
+             默认不写为 False: 不应用(忽略) skip(), limit() 来统计结果 ==&gt; 上例结果为 3
+             设为 True：           结合 skip(), limit() 来统计最终结果 ==&gt; 上例结果为 1
+  
+     注： 对于 count()  ，Mongo 和 PyMongo都有此方法，且用法是一模一样的。
+          那为什么上面PyMongo中我却用了 count_documents() 而不是 count()  ?????
+          答：
+              因为 运行 或者后 戳进PyMongo源码可清晰看见，未来版本 count() API将要废除。
+              官方建议我们用  count_documents()
+              它的好处是把 skip() 和 limit() 由两个函数调用 变为 2个参数传进去了。
+</code></pre>
+</li>
+<li>
+<h3 id="sort">sort()</h3>
+<pre><code> sort: 排序
+ M: queryset = table.find({'name':'lin'}).sort({'_id': -1})  # 注意，参数是{} 对象
+ P: queryset = table.find({'name':'lin'}).sort( '_id', -1 )    # 注意，这是2个参数
+     第一个参数，代表 排序依据的字段属性
+     第二个参数，代表 升/降  
+         1 : 升序      eg: 456
+         -1: 降序      eg: 654
+
+ 特别注意： 3连招顺序（优先级要牢记）  ()
+ sort -&gt; skip -&gt; limit   （排序 - 定位 - 挑选） 无论你代码什么顺序，它都会这个顺序执行
+ eg: queryset = table.find({'name': 'lin'}).sort('_id', -1).skip(1).limit(1)
+
+ 也许你会有这样一个疑惑： 为什么 count_documents 没有放进连招里面？
+ 答：
+     你仔细想想， 统计个数，和你排不排序有关系吗？  
+     没错，一点关系都没有。。。     sort() 和 count() 没有联系
+</code></pre>
+</li>
+<li>
+<h3 id="数组操作符">数组操作符</h3>
+<pre><code> 已有数据条件： { name: ['张','李','王'] }
+
+ $all: 
+    M: queryset = table.find({'name': {'$all': ['张','李']}})  # 数组值里必须包含 张和李
+    P：同上，一模一样，一字不差
+ $elemMatch：
+    M: queryset = table.find({'name': {'$elemMatch': {'$eq':'张'} }}) # 数组值有张 就行
+    P: 同上，一模一样，一字不差
+</code></pre>
+</li>
+<li>
+<h3 id="正则">正则</h3>
+<pre><code> M: db.xx.find( {name: { $regex: /^a/, $options:'i' }} )
+ P: queryset = db.xx.find({'name': {'$regex': 'LIN', '$options': 'i'}})
+ PyMongo版的或者这样写-&gt;
+     import re
+     e1 = re.compile(r'LIN', re.I)      # 把Python的正则对象 代替 Mongo语句
+     queryset = db.xx.find({'name': {'$regex': re1 }}) 
+</code></pre>
+</li>
+</ul>
+<h1 id="聚合">聚合</h1>
+<ul>
+<li>
+<h2 id="聚合表达式">聚合表达式</h2>
+</li>
+<li>
+<h3 id="字段路径表达式">字段路径表达式：</h3>
+<pre><code>  $name    # 具体字段
+</code></pre>
+</li>
+<li>
+<h3 id="系统变量表达式">系统变量表达式：</h3>
+<pre><code>  $$CURRENT # 表示管道中，当前操作的文档
+</code></pre>
+</li>
+<li>
+<h3 id="反转义表达式">反转义表达式：</h3>
+<pre><code>  $literal: '$name'    # 此处 $name 原语法被破坏，现在它只是单纯的字符串
+</code></pre>
+</li>
+<li>
+<h2 id="聚合管道">聚合管道</h2>
+<pre><code>  &quot;&quot;&quot;
+      单个管道，就像 Python中的 map等高阶函数原理， 分而治之。
+      只不过，MongoDB善于将管道串联而已。
+      .aggregate([ 里面写管道各种操作  ])
+  &quot;&quot;&quot;
+</code></pre>
+</li>
+<li>
+<h3 id="match管道查询">$match（管道查询）</h3>
+<pre><code>  M: queryset = table.aggregate([{'$match': {'name': 'zhangsan'}}])
+  P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="project管道投影">$project(管道投影)</h3>
+<pre><code>  数据条件 =&gt; 
+  [
+      {&quot;id&quot;:'xxx', &quot;name&quot; : &quot;zhangsan&quot;, &quot;age&quot; : 15 },
+      {&quot;id&quot;:'xxx', &quot;name&quot; : &quot;lisi&quot;, &quot;age&quot; : 18 },
+      {&quot;id&quot;:'xxx', &quot;name&quot; : &quot;wangwu&quot;, &quot;age&quot; : 16 }
+  ]
+  M: queryset = table.aggregate([{'$project': {'_id': 0,'new':'5'}}])
+  P: 同上
+  
+  结果 =&gt; [{'new': '5'}, {'new': '5'}, {'new': '5'}]
+  注：'new'是在投影的时候新加的，会被投影。但是加了此新值，除了_id，其他属性默认都不会被投影了
+</code></pre>
+</li>
+<li>
+<h3 id="skip-管道跳过原理同前面讲过skip-略">$skip  (管道跳过，原理同前面讲过skip() 略)</h3>
+</li>
+<li>
+<h3 id="limit管道截取原理同前面讲过的limit">$limit（管道截取，原理同前面讲过的limit() ）</h3>
+<pre><code>  M: queryset = table.aggregate([{'$skip': 1},{'$limit':1}])
+  P: 同上
+  解释：
+      一共三条文档， skip跳过了第一条，从第二条开始取，limit取一条，所以最终取的是第二条
+</code></pre>
+</li>
+<li>
+<h3 id="sort-管道排序同上不解释">$sort (管道排序，同上,不解释)</h3>
+<pre><code>  M: queryset = table.aggregate([{'$sort':{'age':1}}])
+  P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="unwind管道展开数组-相当于-数学的-分配律">$unwind（管道展开数组， 相当于 数学的 分配律）</h3>
+<pre><code>  数据条件 =&gt; {&quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : [ &quot;sing&quot;, &quot;dance&quot; ]}
+  
+  path小参数:
+      M: table.aggregate([{'$unwind':{'path': '$hobby'}}])   # 注意 path是语法关键词
+      P: 同上
+      结果 =&gt; 
+          { &quot;_id&quot; : xx, &quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;sing&quot; }
+          { &quot;_id&quot; : xx, &quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;dance&quot; }
+      形象例子：
+          a * [b+c] =&gt; a*b + a*c
+  
+  includeArrayIndex小参数：
+      M: queryset = table.aggregate([{'$unwind': {
+                  'path':'$hobby', 
+                  'includeArrayIndex':'index'    # 展开的同时会新增index字段记录原索引       
+          }}])
+      P: 同上
+      结果 =&gt; 
+          {&quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;sing&quot;, &quot;index&quot; : NumberLong(0) }
+          {&quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;dance&quot;, &quot;index&quot; : NumberLong(1) }    
+          
+  注意：
+      $unwind 上面有两种特殊情况：
+      情况一：
+          文档中无 hobby字段   或   hobby字段为 空数组[]
+          那么该文档不参与unwind展开操作， 自然就不会显示结果。
+          若想让这种文档也参与 unwind展开操作,那么需要追加小参数 
+              'preserveNullAndEmptyArrays':true        # 与 path同级书写
+          最终结果，这种字段的文档也会被展示出来，并且 index会被赋予一个 null值
+      情况二：
+          文档中有 hobby字段，但是该字段的值并不是数组
+          那么该文档 会 参与 unwind展开操作，并且会显示出来， 同样 index 会被赋予一个 null值
+</code></pre>
+</li>
+<li>
+<h3 id="lookup使用方式一">$lookup（使用方式一）</h3>
+<pre><code>  使用方式（一）：集合关联 ===&gt; 我的理解是，相当于关系型数据库的 多表查询机制
+
+      集合 &lt;=&gt; 表  ，  多表查询 &lt;=&gt; 多集合查询 
+          自身集合 与 外集合 根据我们指定的 关联字段 关联后， 如有关联，
+          则新字段的值为 [外集合的关联文档， 。。。]， 有几条文档关联，这个数组就会有几条
+
+  废话不多说，先重新创建两个集合：
+  db.user.insertOne({'name':'猫', 'country': ['China','USA']})    # 一条
+  db.country.insertMany([{'name':'China'}, {'name':'USA'}])      # 两条
+  
+  table = db.user        # 看好，我赋值了一下，下面直接写table就行了
+  
+  M: queryset = table.aggregate([{
+      '$lookup': {
+          'from': 'country',           # 需要连接的另外一个集合的名称（外集合）
+          'localField': 'country',     # （主集合）连接的 依据 字段
+          'foreignField': 'name',      # （外集合）连接的 依据 字段
+          'as': 'new_field'            # 最终关联后查询出来的数据，生成新字段，as用来起名
+      }
+  }])
+  P: 同上
+  
+  结果 =&gt; 
+  {
+  	&quot;_id&quot; : ObjectId(&quot;5d2a6f4dee909cc7dc316bf1&quot;),
+  	&quot;name&quot; : &quot;猫&quot;,
+  	&quot;country&quot; : [
+  		&quot;China&quot;,
+  		&quot;USA&quot;
+  	],                  # 这行之前应该不用解释，这就是 user集合本身的数据，没变
+  	&quot;new_field&quot; : [     # 这行是新加的字段，后面解释
+  		{
+  			&quot;_id&quot; : ObjectId(&quot;5d2a6fcbee909cc7dc316bf2&quot;),
+  			&quot;name&quot; : &quot;China&quot;
+  		},
+  		{
+  			&quot;_id&quot; : ObjectId(&quot;5d2a6fcbee909cc7dc316bf3&quot;),
+  			&quot;name&quot; : &quot;USA&quot;
+  		}
+      ]    
+  }    
+  解释：
+      1. new_field是我们新添加的字段
+      2. 因为user集合和country集合 我们给出了2个依据关联字段
+         并且这两个关联字段 'China' 和 'USA' 的值都相等
+         所以最终 user集合的new_field字段中 会添加 两条 country集合的文档 到 [] 中
+      3. 如果无关联, 那么   new_field字段中的值  为  空[]
+</code></pre>
+</li>
+<li>
+<h3 id="lookup使用方式二">$lookup（使用方式二）:</h3>
+<pre><code>  使用方式二：不做集合的关联，而是直接把（外集合）经过条件筛选，作为新字段放到（主集合）中。
+  
+  M: queryset = table.aggregate([{
+      '$lookup': {
+          'from': 'country',                # 外集合
+          'let': {'coun': '$country'},      # 使（主集合）的变量 可以放在（外集合）使用
+          'pipeline': [{                    # 外集合的专属管道，里面只可以用外集合的属性
+              '$match': {                   # 因为设置了 let，所以这里面可以用主集合变量
+                  '$expr': {                # $expr使得$match里面可以使用 聚合操作
+                      '$and': [
+                              {'$eq': ['$name', 'China']},   # 注意，这是聚合的 $eq用法
+                              {'$eq': ['$$coun',['China', 'USA']]}
+                      ]
+                  }
+              }
+          }],
+          'as': 'new_field'
+      }
+  }]) 
+  P: 同上
+  解释：
+      把（外集合） pipeline里面按各种条件 查到的文档， 作为（主集合）new_field 的值。
+      当然，如果不需要主集合中的属性，可以舍弃 let 字段
+</code></pre>
+</li>
+<li>
+<h3 id="group-分组-统计种类">$group （分组--统计种类）</h3>
+<pre><code>  用法1（分组--统计字段种类）
+      M: queryset = table.aggregate([{'$group': {'_id': '$name'}}])    # _id是固定写法
+      P: 同上
+      结果 =&gt; [{'_id': '老鼠'}, {'_id': '狗'}, {'_id': '猫'}]
+      
+  用法2（分组--聚合）
+      数据条件：
+          { &quot;name&quot; : &quot;猫&quot;, &quot;country&quot; : [ &quot;China&quot;, &quot;USA&quot; ], &quot;age&quot; : 18 }
+          { &quot;name&quot; : &quot;狗&quot;, &quot;country&quot; : &quot;Japna&quot; }
+          { &quot;name&quot; : &quot;老鼠&quot;, &quot;country&quot; : &quot;Korea&quot;, &quot;age&quot; : 12 }
+          { &quot;name&quot; : &quot;猫&quot;, &quot;country&quot; : &quot;Japna&quot; }
+  
+      M: queryset = table.aggregate([{
+          '$group': {
+              '_id': '$name',                    # 根据name字段分组
+              'type_count': {'$sum': 1},         # 统计每个分类的 个数
+              'ageCount': {'$sum': '$age'},      # 统计age字段的 数字和
+              'ageAvg': {'$avg': '$age'},        # 统计age字段的 平均值
+              'ageMin': {'$min': '$age'},        # 统计age字段的 最小值
+              'ageMax': {'$max': '$age'},        # 统计age字段的 最大值
+          }
+         }])
+      p: 同上
+      
+      结果:
+                  {
+                  	&quot;_id&quot; : &quot;老鼠&quot;,
+                  	&quot;type_count&quot; : 1,
+                  	&quot;ageCount&quot; : 12,
+                  	&quot;ageAvg&quot; : 12,
+                  	&quot;ageMin&quot; : 12,
+                  	&quot;ageMax&quot; : 12
+                  }
+                  {
+                  	&quot;_id&quot; : &quot;狗&quot;,
+                  	&quot;type_count&quot; : 1,
+                  	&quot;ageCount&quot; : 0,
+                  	&quot;ageAvg&quot; : null,
+                  	&quot;ageMin&quot; : null,
+                  	&quot;ageMax&quot; : null
+                  }
+                  {
+                  	&quot;_id&quot; : &quot;猫&quot;,
+                  	&quot;type_count&quot; : 2,
+                  	&quot;ageCount&quot; : 18,
+                  	&quot;ageAvg&quot; : 18,
+                  	&quot;ageMin&quot; : 18,
+                  	&quot;ageMax&quot; : 18
+                  }
+      注意：
+          若想直接对整个集合的 做统计，而不是分组再统计
+          把 _id改为 null即可  { _id: 'null' }      
+          # (或者随便写一个匹配不到的 字符串或数字都行，分不了组，就自动给你统计整个集合了)
+</code></pre>
+</li>
+<li>
+<h3 id="out-聚合操作后将结果写入新集合">$out (聚合操作后，将结果写入新集合)</h3>
+<pre><code>  &quot;&quot;&quot;
+      我的理解是重定向 操作， 或者理解为 视图 操作
+      写入的集合如果存在，那么会全部覆盖（但保留索引）
+      聚合过程遇到错误，那么会自动执行 ’回滚’操作
+  &quot;&quot;&quot;
+  M: 
+      table.aggregate([
+          { '$group': {'_id': '$name'} },
+          { '$out': 'newCollection' }
+      ])
+  P: 同上
+  最后验证： db.newCollection.find()   ，你就会看到新集合 及其 里面的内容
+
+  聚合管道 ==&gt; 第二个参数
+      table.aggregate([之前说的都是这里面的参数],  下面说这个参数)
+      
+      allowDiskUse: true
+          每个聚合管道占用内存需 &lt; 16M， 过大就会出问题
+          allowDiskUse设置为true， 会将内存的 写入到临时文件中，减缓内存压力。
+
+          官方文档：write data to the _tmp subdirectory in the dbPath directory
+                   Default: /data/db on Linux and macOS, \data\db on Windows
+          它说： 默认在  dbPath配置变量下的 子目录_tmp下，  dbPath默认为 : /data/db
+      
+      M:
+          queryset = table.aggregate([{
+              '$group': {'_id': '$name'}}],
+              {'allowDiskUse': true}           
+          )
+      P:     
+          queryset = table.aggregate([{
+              '$group': {'_id': '$name'}}],
+              allowDiskUse=True,                 # 注意，这里语法稍有不一样
+          )
+</code></pre>
+</li>
+</ul>
+<h1 id="索引">索引</h1>
+<ul>
+<li>
+<h2 id="创建索引">创建索引：</h2>
+</li>
+<li>
+<h3 id="单键索引">单键索引</h3>
+<pre><code>  M: table.createIndex({'name':1})
+  P: table.create_index([('name',-1)])        # -1代表逆序索引，注意是元组
+</code></pre>
+</li>
+<li>
+<h3 id="联合索引">联合索引</h3>
+<pre><code>  索引命中：最左匹配原则  eg  1,2，3  这三个创建联合索引， 可命中索引为：【1,12,123】
+  M: table.createIndex( {'name':1}, {}, {} )           # 多个{}
+  P: table.create_index([ ('name',-1), (), () ])       # 多个元组
+</code></pre>
+</li>
+<li>
+<h3 id="多键索引">多键索引</h3>
+<pre><code>  多键是针对于数组来讲的，创建单键的字段 指定为 数组字段， 默认就会设置为多键索引
+</code></pre>
+</li>
+<li>
+<h3 id="唯一索引-unique">唯一索引 （unique）</h3>
+<pre><code>  '''注意： 如果集合中，不同文档的字段有重复，创建唯一索引的时候会报错'''
+  M: table.createIndex({'name':1}, {'unique':true})
+  P: table.create_index([('name', 1),('counrty',1)], unique=True)
+</code></pre>
+</li>
+<li>
+<h3 id="稀疏索引-sparse">稀疏索引 (sparse)</h3>
+<pre><code>  eg:
+  一个集合中：
+      给 name创建 唯一索引
+      插入文档1: 有 name字段
+      插入文档2: 无 name字段 （MongoDB会在索引库中，把没有的字段的 索引设为 {字段:null}  ）
+
+      再插入文档3, 无name字段  --&gt; 同样也会把索引库中 name设为 null  
+          但是就在这个时候，刚要把索引库中的 name字段设为 null的时候。。。
+          
+          唯一索引告诉你：” 我这里已经有了一个，{ name:null }，请你滚 ”
+          然后就无情的给你报错了（重复索引字段）
+
+      那咋整啊， 别急，稀疏索引就是给你办这事的
+      
+      设置稀疏索引。 MongoDB就不会把  没有的字段 加入到索引库了
+      所以，索引库里面就不会自动添加  {字段: null} 
+      重新再次插入文档3， 无name字段， 可成功插入，不存在null的重复问题了
+
+      M: table.createIndex({'name':1}, {'unique':true, 'sparse':true})
+      P: table.create_index([('name', 1),('counrty',1)], unique=True, sparse=True)
+</code></pre>
+</li>
+<li>
+<h2 id="查询索引">查询索引</h2>
+<pre><code>  M：queryset = table.getIndexes()
+  P: queryset = table.list_indexes()
+</code></pre>
+</li>
+<li>
+<h2 id="删除索引">删除索引</h2>
+<pre><code>  方式1：
+      M: table.dropIndex('索引名')     # 索引名可通过 上面查询索引的指令查
+      P: table.drop_index('索引名')    
+  方式2：
+      M: table.dropIndexes()          # 删除全部，_id除外， 想指定删除多个，可用列表列出
+      P: table.drop_indexes()
+</code></pre>
+</li>
+<li>
+<h2 id="查看索引性能是否有效">查看索引性能(是否有效)</h2>
+<pre><code>  table.上面说过的任一函数().explain()           # 链式调用 explain，表示列出此操作的性能
+  eg:
+      M: queryset = table.explain().find({'name':'猫'})
+      P: 同上
+  结果中找到：            
+      queryPlanner -&gt; winningPlan -&gt; inputStage -&gt; stage   # stage结果对应说明如下
+          COLLSCAN    # 未优化，还是搜的整个集合
+          IXSCAN      # 索引起到作用
+          
+  索引对投影的优化：
+      queryPlanner -&gt; winningPlan -&gt; stage   # stage结果对应说明如下
+          FETCH         # 索引 对投影 未优化
+          PROJECTION    # 索引 对投影 起到优化作用
+          
+  索引对排序的优化：
+      同上 stage  最好 不是 sort
+      按索引 正序（逆序） 取数据， 这样就有效避免了机械排序的过程
+</code></pre>
+</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Linux实用工具命令]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-linux-shi-yong-gong-ju-ming-ling/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-linux-shi-yong-gong-ju-ming-ling/">
+        </link>
+        <updated>2020-09-29T03:16:42.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="ubuntu16升级到1804">Ubuntu16升级到18.04</h3>
+<pre><code>“”“
+    有特殊新颖强迫症癖好可以升下，如果你觉得16.04好用，就根本没必要升了
+”“”
+我当时租的 云服务器通常都是16.04，现在估计也是16.04较多
+我是个Python3的玩家， 我只想用Python的最新版，或最新标准版3.6-3.7
+道理很简单，我追求新颖，虽然新版不稳定，但是你可以尝鲜并领先于别人。。。
+废话不多说：
+    Ubuntu16.04: 默认装的是Python2.7 + Python3.4 或3.5 
+    Ubuntu18.04: 默认装的是Python2.7 + Python3.6.+
+我喜欢升级系统版本来直接让对应软件升级：
+    lsb_release -a    # 查看系统版本
+    apt update        # 一路选Y   
+    apt dist-upgrade  
+    apt autoremove    # 一路选Y
+    apt install update-manager-core    # 比较重要
+    do-release-upgrade -d              # 完事
+注：
+    如果其中某个命令过程弹出一个黑窗口让你选择， 我记得有个 
+        core-new-update 字眼的，选这个即可    # 选择 新 核心
+</code></pre>
+<h3 id="vim多行注释python为例">vim多行注释（Python为例）</h3>
+<pre><code>Ubuntu是肯定可以用， CentOS我记得好像用不了
+
+直接一套连招：
+注释：
+    1. ctrl + v
+    2. 按 下 箭头方向键，选中多行
+    3. shift + i
+    4. 输入 # 
+    5. 按两下 ESC键
+    
+取消注释：
+    1. ctrl + v
+    2. 按 下 箭头方向键，选中多行
+    3. 按 x 键
+
+注： 此套连招，需要熟练度， 如果不行就多练练。 手不好使，就不要怪我了~~~~
+</code></pre>
+<h3 id="vimrc简单配置">vimrc简单配置：</h3>
+<pre><code>“”“
+    tab = 4缩进,
+    设置行号
+    基于文件名的简单语法高亮
+    不要想着删一行，直接打开vimrc 全部复制上去，保存退出就可以用了
+”“”
+vi ~/.vimrc
+    syntax on
+    set nu
+    set expandtab
+    set tabstop=4
+    set shiftwidth=4
+    set softtabstop=4
+</code></pre>
+<h3 id="locate查询库">locate查询库</h3>
+<pre><code>locate xxx    # 虽然很简单的命令，但是如果，一直为下线，并且还想查找新东西，那么需要更新库
+updatedb      # 更新搜索库， 完事
+
+如果 updatedb命令出错，那就安装一下 mlocate就好了：
+    yum/apt-get install mlocate
+</code></pre>
+<h3 id="htop查看服务器负载">htop查看服务器负载</h3>
+<pre><code>ubuntu/centos中有 
+    top ： 此命令可以详细查看服务器各种负载，资源状况，但是看着不方便，非常费劲
+    htop ： top的升级版， 容易看出资源消耗情况
+    如果未安装，可通过  
+        apt-get/yum install htop   安装
+
+    htop -d 0.1    # 0.1秒动态更新一次资源数据。 看起来有一点炫。
+</code></pre>
+<h3 id="pkill">pkill</h3>
+<pre><code>ps -el 查看 PId + kill -9 PID        # 这套连招可强制杀死一个进程
+
+但假如你有一连串的python进程 想要 全部KILL
+    pkill python            # 完事，和python有关的全KILL掉了，也可以通过通配符* 的方式来简写
+</code></pre>
+<h3 id="patree列出进程">patree列出进程</h3>
+<pre><code>tree:    此命令用来列出目录层级结构
+pstree:  用来列出 正在运行的 程序（所有进程的层级结构，进程名）
+pstree -p: 以层级的方式，不仅列出进程名， 还列出所有进程的(PID)
+</code></pre>
+<h3 id="alias改名">alias改名</h3>
+<pre><code>vi /etc/profile
+    alias python='python3'        # 这里是举个例子，配完，python命令就等价于 python3命令
+    alias pip='pip3'
+source /etc/profile            # 不要忘记，这条命令 更新一下配置文件
+</code></pre>
+<h3 id="重定向管道-与-tee">重定向管道 ( &gt; 与 tee )</h3>
+<pre><code>date &gt; date.txt	     # 截流， 屏幕上不显示
+date | tee date.txt  # 不截流， 屏幕上显示， 并且还能输入到文件
+</code></pre>
+<h3 id="叹号命令">! 叹号命令</h3>
+<pre><code>”“
+    !命令前缀 : 运行最后一条以这个前缀开头的命令
+”“
+假如下面是你最后按顺序再command终端 输入的四条命令：
+    python aaa.py
+    python bbb.py
+    npm run dev
+    pip install ccc
+
+需求：你想迅速运行 python bbb.py这条命令
+你只需
+    !py    # 即可，  愣着干啥呢， 已经完事了，这条命令就等于你上面那一大串
+    
+    解惑：
+        1. !py   -&gt; py开头的有两条，为啥不执行第一条 python aaa.py
+            因为 ! 叹号 的语法意思就是选择 最后出现以py开头的执行。
+        2. 为啥直接 !p 不行呢？
+            因为以p开头的最后一条命令是 pip install ccc。  这也不是你想要的啊。
+</code></pre>
+<h3 id="ctrlz-和-和-nohup-和-screen">ctrl+z 和 &amp; 和 nohup 和 screen</h3>
+<pre><code>ctrl+c： 强制终止（最常用的，先提出来。。。。 应该都知道的。。）
+ctrl+z： 可以把正在运行中的程序挂起到后台（注意这时候程序就暂停了）
+jobs:    粗略列出 后台挂起的程序
+jobs -l: 详细列出 后台挂起的程序 （其实就是多列出了个PID）
+         kill -9 PID   # 顺水推舟地使用此命令来通过 PID 干掉后台挂起的程序
+    
+fg:      把挂起的后台的程序 拿回来继续执行
+fg 程序编号:  如果有多个后台挂起的程序，选择一个继续执行，编号可通过 jobs 查看。
+
+使用场景： 
+    加入正在 vim 编辑东西，想跳出编辑器，写点别的，那么可以 进行下面操作：
+    不要保存， 直接 ctrl+z
+    然后去 做别的事
+    做完了想回到 vim继续编辑剩下的内容, 直接 fg
+    
+&amp;： 运行 的 时刻 就直接 放到后台  (不实用)
+    eg: (通常是费时的操作，或者长时间占用 command命令行）
+        sleep 100 &amp;        # 这样费时100秒的操作，直接让它滚去后台执行，别占我地方
+    局限：
+        假如你用  python xxxx.py &amp; 运行一个web服务器，虽然它会滚去后台一直运行。
+        前台command界面看起来很干净了。
+        但是，如果有用户请求过来， 你服务器收到打印在终端的信息 可不会乖乖打印在后台。
+        打印信息会钻出来到前台command界面来恶心你。。。。。
+        为了解决这一问题， 请移步 下面 ...
+
+nohup: (通常和 上面的 &amp; 联合使用)     （实用性一般）
+    eg: 同样运行一个服务器
+        nohup python xxx.py &amp;        
+            #  它会乖乖的滚去后台执行，并且将要打印的消息 也不会打印到前台，也不会打印到后台。
+                那打印的内容去哪了呢？？
+                nohup会自动给你 把打印的东西重定向 到一个  nohup.out文件，通常在当前目录下
+            #  这时你的前台command 就不会受到 骚扰了。。。。
+    也许你以为它很好用了，可以完美的决绝运行一个费时的进程。但是 它依然是个 loser。。.
+    局限：
+        当我一直用 nohup.out 部署一些服务程序的时候，一部署就是很多天。
+        当时学校断电（我租的阿里云ECS服务器）. 虽然服务器可以不间断的执行。
+        但是 我需要 用 xshell 一直去远程 查看我的 程序运行的怎么样了啊， 是否崩了？
+        可惜的是，每次xshell关闭了，你再上去， 想找 通过 nohup &amp; 连招 放到后台程序的时候，
+        你会痛苦无比。。。非常惨
+        后来。。。。。。。。。
         
-        In [59]: s2 = {'abcd'}   # 理解方式： 此初始化方法把 整个 字符串当做集合的 一个 元素
-        In [60]: s2
-        Out[60]: {'abcd'}</code></pre>
+screen: （会话机制）  
+    没错，后来我就发现了 这个 screen工具 
+    如果你那里没有，就安装一下喽：  apt-get / yum install screen 
+    然后需要配置一下：
+        vi ~/.screenrc       # 创建文件        
+            shell -$SHELL    # 输入此行内容，保存退出
+    至于为何配置这个： 说实话我有点忘了
+        貌似不同screen会话对于不同的shell 权限有限制，导致很多东西用不了，so do it
+    
+    直接说一套我常用且超级实用连招把：
+    eg:
+        screen -S 会话名       # 创建 并 进入这个会话（就像进入另一个世界，但资源共享）
+        python xxx.py         # 举例子，这是我的爬虫程序，需要运行 三天
+        ctrl + a + d          # 跳出会话，回到正常命令行，但是这个会话以及你的程序依然在运行，
+        ....... 这段时间（除了关闭服务器）你做什么都行，关闭 shell也可以的。
+        screen -r 上面的会话名    # 恢复到会话中，  你会发现，爬虫程序还在那里好好的运行呢。
+        
+        如果你忘记会话名了，不要紧：
+        screen -ls     # 这条命令会列出所有 你创建过的会话，你也可以看到会话名
+        
+    总结：
+        所以，我不知道阁下能不能感受到 screen的魅力。
+        我们可以 通过  screen -r 这一条命令来 迅速回到程序运行的环境。
+        nohup &amp;： 你用这个执行的程序，关了 xshell, 你再连，你就不好找这个运行的程序了
+        screen 有一套完好的系统（就像有开关一样）来控制会话
+               你进入screen会话中写程序，screen 自然就能有条不紊的管理好 你程序的运行状态
+
+        举个白话例子：
+            你正遛二哈呢，突然有急事：
+            nohup &amp; :  你说：‘二哈，等我回来，自己玩把’        
+                       你回来时， 二哈跑丢了。 （不受控制，程序找不到了，虽然可以花力气找到）
+            screen  :  你说：‘二哈，等我回来，自己玩吧，但我要把你拴起来’        
+                       你回来时， 二哈还在那里乖乖的玩。（程序有效的受到控制，你可以轻松定位）
+</code></pre>
+<h3 id="sudo-su等操作">sudo su等操作</h3>
+<pre><code>不好意思，用了好几年linux：
+    什么 su- su 之类的，  我至今都没搞太明白。。。。。。。。。。
+
+但是，我只用下面这一条命令，这些年就没遇到过问题：
+    sudo -s    # 变为root, 如果你之前输入过密码， 这条命令还会免去让你输入密码的环节
+</code></pre>
+<h3 id="环境变量">环境变量</h3>
+<pre><code>把某路径加入到环境变量中：
+    vi /etc/profile
+        export PATH=$PATH:/XXX/XX
+
+做一些配置：
+    vi /etc/profile            
+    vi ~/.bashrc 
+    等修改完后
+    source /etc/profile        # 用一个 source 命令执行一下使配置更新生效
+    
+注： Linux-shell我研究的不深,所以这里可能有些说的不是特别明朗。
+    其实 这些配置文件 以及 source . sh bash 这些命令 和 用户 以及权限等都是有很大关系的。   
+    有兴趣可自行深入了解
+</code></pre>
+<h3 id="激活ubuntu的root用户">激活Ubuntu的root用户</h3>
+<pre><code>也许你ubuntu只能用root权限
+但你不能使用root用户登录，或不能使用root用户进行ssh连接
+ubuntu其实是存在 root 用户的, 不用创建，给个密码就能直接使用
+sudo passwd root
+</code></pre>
+<h3 id="root用户远程ssh连接">root用户远程SSH连接</h3>
+<pre><code>假如你的 xshell 连接不上远程服务器， 可能未开启 或 未安装 sshd服务
+如下命令即可：
+    sudo apt-get install ssh
+    systemctl start ssh
+如果你想要用root用户直接ssh连接, 可作如下配置：
+    sudo vim /etc/ssh/sshd_config
+        PermitRootLogin yes
+    systemctl restart ssh
+</code></pre>
+<h3 id="mysql57mariadb修改密码小坑">MySQL5.7+/MariaDB修改密码小坑</h3>
+<pre><code>当阁下还在停留在Mysql5.7版本之前，修改密码可以用下面这两种方式：
+    mysqladmin -uroot password -p
+    或内部设置：
+    update user set password=password('root') where user='root'
+
+但是 MySQL5.7 之后 或者 MariaDB ,上面这俩方法 都不能 修改密码了。
+正确修改方式：
+    先进入MySQL交互式： MySQL -uroot -p 
+
+    update mysql.user set authentication_string=password(&quot;密码&quot;) where user=&quot;用户名&quot;
+    update user set plugin=&quot;mysql_native_password&quot;;
+    flush privileges
+    
+    最后重启服务， 完事
+    
+另外，值得提醒的一点容易出现的问题：
+    无论你连接的是什么数据库，如果你连不上
+    
+    首先你应该想到的是，数据库配置文件：
+        bind 0.0.0.0        # 每种数据库几乎都需要先改成这样，才能被外界访问
+        
+    其次，你用的是云服务器的话
+        看看是否放通了 对应数据库的宽口
+        
+    最后，是否开了防火墙：
+        没记错的话，Centos 和 Ubuntu 防火墙不是同一种，真正需要关闭可自行百度
+</code></pre>
+<h3 id="其他命令">其他命令</h3>
+<pre><code>&quot;&quot;&quot;
+    一时间也记不起来还用过哪些了
+&quot;&quot;&quot;
+
+wc             : 统计字,词，行（自己选参数）
+curl           : 可以请求 url，并返回数据（相当于一个小小爬虫），也可以向某个接口发送请求
+ssh-keygen     ：生成公私密钥
+cd -           : 跳回到上一次的路径
+lsb_release -a : 查看Linux发行版信息
+grep           : 过滤字符
+tar            : 压缩/解压
+netstat        : 查端口
+等</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Python正则全解详解]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-python-zheng-ze-quan-jie-xiang-jie/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-python-zheng-ze-quan-jie-xiang-jie/">
+        </link>
+        <updated>2020-09-29T03:15:32.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="预编译">预编译</h3>
+<pre><code>import re
+re1 = re.compile(r'元字符 组成的正则规则')    # 元字符下面会说
+re1.方法()                     # 方法下边也会说
+</code></pre>
+<h3 id="元字符">元字符：</h3>
+<pre><code>表示普通字符：
+    .    # 除了\n外 都可以匹配的到                
+    \d   # 只匹配 纯数字 0-9
+    \D   # 和 \d相反， 除了数字全都匹配
+    \s   # 只匹配空格
+    \S   # 和 \s相反，除了空格，全都匹配         # 我喜欢用 [\s\S]*? 匹配所有
+    \w   # 只匹配 纯数字 或 大小写字母 或 下划线
+    \W   # 与 \w 恰好相反，     除了 纯数字、大小写字母、下划线 全都匹配
+    []   # [abcde] 只要包含这个列表的字符，都可以匹配的到。但默认只取一个， 简写 [a-e]
+             eg: re.compile(r'[e-h]').match('hello python ').group(0)
+             &gt;&gt;&gt; h
+         此外:  [^abcde] 或 [^a-e] 表示 '排除'，意思就是 除了abcde全匹配
+    
+匹配表示边界的：
+    ^    # 匹配 起始 位置，受 re.M 影响	 #注意：不要和 [^123] 除123之外搞混
+         eg:
+            import re
+            r1 = re.compile(r'^\d+')
+            print(r1.search('456hello123').group())
+            &gt;&gt;&gt; 456
+
+    $    # 匹配 结尾 位置，受 re.M 影响
+         eg:
+            import re
+            
+            s = &quot;&quot;&quot;
+            123abc456
+            678abc789
+            &quot;&quot;&quot;
+            r1 = re.compile(r'\d+$',re.M)    # 注意这里加入了re.M
+            print(r1.findall(s))
+            &gt;&gt;&gt; ['456', '789']    # 这是写了re.M，就意味着 每一行都给你单独按照规则处理
+            &gt;&gt;&gt; ['789']           # 如果没写re.M, 那么就按照整体，去最后一行的尾部
+            注： 其实re.M的本质是 是根据\n，进行 断行，断行后对每一行按照规则单独处理
+            
+    \b： # 匹配 单词的 边界（除了 数字、中英字母、下划线 的 所有符号）
+        eg:
+            import re
+            s = '你好啊----好个P'
+            r1 = re.compile(r'\b好')
+            print(r1.findall(s))
+            &gt;&gt;&gt; 好    
+            # 解释：这个‘好’是，后面  的那个。因为后面的 ’好‘ 字 左边是符号，而非单词字符
+                       
+    \B： # 匹配 单词 非 边界（包括 数字、中英字母、下划线）
+        eg:
+            import re
+            s = '你好啊----好个P'
+            r1 = re.compile(r'\b好')
+            print(r1.findall(s))
+            &gt;&gt;&gt; 好    
+            # 解释：这个‘好’是，前面  的那个。因为前面的 ’好‘ 字 左边是中文字符。属于非边界
+            # 所以就匹配上了
+        
+        再次总结： \b 与 \B：
+            \b： 匹配边界字符。边界字符：（除了 数字、字母、汉字、下划线的所有符号）
+            \B： 匹配非边界字符。非边界字符：（数字、字母、汉字、下划线）
+    
+匹配表示数量的：
+    *    ：	0次 或 多次                    eg： 你*
+    +    ：	1次 或 多次                    eg:  你+
+    ?    ：	0次 或 一次                    eg:  你?
+    {m}  : 	出现m次                        eg:  你{3}
+    {m,} :	至少 出现m次                   eg:  你{3,}   # 涉及到贪婪模式，不深的不要用
+    {m,n}: 	m次 到 n次  之间任意一次就行    eg:  你{3,6}
+    
+表示分组：
+    |    ： 相当于或运算符， 两边写的是 正则表达式，  优先选择左边的
+    ()   :  括起来里面的内容，就变成了分组。 可以用 .group(1)提取，如果有更多那就 group(2)..
+    (?P&lt;name&gt;) ： 在上面分组的基础上 起别名
+    (?P=name)  :  根据分组的别名来使用分组
+        eg:
+            s = '&lt;h1&gt;你好&lt;/h1&gt;'
+            r1 = re.compile(r'&lt;(?P&lt;name1&gt;\w+)&gt;(\w+)&lt;/(?P=name1)&gt;').match(s).group(2)
+            print(r1)
+            &gt;&gt;&gt; 你好
+            
+    \数字 ：提取的分组可以在 同一个正则中 复用  
+         eg: 
+             s = '&lt;h1&gt;你好&lt;/h1&gt;'
+             r1 = re.compile(r'&lt;(\w+)&gt;(\w+)&lt;/\1&gt;')    # \1 代表复用第一个分组
+             print(r1.match(s).group(2))         # 2代表提取第二个分组
+             &gt;&gt;&gt; 你好
+</code></pre>
+<h3 id="匹配模式">匹配模式</h3>
+<pre><code>re.M    # 多行匹配， 影响   ^ 和 $，上面讲  ^ 与 $已经详解了。
+re.I    # 忽略大小写
+        eg:
+            s = 'aAbB'
+            r1 = re.compile(r'aabb', re.I).match(s).group()
+            print(r1)
+            &gt;&gt;&gt; aAbB
+
+re.S    # 提升 . 的权限，  让 .  可以 匹配到换行符
+        s = &quot;&quot;&quot;
+        hello
+        python
+        &quot;&quot;&quot;
+        r1 = re.compile(r'.*', re.S).match(s).group()    # 注意这里 re.S
+        print(r1)
+        &gt;&gt;&gt; hello
+            python
+        注意：如果不写 re.S 那么 .* 只能匹配到第一行的空字符串，因为遇到第一个空行的\n就停止了
+        
+re.X    # 可以给正则分行写，并可以加注释，
+    eg:
+        import re
+    
+        title = '1好2你3'
+        r1 = re.compile(r&quot;&quot;&quot;
+        	1	 # 注释1  看这两行
+        	好	# 注释2  看这两行，1 和 好 没有加逗号。但是他们属于整体的规则，你可以加注释
+        &quot;&quot;&quot;, re.X)		# 把正则可以分行写,  用了re.X后，分行的正则会被看作为一行
+        result = r1.match(title).group()
+        print(result)	# 输出结果： 1好
+</code></pre>
+<h3 id="贪婪模式-与-非贪婪模式">贪婪模式 与 非贪婪模式</h3>
+<pre><code>个人理解： 
+    贪婪模式：(Python默认使用的就是 贪婪模式) 
+        你想匹配 一个句子中的 一个单词， 但是你写的规则恰好可以 满足 匹配所有单词。
+        那么它就会 贪婪的 把所有单词 全部 都给你匹配出来。   (贪)
+        
+        使用方法：
+            * 或 +
+            
+    非贪婪模式：
+        即使你把规则写的很好，并且能把所有字符串都匹配到， 但是如果你加上了  非贪婪模式。
+        在满足规则条件的前提下，只匹配一个.
+        
+        使用方法：
+            *? 或 +?
+
+    eg1：基于search的贪婪模式（match同此）
+        我们先回忆一下：search()方法的 最核心思想就是：从前往后搜，搜到一个满足的就直接返回。
+        OK，继续。
+        
+        贪婪：（默认）：
+            import re
+            r1 = re.compile(r'\d+')
+            print(r1.search('你好333你好333你好').group())
+            &gt;&gt;&gt; 333        # 满足规则后 尽可能贪， 所以第一串连着的 '333'  搜到了就直接返回了
+        
+        非贪婪（就多了个问号 ? ）：
+            import re
+            r1 = re.compile(r'\d+?')
+            print(r1.search('你好333你好333你好').group())
+            &gt;&gt;&gt; 3          # 嗯，你的规则就是 至少一个数字，搜到了一个就可以返回了，干得漂亮。
+            
+    
+    eg2: 基于findall的贪婪模式（如果你findall与规则，理解的不透彻，这个会有点绕的，前方高能）
+        先回忆一下：findall()方法的 最核心思想就是：拿着 定死的 规则，把所有满足规则的都提出来
+        OK，继续。
+        
+        贪婪（默认）：
+            import re
+            r1 = re.compile(r'\d+')
+            print(r1.findall('你好333你好333你好'))
+            &gt;&gt;&gt; ['333', '333']
+            
+            解释： 规则是匹配至少一位数字。
+                  但是 贪婪模式 提醒了 规则：“你的任务是给我尽可能的 多匹配数字”
+                  findall 拿着 被贪婪化的 规则 去匹配原始字符串
+                  
+                  被贪婪模式 提醒过的规则果然不负众望，  一次提一串连着的 ‘333‘  
+                  findall 拿着它 提取了   两次   ,就把所有数字提取出来了
+                  结果就是    ['333', '333']
+                  
+        非贪婪：
+            import re
+            r1 = re.compile(r'\d+?')
+            print(r1.findall('你好333你好333你好'))
+            &gt;&gt;&gt; ['3', '3', '3', '3', '3', '3']
+
+            解释： 规则 同样是 匹配至少一位数字。
+                  但是 非 贪婪模式 提醒了 规则：“你的任务是给我尽可能的 少  匹配数字”
+                  findall 拿着 被贪婪化的 规则 去匹配原始字符串
+          
+                  被贪婪模式 提醒过的规则果然不负众望，  一次只提取一个 ‘3‘  
+                  findall 拿着它 提取了   六次   ,才把所有数字提取出来了
+                  结果就是    ['3', '3', '3', '3', '3', '3']
+</code></pre>
+<h3 id="匹配方法">匹配方法</h3>
+<pre><code>match():
+    '''
+        match()方法是 根据规则从第一个开始，向后逐个匹配，如果有一个字符匹配不上，就返回None
+    '''
+    
+    s = 'hello python'
+    re1 = re.compile(r'he')  
+    re1.match('')
+    result = re1.match(s).group() if re1.match(s) else None   # 注意：非None才有group方法
+    print(result)        # 通过 group()方法获得的才是最终 正则匹配的字符串
+    &gt;&gt;&gt; he
+    
+    简单分组提取：
+        s = 'hello python'
+        re1 = re.compile(r'h(e)llo') # 给e加个一个(),就代表添加了分组，一会要把他提出来
+        result = re1.match(s).group(1) if re1.match(s) else None 
+            # 注意上方的  group(1)  这个参数是1，代表 只 提取 分组 里面的内容
+                &gt;&gt;&gt; e
+            # 如果是 group() 或 group(0)  代表提取 整个正则规则 的内容
+                &gt;&gt;&gt; hello
+        print(result)    
+        &gt;&gt;&gt; e
+    
+    嵌套-平行（深度-广度）分组提取：
+        原理：分组提取先提取嵌套的，后提取平行的 (专业点就是先深度，后广度)
+        eg：
+            a = '123-%%%-dd'
+            result = re.compile(r'123(-(%%%)-)d(d)').match(a).groups()   
+            # 或者用 group(1), group(2), group(3) 代替groups() 单个看也行
+            print(result)
+            &gt;&gt;&gt; ('-%%%-', '%%%', 'd') 
+
+search():
+    &quot;&quot;&quot;
+        search() 方法是： 从前向后按规则‘搜索’, 直到搜到位置，搜不到就返回None
+    &quot;&quot;&quot;
+    s = &quot;aaa123aaa&quot;
+    r1 = re.compile(r'\d+').search(s).group()
+    print(r1)     
+    &gt;&gt;&gt; 123
+
+findall():
+    &quot;&quot;&quot;
+        findall() 方法是： 按照正则规则，搜索所有符合规则的字符串，以列表的形式作为结果返回
+    &quot;&quot;&quot;
+    s = &quot;aaa---123---bbb&quot;
+    r1 = re.compile(r'\w+').findall(s)
+    print(r1)
+    &gt;&gt;&gt; ['aaa', '123', 'bbb']
+    
+    微不足道的扩展：
+        a = '123-%%%-dd'
+        result = re.compile(r'-(.*?)-').findall(a)
+        print(result)
+        &gt;&gt;&gt; %%%
+        # 解释： findall() 方法中 如果规则中含有分组，那么就会只返回分组中提取的的内容
+        
+finditer():
+    &quot;&quot;&quot;
+        finditer() 和 findall() 使用方式一样，只不过返回结果是 可迭代对象，easy,此处不在多说
+    &quot;&quot;&quot;
+    
+split():
+    &quot;&quot;&quot;
+        split()方法是：按照规则去切割，切割结果以列表的方式返回
+    &quot;&quot;&quot;
+    语法关联：
+        我们知道字符串  有 split() 方法，可以按照一个参数损耗来切割，但是这个参数只能指定一个
+        如果让你在多种规则的前提下切割，需要怎么办。
+        巧了，正则切割split() 方法就是解决这个问题的， 实例如下：
+        
+    s = &quot;aaa%%123@@bbb&quot;                  # 可以看见，%和@符号把字符分开了，现在我们只想要字符
+    r1 = re.compile(r'\W+').split(s)     # \W 大写： 以非单词性字符作为损耗规则，来切割
+    print(r1)
+    &gt;&gt;&gt; ['aaa', '123', 'bbb']
+
+sub():
+    &quot;&quot;&quot;
+        sub()方法是： 按照规则匹配选出代替换的字符，然后自己 给定字符去替换
+    &quot;&quot;&quot;
+    场景1：常用方式，自己给定目标字符串，按规则匹配并直接替换原始字符串
+        eg:
+            s = &quot;aaa%%123@@bbb&quot;
+            r1 = re.compile(r'\W+').sub('你好',s)
+            print(r1)
+            &gt;&gt;&gt; aaa你好123你好bbb
+        
+    场景2：正则匹配后的结果 经过函数操作，函数的返回值作为 替换的最终结果
+        eg:
+            s = &quot;aaa%%123@@bbb&quot;
+            r1 = re.compile(r'\W+').sub(lambda a:a.group()*2, s)
+            print(r1)
+            &gt;&gt;&gt; aaa%%%%123@@@@bbb
+            解释： 按照规则匹配到的字符是 %%和@@，经过函数 乘以2后， 就替换成了 %%%%和@@@@
+            
+subn():
+    &quot;&quot;&quot;
+        subn() 和 sub()语法几乎一样，唯一的扩展功能就是 返回结果是元组，(字符串, 次数)
+    &quot;&quot;&quot;
+    s = &quot;aaa%%123@@bbb&quot;
+    r1 = re.compile(r'\W+').subn('你好',s)
+    print(r1)
+    &gt;&gt;&gt; ('aaa你好123你好bbb', 2)
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Python好用深度技能工具介绍]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-python-hao-yong-shen-du-ji-neng-gong-ju-jie-shao/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-python-hao-yong-shen-du-ji-neng-gong-ju-jie-shao/">
+        </link>
+        <updated>2020-09-29T03:10:43.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="单元素元祖">单元素元祖：</h3>
+<pre><code>a = (1)    # 这是整数1
+a = (1,)   # 这才是元祖
+也许这两行，你们当时疑惑过，并且现在也都知道了，当然重点并不在这里。。
+
+我无聊的时候想过，为什么单元素元祖要这样设计 -&gt; (1,)?
+不多废话，看下面代码，自己理解：
+    a = (3,)
+    a = (3)
+    
+    a = (1+2)
+    a = (1+2,)
+    
+    a = (1+2) + (3+4)
+    a = (1+2,) + (3+4,)
+
+注：
+    这是我个人原创理解的一个微不足道的知识点，但是印象却特别深刻。
+    因为我反向推测出 设计者为什么会设计出这种语法。
+    （当然，也许我的推测和设计者当时的想法的并不一样~~~手动滑稽）
+</code></pre>
+<h3 id="深浅拷贝-copydeepcopy皮肉">深/浅拷贝-copy/deepcopy（皮/肉）</h3>
+<pre><code>&quot;&quot;&quot;
+    最开始接触深浅拷贝的时候没太大感觉，只是普通的觉得避免数据污染就够了
+    后来有一次用scrapy写爬虫的时候，层次太多导致内存有些顶不住。
+    后来用的 deepcopy() 来 优化  scrapy 的 meta， 虽然效果不是特别明显，但是感觉深浅拷贝很有用
+&quot;&quot;&quot;
+    一、 =号，不拷贝
+        =号就意味着，引用指向同一个地址空间，‘敌动我动，敌不动我不懂’ 的感觉。 LOL一句话:&quot;连体婴儿&quot;~~
+    二、 copy：也称浅拷贝
+        我用最简单的话解释一下：浅拷贝就是只能拷贝最外面的一层皮，来独立开辟空间使用，再深还是共用的     
+
+            from copy import copy
+            from copy import deepcopy
+            
+            a = [[1,2,3],[4,5,6]]
+            b = deepcopy(a)
+            b[0] = 0            # 这就是最外面的一层皮
+            print(b)
+            print(a)
+    三、 deepcopy：顾名思义了，深拷贝
+       如果你听懂我上面的话，我感觉这个就更好理解了， 浅拷贝是皮，深拷贝那就是肉了呗。
+       没错，无论套了几层的序列结构，每一层都是独立开辟空间，独立指向。
+            from copy import copy
+            from copy import deepcopy
+            
+            a = [[1,2,3],[4,5,6]]
+            b = deepcopy(a)
+            b[0][1] = 0    # 看清楚，这回就是里面的肉了， 深拷贝：你改哪里都行，哪里都与我无关
+            print(b)
+            print(a)
+</code></pre>
+<h3 id="lambda黑科技">lambda黑科技</h3>
+<pre><code>&quot;&quot;&quot;lambda相当于匿名函数，可以使代码简介，但有时也会被人唾弃，但我仍然喜欢用lambda&quot;&quot;&quot;
+
+1. 试想：如果你想在lambda调用多个函数，该如何写？
+    lambda: (print(1),print(2))    # 最外层加个括号即可
+    
+2. 如果你想让这个 lambda函数直接自执行，而不是通过赋予一个函数引用再执行？
+    1. 这个也是我自己瞎鼓捣出来的。
+    2. 虽然我JS水平很垃圾，但是我知道JS匿名函数有一种执行方式叫做 ‘自执行’。
+    3. 把上面类比一下。
+    
+    看吧，这就是Python版的匿名函数自执行方法。
+        Python版本： (lambda a:print(a))(1)        
+        JS版：       (function(){})()
+</code></pre>
+<h3 id="lambda的虚伪替代品-operator">lambda的虚伪替代品-operator</h3>
+<pre><code>&quot;&quot;&quot;
+    据说这个模块可以替代lambda， 个人理解此模块并不那么太有实用价值，理解成本也偏高，
+    建议：如果不喜欢lambda或者lambda用的很少的人，可以研究一下此模块。此模块的意图还是可以的。
+    我还是喜欢使用 lambda
+&quot;&quot;&quot;
+直接上个例子：（字典基于Value来排序） 
+    传统lambda写法：
+        In [27]: a = {'1':6, '2':5, '3':4}
+        In [28]: sorted(a.items(), key=lambda a:a[1])   # 看key= 这里
+        Out[28]: [('3', 4), ('2', 5), ('1', 6)]
+                                
+    operator写法：
+        from operator import itemgetter
+        
+        In [25]: a = {'1':6, '2':5, '3':4}
+        In [26]: sorted(a.items(), key=itemgetter(1))   # 就是key= 这里有区别
+        Out[26]: [('3', 4), ('2', 5), ('1', 6)]
+
+如果上面两种新旧方法都很模糊，那么我再解释一下： 我认为上面能让人头疼的也就是 索引 1 了！！！！
+    sorted, map这种高阶函数，我之前也单独讲过，它会把 一个序列的每一个元素用管道函数进行映射。
+    
+    sorted稍微特殊一点，它的管道函数方法变成了key=这里： (变相理解为 指定排序的基准/参考)
+        1. key=lambda a:a[1]
+            指定基准：序列a的 每子元素 的 第1号索引子元素    # eg： [[1,2],[3,4],[5,6]]  就是2,4,6
+        
+        2. key=itemgetter(1)
+            指定基准：同上一模一样，只不过写法不一样，逻辑步骤就是 原原本本从 lambda那里演变过来的。
+            
+总结与个人观点：
+    1. operator 模块只是 lambda 使用思想 的 高一层的封装
+    2. 让使用者可以忽略lambda格式细节
+    3. 但是我认为 如果lambda都用不好， 那么 这个 itemgetter(1) 这种子元素 索引的指定 也会很困难
+    4. 所以我还是建议用 lambda, 当你 lambda思想练熟了之后， 用 operator看看官方文档就是很快的事情
+</code></pre>
+<h3 id="封包拆包解构赋值函数占位参数骚操作">封包/拆包(解构赋值)/函数占位参数骚操作</h3>
+<pre><code>&quot;&quot;&quot;
+    再次说明一下：我写的所有的都是Py3的/   Py2的解构赋值可能有些出入，此处我只说Py3
+&quot;&quot;&quot;
+
+封包：
+    1）
+        def f(a,*b):
+        	print(a)    # 1
+        	print(b)    # (2,3,4)
+        f(1,2,3,4)
+    2） 
+        def f(**kwargs):
+        	print(kwargs)    # {'a': 3, 'b': 4}
+        f(**dict(a=3,b=4))
+        
+拆包（解构赋值）：
+    &quot;&quot;&quot;
+        我说过太多次了， ES6的语法和Python很像。解构赋值这个词也是从ES6听到的。
+        不过ES6的解构，还可以解构 {} 和 解构空值 和 解构默认值,   而Python不可以
+    &quot;&quot;&quot;
+    1)  只要第一个
+            a, *_ = range(5)
+            print(a, _)     # 0  [1, 2, 3, 4]
+
+    2)  只要第一个和最后一个
+            a, *_, c = range(5)
+            print(a, _, c)    # 0  [1, 2, 3]  4
+            
+    3)  只要最后一个
+            *_, b = range(5)
+            print(_, b)      # [0, 1, 2, 3]  4
+
+
+函数占位参数骚操作：
+    &quot;&quot;&quot;
+        这是我在源码中看到的，当时觉得很惊讶，自己试了一下，下面说下自己的理解:
+        这个*的作用就是： （*后面的参数是 调用时 必须命名 且 必须传递 的参数）
+            a你必须给我传过来，但是你不写   a=
+            b你必须给我传过来，但是你必须写 b=
+    &quot;&quot;&quot;
+    def f(a,*,b):
+    	print(a)
+    	print(b)
+    f(1,b=3)    # f(a=1,b=3)    # 只能通过这两种方式调用
+</code></pre>
+<h3 id="反射-getattr-setattr-hasattr-delattr-import_module">反射-getattr &amp; setattr &amp; hasattr &amp; delattr &amp; import_module</h3>
+<pre><code>综合例子:
+    from importlib import import_module
+    random = import_module('random')          # 动态反射导入模块  
+    # 或 random = __import__('random')         
+    if hasattr(random, 'randint'):            # 检测模块中是否有函数
+    	randint = getattr(random,'randint')   # 动态反射导入函数
+        print(eval('randint(0,1)'))               # 字符串转语句执行（类似反射）
+    
+getattr &amp; setattr &amp; hasattr &amp; delattr 讲解：
+    hasattr &amp; getattr
+        random = __import__('random')
+        if hasattr(random,'randint'):	# 检测 random 模块中是否有 randint 函数
+        	randint = getattr(random,'randint')
+        	print(randint(0,1))
+        	
+    delattr &amp; hasattr 
+        delattr(random, 'randint')      # 动态删除模块中的 randint函数
+        if not hasattr(random,'randint'):
+        	print('没有此函数了，让delattr删除了')
+        	
+    setattr &amp; getattr                   # 动态重新设置模块的 randint函数，并给个函数体
+        setattr(random, 'randint', lambda:print('设置这个方法凑合用把。'))
+        randint = getattr(random, 'randint')
+        randint()     
+</code></pre>
+<h3 id="模块重新导入到内存-reload">模块重新导入到内存-reload</h3>
+<pre><code>from imp import reload
+import time
+reload(time)
+print(time.time())
+</code></pre>
+<h3 id="进度条-tqdm">进度条-tqdm</h3>
+<pre><code>for x in tqdm(range(100)):
+    import time
+    time.sleep(1)
+    print(x)
+tqdm包装一个可迭代对象， 只是装饰了一下，使用方法还是像原来一样使用。 
+</code></pre>
+<h3 id="票数统计-counter">票数统计-Counter</h3>
+<pre><code>In [2]: from collections import Counter
+
+In [3]: Counter([1,2,3,4])
+Out[3]: Counter({1: 1, 2: 1, 3: 1, 4: 1})
+
+In [4]: Counter([1,1,1,2,2,3])    # 统计频次
+Out[4]: Counter({1: 3, 2: 2, 3: 1})
+
+In [5]: Counter([1,1,1,2,2,3]).most_common(1)    # 频次最多的前1个
+Out[5]: [(1, 3)]
+</code></pre>
+<h3 id="文件-复制移动-shutil">文件 复制/移动-shutil</h3>
+<pre><code>import shutil
+shutil.copy(源，目标)    # 复制
+shutil.move(源，目标)    # 移动，改名
+shutil.rmtree(r'目录名')  # 删除目录（级联删除）    # 参数只能是目录
+</code></pre>
+<h3 id="文件遍历-oswalk">文件遍历-os.walk</h3>
+<pre><code>&quot;&quot;&quot;
+    os.walk() 是一个深度遍历模式的文件遍历函数
+    返回值是一个迭代器，遍历这个迭代器后，每一次的返回值都是如下顺序三种构成
+        1. current_path: 当前路径 
+        2. dir_list:     其下目录列表
+        3. file_list:    其下文件列表
+    
+&quot;&quot;&quot;
+import os
+file_generator = os.walk('D:/虚拟E盘-代码空间/TF2')
+for current_dir, dir_list, file_list in file_generator:
+	print(current_dir, dir_list, file_list)
+</code></pre>
+<h3 id="非阻塞执行cmdshell-subprocess">非阻塞执行cmd/shell-subprocess</h3>
+<pre><code>&quot;&quot;&quot;
+    主要代替os.system
+&quot;&quot;&quot; 
+import subprocess
+res = subprocess.run('dir', shell=True, stdout=subprocess.PIPE) # 结果输入到res管道中去
+print(res.stdout.decode('gbk'))    # res管道中有输出日志，如果在win下，需要 decode
+</code></pre>
+<h3 id="排列组合-itertools模块">排列组合-itertools模块</h3>
+<pre><code>import itertools
+list(itertools.product([1,2,3],repeat=3))    # 复制3份有序全排列， repeat=3    
+list(itertools.permutations([1,2,3], 3))     # 内部有序排列， 3表示最后排列为几位
+list(itertools.permutations([1,2,3,4],3))    # 无序组合， 3表示3位
+</code></pre>
+<h3 id="枚举-emunerate">枚举-emunerate</h3>
+<pre><code>In [100]: list(enumerate(list('abcde'),start=1))    # 默认从0，开始标号， start=1就从1开始
+Out[100]: [(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')]
+
+In [108]: list(enumerate(((1,2),(3,4))))
+Out[108]: [(0, (1, 2)), (1, (3, 4))]        
+
+In [106]: list(enumerate({&quot;a&quot;:'c','b':'d'}))
+Out[106]: [(0, 'a'), (1, 'b')]
+</code></pre>
+<h3 id="global-nonlocal-globals-locals">global &amp; nonlocal &amp; globals() &amp; locals()</h3>
+<pre><code>global: 函数外的变量只能在函数内部取值，而不能修改， 如果想要在函数内部修改外部变量, ‘global 变量名’ 即可
+    a = 1
+    def f():
+        global a
+        a += 1
+        print(a)
+    f()
+        
+nonlocal: 原理同上一模一样，只不过应用场景是闭包了，代码如下：
+    def f():
+        a = 1
+        def f1():
+            nonlocal a
+            a = a+1
+            print(a)
+        f1()
+    f()
+</code></pre>
+<h3 id="日历-calendar">日历-calendar</h3>
+<pre><code>import calendar
+calendar.calendar(2019)    # 返回2019年的日历
+calendar.month(2919,5)    # 返回2019年5月的日历
+calendar.isleap(2000)    # 判断2000年是否为闰年
+</code></pre>
+<h3 id="时间日期-timedatetime">时间/日期-time/datetime</h3>
+<pre><code>import time
+1. 时间戳：
+    time.time()
+    
+2. 字符串转时间(p-pass方便记忆)
+    from datetime import datetime
+    fordate = datetime.strptime('2019-5-25 9:30:30', '%Y-%m-%d %H:%M:%S')
+    print(fordate)
+
+3. 时间转字符串(f-from方便记忆)
+    from datetime import datetime
+    strdate = datetime.strftime(fordate, '%Y-%m-%d %H:%M:%S')
+    print(strdate)
+    
+4. 初始化时间
+    from datetime import datetime
+    dt1 = datetime(2019,5,25,9,37)    # 初始化时间为 datetime格式
+    dt1 = datetime.now()   # 获取当前时间为 datetime格式
+    print(dt1.year)
+    print(dt1.month)
+    print(dt1.day)
+    print(dt1.hour)
+    print(dt1.minute)
+    print(dt1.second)
+</code></pre>
+<h3 id="retrying模块">retrying模块</h3>
+<pre><code>&quot;&quot;&quot;
+    retrying模块的retry是个装饰器
+    被装饰的函数会执行如下基本操作：
+        如果此函数内部代码  无异常， 那么 retry装饰器 不起到任何作用
+        如果此函数内部代码  无异常， 那么 retry装饰器 会一直反复执行这个函数
+            直到无异常，才执行下面的代码（才放你走）
+            如果你这个程序压根就是个错误程序，那么不好意思，慢慢等，等到死吧。。。。。
+            
+    所以说到底，retry装饰器 的设计目的就是（类似  轮询/回调那种思想）：
+        希望你这个函数执行 出现异常，但此异常会通过程序之外的因素来控制，至无异常为止
+    
+    当然设计者并不会苦苦相逼的。。 他不会让你等到死， 你也可以通过手动设置参数来自己控制异常
+    这里我就说2个常用的参数：
+        stop_max_attempt_number = 10000 
+            # 此参数就是会 自动执行这个函数 10000次
+                10000次之内，如果有有一次，函数顺利执行，无异常，那么继续执行下面的代码(放行)
+                10000次之内，全部都是异常，不好意思， 我也不等你了，直接抛出一个异常，程序终止
+        stop_max_delay = 20*1000,
+            # 此参数就是会 等你 20*1000 毫秒  ====  20秒
+                20秒之内， 如果能顺利执行此函数， 继续执行下面程序（放行）
+                20秒之内， 全都是异常， 抛出异常，程序终止
+                
+        这两个参数也可以联用
+        具体语法见下方代码
+&quot;&quot;&quot;
+pip install retrying
+
+from retrying import retry
+
+# 最多等你执行 10000次，  最多等你执行 20秒， 还连不上，就滚蛋，程序抛异常终止。
+
+@retry(
+    stop_max_attempt_number = 10000,
+    stop_max_delay = 20*1000,
+)
+def verify_request():
+    response = requests.get(&quot;http://selenium:4444&quot;, timeout=0.5)
+    print(response)
+verify_request()
+
+
+注：时间 和 次数这两个参数联合用，哪个参数先达到设定值， 就按哪个优先停止程序。
+如果对连个联合参数 有次序疑问，可用如下代码自己调节测试：
+    from retrying import retry
+    a = 1
+    @retry(        
+    	stop_max_attempt_number = 10000000,
+    	stop_max_delay = 3*1000
+    )
+    def f():
+    	global a
+    	print(a)
+    	a+=1
+    	1/0
+    f()
+
+其实还有很多参数，不算太常用，感兴趣可以看看：
+    https://github.com/rholder/retrying</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => Python__黑魔法__]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-python__-hei-mo-fa-__/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-python__-hei-mo-fa-__/">
+        </link>
+        <updated>2020-09-29T03:09:46.000Z</updated>
+        <content type="html"><![CDATA[<h3 id="类的继承">类的继承</h3>
+<pre><code>类继承有三种调用方式，其实是 有区别 的，听我慢慢道来
+class A:
+	def say(self, name):
+		print(f'Im {name}')
+class B(A):
+	def say(self, name):
+    # 第一种：父类.方法(self, 参数) 直接调用
+	    A.say(self, name)    
+	    
+	def say(self, name):
+	# 第二种：super().方法(参数)    直接调用
+	# 在谁的类下调用super，就找此类对应 mro()的下一个,就是要继承的
+	 	super().say(name)
+	 	
+	def say(self, name):
+	# 第三种：super(B, self).方法(参数)
+	# 找类名 对应的 mro()的下一个，就是 继承的，一般写本身的类名
+		super(B, self).say(name)
+
+B().say('Tom')
+</code></pre>
+<h3 id="上下文管理器">上下文管理器</h3>
+<pre><code>&quot;&quot;&quot;
+    上下文管理器可以用两种方式实现：
+&quot;&quot;&quot;
+     方式1：通过类来实现
+        主要实现两种协议
+            1. __enter__(self)
+            2. __exit__(self, *args, **kwargs)
+                
+        class A():
+        	def __init__(self, name):
+        		self.name = name
+        	def __enter__(self):
+        		print('进入')
+        		return self
+        	def __exit__(self, *args, **kwargs):
+        		print('退出')
+        		return True
+        
+        with A('Tom') as a:
+        	print(a.name)
+
+    方式2：通过函数来实现
+        from contextlib import contextmanager
+        @contextmanager
+        def f():
+        	print('开始')    # yield 之前 对应 with f()
+        	yield '中间'     # yield 的值 就是    as 之后的值
+        	print('结束')    # yield 之后 对应 print(str1) 这个语句体
+        
+        with f() as str1:
+        	print(str1)
+        ------------------Output----------------------
+        开始
+        中间
+        结束
+</code></pre>
+<h3 id="属性描述符-property-setter">属性描述符-property-setter</h3>
+<pre><code>class A:
+@property
+def name(self):
+	return '123'
+@name.setter
+def name(self, value):
+	self.age=value
+
+a = A()
+print(a.name)
+a.name = '456'
+print(a.age)
+</code></pre>
+<h3 id="init"><strong>init</strong>()</h3>
+<pre><code>实例化对象时自动调用，这里先卖个关子，见下面 __new__()
+</code></pre>
+<h3 id="call"><strong>call</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+   对象当做函数执行的时候会自动调用 __call__()
+&quot;&quot;&quot;
+class A():
+    pass
+a = A()    # 此处自动调用了 __init__()
+a()        # 此处自动调用了 __call__()
+</code></pre>
+<h3 id="str"><strong>str</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    对对象进行print操作的时候 会自动调用 __str__()
+&quot;&quot;&quot;
+class A:
+	def __str__(self):
+		return '5'
+a = A()
+print(a)  # 此处自动调用了 __str__()
+</code></pre>
+<h3 id="new"><strong>new</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    上面说过 __init__()是实例化对象的时候自动调用，在它之前还隐式调用了 __new__()
+    __new__返回的是什么，对象就是什么
+&quot;&quot;&quot;
+In [2]: class A:
+   ...:   def __new__(self):
+   ...:     print('__new__')    # 初始化对象只调用 __new__ 而不调用 __init__
+   ...:     return 1
+   ...:   def __init__(self):
+   ...:     print(2)
+   ...: print(A())
+    __new__
+    1
+</code></pre>
+<h3 id="setattr-和-getattr-和-delattr"><strong>setattr</strong>() 和 <strong>getattr</strong>() 和 <strong>delattr</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    __setattr__()：=号 属性赋值 会自动调用此方法 
+    __getattr__()：.号 属性取值 会自动调用此方法    # 注：找不到属性才会调用此方法
+    __delattr__()：del 属性删除 会自动调用此方法
+&quot;&quot;&quot;
+class A:
+
+	def __init__(self, name):
+		self.name = name        # 赋值操作就会调用 __setattr__()
+    
+	def __setattr__(self, name, value):
+		print(f'{name}:{value}')
+	def __getattr__(self, name):
+		print(name)
+	def __delattr__(self,name):
+	    print('del了')
+		
+a = A('Jack')    # 调用了 __init__
+a.name = 'Tom'   # 赋值操作再次调用 __setattr__()
+a.name           # 取值操作调用 __getattr__()
+---------------------output---------------------
+name:Jack
+name:Tom
+name
+del了
+</code></pre>
+<h3 id="getattribute"><strong>getattribute</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    和 __getattr__() 一样，只不过 __getattribute__最先调用，并拦截了 __getattr__()
+&quot;&quot;&quot;
+class A:
+	def __init__(self):
+		self.name = 1
+	def __getattr__(self,x,*args, **kwargs):
+		print(456)
+	def __getattribute__(self, x):
+		print(123)
+
+a = A()
+a.aaaaaa
+-----------output---------------
+123
+</code></pre>
+<h3 id="getitem"><strong>getitem</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    对对象进行 切片、索引、遍历 等 会自动调用此方法
+&quot;&quot;&quot;
+class A:
+def __getitem__(self,x,*args, **kwargs):
+	return x
+
+a = A()
+触发方式1： 如果直接索引此对象，那么索引值就会传递到上面 x 当作参数
+    print(a[5])
+    &gt;&gt; 5
+触发方式2： 如果直接切片此对象，那么slice对象 就会传递到上面 x 当作参数
+    print(a[1:5])
+    &gt;&gt; slice(1, 5, None)
+触发方式3： 如果for循环迭代此对象，那么 上面的 x 每次将会被赋予从零开始 自增1的自然整数
+    for x in a:
+	    print(x)
+	&gt;&gt; 0,1,2,3,4.................... 
+</code></pre>
+<h3 id="init_subclass"><strong>init_subclass</strong>（）</h3>
+<pre><code>&quot;&quot;&quot;
+    被继承的类 会自动调用__init_subclass__ 
+&quot;&quot;&quot;
+class A:
+	def __init_subclass__(self):
+		print('我被继承了')
+
+class B(A):
+	pass
+</code></pre>
+<h3 id="base"><strong>base</strong>（）</h3>
+<pre><code>&quot;&quot;&quot;
+    查看基类
+&quot;&quot;&quot;
+class A:
+    pass
+class B(A):
+	pass
+print(B.__base__)
+-----------output---------------
+&lt;class '__main__.A'&gt;
+</code></pre>
+<h3 id="contains"><strong>contains</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    xx in xx 就会自动调用  __contains__()
+&quot;&quot;&quot;</code></pre>
 ]]></content>
     </entry>
 </feed>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Docker语法全面回忆 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Hello Docker
+官方安装教程：https://docs.docker.com/install/linux/docker-ce/ubuntu/
+进去选好对应系统/发行版， 照着命令复制-粘贴-运行。  就可以安装成功（根本不需要多余..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Docker语法全面回忆</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="hello-docker">Hello Docker</h1>
+<pre><code>官方安装教程：https://docs.docker.com/install/linux/docker-ce/ubuntu/
+进去选好对应系统/发行版， 照着命令复制-粘贴-运行。  就可以安装成功（根本不需要多余操作）
+</code></pre>
+<h1 id="image镜像">Image（镜像）</h1>
+<ul>
+<li>
+<h3 id="docker-search">docker search</h3>
+<pre><code> docker search python    # 列出dockerhub 提供的 image
+</code></pre>
+</li>
+<li>
+<h3 id="docker-pull下载">docker pull（下载）</h3>
+<pre><code> docker pull python:3.7  # 从 dockerhub下载 image    冒号:数字  用来指定版本（不指定就是最新版本）   
+</code></pre>
+</li>
+<li>
+<h3 id="docker-images列出">docker images（列出）</h3>
+<pre><code> docker images           # 列出本地镜像 （或 docker image ls）
+ docker images py*       # 也可以通过名称来筛选查看 image， 也可使用通配符
+</code></pre>
+</li>
+<li>
+<h3 id="docker-rmi删除">docker rmi（删除）</h3>
+<pre><code> docker rmi &quot;image名&quot; 或 &quot;imageID&quot;    # 删除 image
+ docker rmi python -f                # 强制删除（当image内有容器运行无法删除时，可通过-f强制删除）
+     如果两个image有相同 &quot;imageID&quot;，会删除失败， 这时可以考虑用 &quot;image名&quot; 来删除
+     如果两个image有相同的 &quot;image名&quot;， 那么可以考虑用  &quot;image名:Tag&quot;  来删除
+</code></pre>
+</li>
+<li>
+<h3 id="docker-save保存备份">docker save（保存备份）</h3>
+<pre><code> 方式1：docker save python &gt; python.tar        # 可追加多个image来 把多个image打包保存  
+ 方式2: docker save python -o python.tar
+ python.tar文件 可分享传输，给别人还原加载使用
+ 注： 上令为例，如果有多个python版本， 那么会将所有python images 都会打包在一起保存
+      如果你有多个镜像， 为了避免混淆，一定要指定一下版本号  docker save python:latest  
+</code></pre>
+</li>
+<li>
+<h3 id="docker-load还原">docker load（还原）</h3>
+<pre><code> 方式1： docker load -i python.tar
+ 方式2： docker load &lt; python.tar
+</code></pre>
+</li>
+<li>
+<h3 id="docker-tag改名改版本号">docker tag（改名，改版本号）</h3>
+<pre><code> docker tag python:latest py:3.7        #  把 &quot;python:latest&quot;  改为  &quot;py:3.7 &quot;
+ 注1： 若image名不为&lt;none&gt;, 那么首先会将 image 复制创建一份，然后改名
+ 注2： 若原image名为 &lt;none&gt; ，那么 改名后，会直接在原有image上直接改名
+</code></pre>
+</li>
+<li>
+<h3 id="docker-inspect查看详细信息">docker inspect（查看详细信息）</h3>
+<pre><code> docker inspect python
+</code></pre>
+</li>
+<li>
+<h3 id="docker-history查看分层历史信息">docker history（查看分层历史信息）</h3>
+<pre><code> docker history mypython:3.7
+</code></pre>
+</li>
+</ul>
+<h1 id="container容器">Container（容器）</h1>
+<ul>
+<li>
+<h3 id="docker-create创建">docker create（创建）</h3>
+<pre><code> docker create --name py-con python:latest    #  --name后自定义名字，  最后指定哪一个镜像
+ docker create -it python:latest  python       #  创建带有标准输入环境的容器，并执行python命令
+     -t 为了给容器创建一个 terminal
+     -i 为了给容器提供一个 标准输入流 （否则，容器终端里无法输入）
+ 注：创建默认是 created状态， 需要下面 docker start 命令来启动     
+</code></pre>
+</li>
+<li>
+<h3 id="docker-start开启">docker start（开启）</h3>
+<pre><code> docker start -ai 容器ID        # 以标标准环境开启容器
+     -a 代表提供标准输出
+     -i 同create -i ，提供标准输入
+</code></pre>
+</li>
+<li>
+<h3 id="docker-run创建启动-推荐">docker run（创建+启动, 推荐）</h3>
+<pre><code> docker run -it python:latest python      # 一套搞定  create+start 的繁杂过程， -it同上不解释
+     # 命令防混淆解释： 根据python:latest镜像 ，创建并执行容器，同时执行 python命令
+ docker run  -d -it python:latest python
+     # 其他不变，多加一个 -d， 可以创建并放入 &quot;后台&quot; 执行 （不加-d , 默认&quot;前台&quot;）
+ docker run -dit --rm python:latest python
+     # --rm 参数代表 容器停止，即（exited状态），  就会自动删除。 
+ docker run --network bridge -itd mypython:latest python
+     # --network 代表指定网络（若不指定，默认也是bridge，见下面 网络章节）
+ docker run -dit -p 6006:6379 redis
+     # 端口映射， 宿主机（6006）：容器(6379)        (-P代表容器内部所有端口 与宿主机随即映射)
+ docker run --restart always
+     # --restart always 代表 docker服务重启时， 里面的容器也会跟着重启
+</code></pre>
+</li>
+<li>
+<h3 id="docker-stop终止结束">docker stop（终止，结束）</h3>
+<pre><code> docker ps             # 查看一下   &quot;运行中容器ID&quot;
+ docker stop 容器ID    # 停止 &quot;运行中&quot; 的容器  ( 默认 10秒钟后 才停止)
+ docker stop -t 0 374  # -t指定时间 0秒后， 即瞬间就可以停止
+ 扩展（停止所有正在运行的容器）：
+     docker stop $(docker ps -q)    # -q参数代表只显示容器ID
+</code></pre>
+</li>
+<li>
+<h3 id="docker-restart重启">docker restart（重启）</h3>
+<pre><code> docker restart -t 0  281    # 0秒重启
+</code></pre>
+</li>
+<li>
+<h3 id="docker-pause暂停">docker pause（暂停）</h3>
+<pre><code> docker pause 281    # 暂停容器内的所有进程， 注意是暂停， 不是终止
+</code></pre>
+</li>
+<li>
+<h3 id="docker-unpause继续">docker unpause（继续）</h3>
+<pre><code> docker unpause 281    # 把暂停的容器，继续开启
+</code></pre>
+</li>
+<li>
+<h3 id="docker-ps查看">docker ps（查看）</h3>
+<pre><code> docker ps         # 列出所有 &quot;运行中&quot; 的容器
+ docker ps -a      # 列出所有 容器
+</code></pre>
+</li>
+<li>
+<h3 id="docker-logs查看输出日志">docker logs（查看输出日志）</h3>
+<pre><code> docker logs 281   # 查看容器内部输出日志
+ docker logs -f 281   # -f 代表阻塞监控，   (和 tail -f 一个道理)
+</code></pre>
+</li>
+<li>
+<h3 id="docker-rename重命名">docker rename（重命名）</h3>
+<pre><code> docker rename 281 python    # 把 281的容器  改名为  python
+</code></pre>
+</li>
+<li>
+<h3 id="docker-inspect查看容器详细信息">docker inspect（查看容器详细信息）</h3>
+<pre><code> docker inspect 374    # 查看容器所有信息
+</code></pre>
+</li>
+<li>
+<h3 id="docker-rm删除">docker rm（删除）</h3>
+<pre><code> docker rm 容器ID        # 删除已停止的容器
+ docker rm 容器ID -f     # 强制删除（运行中）等特殊情况的容器
+</code></pre>
+</li>
+<li>
+<h3 id="docker-attach进入到容器命令执行处">docker attach（进入到容器命令执行处）</h3>
+<pre><code> docker run -itd python:latest python    # 新创建容器，名执行 python命令
+ docker attach 281     # 直接进入281这个容器，并直接跳到 python控制台内部 
+ &quot;注： 进入python控制台后，再退出去，就意味着， 容器的退出。&quot;
+</code></pre>
+</li>
+<li>
+<h3 id="docker-exec执行命令">docker exec（执行命令）</h3>
+<pre><code> docker exec -it 281 python    # 在&quot;容器外部&quot;, 执行&quot;内部容器&quot;的 python命令
+ &quot;注： 与上一条attach不同的是，退出python控制台后，容器依旧运行！（因为是在容器外面执行的python命令）&quot;
+</code></pre>
+</li>
+</ul>
+<h1 id="container-and-images容器与镜像关联">Container and Images（容器与镜像关联）</h1>
+<ul>
+<li>
+<h3 id="docker-commit-把容器封装成一个新镜像">docker commit (把容器&quot;封装&quot;成一个新镜像)</h3>
+<pre><code> docker commit 4d mypython:3.7   # 把4d这个容器所有内容,封装为一个&quot;名字:版本&quot;叫&quot;mypython:3.7&quot;的镜像
+</code></pre>
+</li>
+<li>
+<h3 id="docker-export-容器导出为一个文件">docker export (容器导出为一个文件)</h3>
+<pre><code> docker export fc8 -o mypython.tar  # 把此容器导出为一个.tar文件 ，和前面说过的 image的 save类似
+</code></pre>
+</li>
+<li>
+<h3 id="docker-import-把export导出的文件导出并生成一个镜像">docker import (把export导出的文件导出，并&quot;生成&quot;一个镜像）</h3>
+<pre><code> docker import mypython.tar mypython:latest
+     注： 把export导出的 mypython.tar文件导入 并 直接创建一个  mypython:latest 的 镜像
+</code></pre>
+</li>
+<li>
+<h3 id="docker-commit-docker-import区别">docker commit &amp; docker import区别</h3>
+<pre><code> 前面说过：
+     docker commit 是 直接把一个container 封装为一个image
+     docker import 是 把export导出的container.tar文件 再 导入进来，并重新生成一个 新 image
+ docker commit 是继承封装的，并创建具有分层历史记录 （docker history imageID 即可查看） 
+ docker import 是直接生成的，不具有分层记录     （docker history imageID 即可查看） 
+</code></pre>
+</li>
+</ul>
+<h1 id="网络">网络</h1>
+<ul>
+<li>
+<h3 id="docker-network-ls-查看">docker network ls （查看）</h3>
+<pre><code> docker network ls
+     bridge（网桥）：容器默认网络模式
+         容器-容器网络连接：
+             container1(etho0)--veth1--Docker(bridge)--veth2--container2(etho0)
+         容器-宿主机网络连接：
+             container1(etho0)--veth1--Docker(bridge)--宿主机(etho0)
+             注： veth是创建网络时，自动创建的，不需要手动管理
+             
+     host（主机）：  容器网络和主机使用同一个网络
+         容器-容器网络连接：
+             container1(etho0)--宿主机--container2(etho0)
+         容器-宿主机网络连接：    
+             container1(etho0)--宿主机
+         容器网络（特殊host）：    
+             container1--container2    # 就是 ‘每个容器互相把对方认作为 宿主机’ 这个意思
+             使用方法：
+                 docker run -it --network container:24f1 mypython:latest ls
+                 # container:24f1   的container是语法关键词   24f1是连接的对方容器（）
+                                         
+     null（无网络）：所有容器无网络
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-create-创建">docker network create （创建）</h3>
+<pre><code> docker network create -d bridge mybridge    # 可创建多个bridge
+ docker network create -d host myhost        # 只可创建一个host（默认就有一个，故无法创建）
+ docker network create -d null mynull        # 只可创建一个null（默认就有一个，故无法创建） 
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-rm-删除">docker network rm （删除）</h3>
+<pre><code> docker network rm ab5
+ 注：默认自带的网络不可以删除（null host 和 自带的一个 bridge）
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-connect-给容器绑定网络">docker network connect (给容器绑定网络)</h3>
+<pre><code> docker network connect mybridge 4c4  # 给4c4这个容器绑定一个  mybridge网络（自定义的bridge）
+ docker inspect 4c4    # 查看一下容器信息，最下面就是网络
+ 注：一个container 可以绑定 多个bridge 网络， 
+</code></pre>
+</li>
+<li>
+<h3 id="docker-network-disconnect-给容器-解除绑定的网络">docker network disconnect (给容器 解除绑定的网络)</h3>
+<pre><code> docker network disconnect mybridge 4c4    # 给容器解除绑定网络mybridge
+ 注： 一个container 中 bridge 和 none 网络不可以共存， （若冲突，则先disconnect再connect）
+ 注2：host 网络不能 connect 和 disconnect
+</code></pre>
+</li>
+</ul>
+<h1 id="数据卷-volume">数据卷 (volume)</h1>
+<ul>
+<li>
+<h3 id="docker-volume-create创建数据卷">docker volume create（创建数据卷）</h3>
+<pre><code> docker volume create myvolume
+ 注： myvolume为数据卷名
+</code></pre>
+</li>
+<li>
+<h3 id="docker-volume-ls列出数据卷">docker volume ls（列出数据卷）</h3>
+<pre><code> docker volume ls
+ 注： 若数据卷未指定名字，当 使用docker run -v 方式时，则会新建数据卷ID，并以此ID命名。
+</code></pre>
+</li>
+<li>
+<h3 id="docker-volume-prune删除未被容器使用的-所有-数据卷">docker volume prune（删除未被容器使用的 所有 数据卷）</h3>
+<pre><code> docker volume prune
+ 注：容器占用的数据卷，删不了
+</code></pre>
+</li>
+<li>
+<h3 id="docker-volume-rm-删除-一个-或-多个-指定数据卷">docker volume rm （删除 一个 或 多个 指定数据卷）</h3>
+<pre><code> docker volume rm myvolume
+ 注： 删除 myvolume这个数据卷，当然也可以连续参数，追加删除多个数据卷
+</code></pre>
+</li>
+<li>
+<h3 id="挂载数据卷">挂载数据卷</h3>
+<pre><code> &quot;&quot;&quot;意义： 可以让 宿主机 与 容器 数据联通共享&quot;&quot;&quot;
+ 方式1 （-v参数）
+     -v使用方式1：（指定路径映射挂载）
+         docker run -itd -v /root:/root mypython:latest python  # -v  宿主机路径:容器路径
+         测试：
+             cd /root
+             touch aaa.txt                  # 宿主机创建文件 aaa.txt
+             docker exec -it cfb ls /root   # 结果可看见容器里面也有 aaa.txt 文件
+             
+     -v使用方式2：（指定数据卷对象 映射挂载）
+         docker run -itd -v myvolume:/root mypython:latest python    # 冒号前面 变成了myvolume
+         注1： 这个myvolume就是一个数据卷对象， 执行上面这条命令，就会为我们自动创建这个数据卷对象
+         注2： 由于没有宿主映射路径，那么映射的宿主路径 是什么呢？？
+             docker volume inspect myvolume  # 结果Mountpoint后面的就是，宿主机映射的 默认钩子路径
+             cd /var/lib/docker/volumes/myvolume11/_data    # 此路径和volume名有关
+             touch bbb.txt                   # 宿主机创建文件 bbb.txt
+             docker exec -it 916 ls /root    # 打印结果可见，容器内部也有bbb.txt，说明成功共享。
+         
+ 方式2：（--mount参数，同样包括 -v的两种使用方式， 另外还新增另一种 文件&quot;缓存&quot;挂载方式） 
+     docker run -itd --mount type=volume,src=myvolume11,dst=/root mypython:latest python
+     注：
+         type: 指定类型（路径映射: bind）或 (数据卷对象映射: volume) 或（内存映射：tmpfs）
+         src: 对应上面方式1（宿主机路径）  或 对应上面方式2（数据卷名） 或 省略此项（对应新增）
+         dst: 容器路径
+         逗号分隔，其他没变
+     docker run -itd --mount type=tmpfs,dst=/root mypython:latest python  (tmpfs&quot;缓存&quot;挂载)
+     
+ &quot;综上,可总结为3种挂载选择用途&quot;：
+     一. &quot;宿主路径 与 容器路径&quot;  映射挂载
+     二. &quot;数据卷   与 容器路径&quot;  映射挂载
+     三. &quot;宿主内存 与 容器路径&quot;  映射挂载
+     
+ &quot;综上,可总结为2种挂载参数使用&quot;：
+     一、 &quot;-v 参数&quot;        2种用途 (路径映射 和 数据卷对象映射)
+     二、 &quot;--mount 参数&quot;   3种用途 (路径映射 和 数据卷对象映射 和 内存映射)
+</code></pre>
+</li>
+<li>
+<h3 id="容器之间共享数据">容器之间共享数据</h3>
+<pre><code> &quot;&quot;&quot;借助已经拥有数据卷的容器   来 创建一个新容器&quot;&quot;&quot;
+ docker run -itd --volumes-from 6252 python:latest     # 借助6252容器创建新容器，来共享数据卷
+ 验证：
+      docker exec -it 97db touch /root/abc    # 新容器 创建一个文件abc
+      docker exec -it 6252 ls /root           # 旧容器查看 ，也有新文件abc，共享成功
+</code></pre>
+</li>
+<li>
+<h3 id="细节注意事项">细节注意事项</h3>
+<pre><code> 一、若将 &quot;空数据卷&quot;   挂载到 容器非空目录中，则&quot;此容器目录下的内容 会copy一份到 数据卷中&quot;
+ 二、若将 &quot;非空数据卷&quot; 挂载到 容器任意目录中，则&quot;数据卷的数据 会copy到这个目录中，并将此目录原数据隐藏&quot; 
+ 更通俗一点理解就是：
+     数据卷大哥说：&quot;如果我这里有数据， 你的容器来挂载，你的数据就会被我这里面的数据覆盖。。&quot;
+     数据卷大哥又说：&quot;如果我这里是空的（没有数据），那么 你的容器来挂载， 你的数据就要提供一份给我&quot;
+</code></pre>
+</li>
+</ul>
+<h1 id="dockerhub仓库">DockerHub（仓库）</h1>
+<ul>
+<li>
+<h2 id="无认证-私有仓库">无认证 私有仓库</h2>
+</li>
+<li>
+<h3 id="搭建仓库">搭建仓库</h3>
+<pre><code> docker pull registry    # 拉取 registry镜像
+ docker run -itd \
+     --restart always \                    # docker重启时，此容器也跟着重启
+     --name myregistry \                   # 指定容器名
+     -p 6006:5000 \                        # 端口映射 （registry服务默认为5000端口，映射为6006）
+     -v /root:/var/lib/registry \          # 绑定数据卷 （持久化存储）， 冒号后面的容器路径时默认的
+     registry                              # 拉取的 registry镜像
+ 验证：（一种web服务，所以通过固定Url访问即可）
+     外部浏览器验证： 浏览器输入    服务器外网IP:6006/v2/_catalog  即可  
+     服务器内部验证： curl 127.0.0.1:6006/v2/_catalog
+</code></pre>
+</li>
+<li>
+<h3 id="上传镜像">上传镜像</h3>
+<pre><code> 一、先把要上传的镜像改名
+     docker tag   mypython:latest    127.0.0.1:6006/mython_hub
+     注： 目标名固定格式（需注意，必须此格式）：   IP:Port/新镜像名
+ 二、开始上传
+     docker push 127.0.0.1:6006/mython_hub    # docker push 镜像名，注意这里用ID不好使，必须用这名
+ 三、验证
+     同上面搭建仓库时的验证方法， 可看见结果 repositories列表中多了一个 刚刚上传的镜像
+     curl 127.0.0.1:6006/v2/_catalog
+</code></pre>
+</li>
+<li>
+<h3 id="下载镜像">下载镜像</h3>
+<pre><code> docker pull  127.0.0.1:6006/mython_hub
+ 注： 这个名就是上传时候的 那个名， 一样的
+</code></pre>
+</li>
+</ul>
+<h1 id="dockerfile配置文件式">Dockerfile（配置文件式）</h1>
+<ul>
+<li>
+<h2 id="dockerfile认知">Dockerfile认知</h2>
+<pre><code> Docker 与 docker命令的关系就相当于  shell编程 与 单条命令
+ 主要就是把上面讲的所有命令连起来，脚本式执行，  当然dockerfile也有自己的语法关键词。
+ Dockerfile是基于缓存，所以里面的文件内容(某条命令) &quot;如果未发生改变，则不会重新执行（用的是缓存）&quot;
+ 
+ Dockerfile机制：
+     一、若在结尾每&quot;追加&quot;一条新命令,重新构建Dockerfile时，&quot;只会执行这个新命令，其他旧命令都会使用缓存&quot;
+     二、若新命令 是在&quot;中间插入编写的&quot;，则此条新命令&quot;之前的命令用缓存&quot;, &quot;之后&quot;的命令都会重新执行一遍，
+     三、FROM 关键字是 Dockerfile的入口。
+         新命令只要不是 写在 &quot;FROM的下一条&quot;, 那么所有新命令及其之后的命令都会在 构建Dockerfile时--&gt;
+         触发&quot;层层封装&quot;机制  ，即每条&quot;非缓存命令&quot;运行一遍，都会commit封装一层镜像    
+</code></pre>
+</li>
+<li>
+<h2 id="dockerfile构建">Dockerfile构建</h2>
+<pre><code> docker build /Dockerfile所在路径 -t mypython:v2
+ 注1： 指定Dockerfile所在路径即可，build会自动帮我们找到dockerfile文件
+ 注2： 如果Dockerfile就在当前路径下，那么可以用 . 来替代绝对路径
+ 注3： -t 给镜像指定名字   
+</code></pre>
+</li>
+<li>
+<h2 id="dockerfile语法">Dockerfile语法</h2>
+</li>
+<li>
+<h3 id="from">FROM</h3>
+<pre><code> &quot;下载镜像,类似 docker pull&quot;
+ FROM python:latest    # 同样可以指定版本号
+</code></pre>
+</li>
+<li>
+<h3 id="run-cmd-entrypoint">RUN | CMD | ENTRYPOINT</h3>
+<pre><code> 这三个 命令 都有共同的 2种书写方式：
+     一、（exec）格式--当前进程执行
+         eg:  python -V        # 就是玩linux的命令正常写
+     二、（shell） 格式--子进程执行
+         eg:  [&quot;python&quot;, &quot;-V&quot;]    # 命令与作为字符串列表来书写， 和py的scrapy的shell类似
+         
+ RUN: 
+     &quot;构建镜像过程中&quot;执行的命令， 比如安装东西之类的。。（可写多个）
+ CMD:
+     启动容器时 执行的命令， 就和 之前说过的 docker run 跟的命令是一样的
+     &quot;但是 docker run 要是指定了一个命令，那么  这个CMD配置就会失效&quot;
+ ENRTYPOINT:
+     和CMD类似， 不过 在docker run 指定新命令是，  ENTRYPOINT的命令是不会被覆盖的。都会执行
+</code></pre>
+</li>
+<li>
+<h3 id="add-copy">ADD | COPY</h3>
+<pre><code> &quot;&quot;&quot;将宿主机文件 拷贝 到镜像的某个目录中&quot;&quot;&quot;
+ COPY aaa.txt /root    # 将aaa.txt  拷贝到  镜像的/root目录中
+ ADD aaa.txt /root     # 和COPY一样，不过 ADD可以将压缩文件拷贝进去后，&quot;自动解压&quot;
+</code></pre>
+</li>
+<li>
+<h3 id="env">ENV</h3>
+<pre><code> &quot;&quot;&quot;就相当于编程语言的 变量赋值&quot;&quot;&quot;
+ ENV name=python       
+ ENV nickname=$name    # $name 意为取出 name变量的值
+</code></pre>
+</li>
+<li>
+<h3 id="workdir">WORKDIR</h3>
+<pre><code> &quot;&quot;&quot;切换目录 类似cd命令&quot;&quot;&quot;
+ WORKDIR /root
+</code></pre>
+</li>
+<li>
+<h3 id="volume">VOLUME</h3>
+<pre><code> &quot;&quot;&quot;添加数据卷&quot;&quot;&quot;
+ VOLUME /root   # 就相当于前面说过的docker run -v /root, 即自动创建一个数据卷映射到 容器的/root
+</code></pre>
+</li>
+<li>
+<h3 id="expose">EXPOSE</h3>
+<pre><code> &quot;&quot;&quot;暴露端口&quot;&quot;&quot;
+ EXPOSE 6379  
+ EXPOSE 3306    # 可以用多个 EXPOSE 暴露多个端口
+ 注1： 暴露端口后，可以通过 前面说的  docker run -P 来做自动端口映射
+ 注2： 或者不暴露端口，直接使用手动映射-p，都是可以的。
+</code></pre>
+</li>
+<li>
+<h3 id="官方模板参考网址">官方模板参考网址</h3>
+<pre><code> 官方文档：https://docs.docker.com/engine/reference/builder/
+ 各种开源Dockerfile模板：https://github.com/docker-library/docs/tree/master/
+</code></pre>
+</li>
+</ul>
+<h1 id="docker-compose">Docker Compose</h1>
+<ul>
+<li>
+<h3 id="docker-compose认知">Docker-Compose认知</h3>
+<pre><code> 一、Dockerfile 可以看作是 Docker命令的组合
+ 二、Docker-Compose 可以看作是 Dockerfile的组合（也称作 容器编排工具）
+ 三、Docker-Compose 文件默认名为  docoker-compose.yaml
+ 四、docoker-compose.yaml 文件指令中间都有空格  eg:  version: 3.7（3.7之前是有空格的）
+ 五、docoker-compose.yaml 采用缩进对格式语法进行区分
+</code></pre>
+</li>
+<li>
+<h3 id="docker-compose安装">Docker-Compose安装</h3>
+<pre><code> 官方安装教程：https://docs.docker.com/compose/install/
+ 从上往下，命令复制-粘贴-运行。。。Easy略
+</code></pre>
+</li>
+<li>
+<h3 id="docker-compose文件指令">Docker-Compose文件指令</h3>
+<pre><code> version: &quot;3.7&quot;    # 必有
+     # 此版本号与docker版本对应地址： https://docs.docker.com/compose/compose-file/  
+     
+ services:         # services关键字，写上就行， 必有
+     mypython:     # mypython是我随便起个名
+         build: .  # Dockerfile的路径位置， build是构建Dockerfile文件的
+         ports:
+             -&quot;6006:3003&quot;    # 注意-后面是有空格的，markdown语法充冲突，我就没写空格
+         command: xxxx    # 覆盖Dockerfile中的 CMD
+         depends_on:      # 依赖的服务，  （被依赖的先执行，也就是myredis先执行）
+             -myredis     # -后有空格
+     myredis:      # 同理 myredis 也是我随便起的名
+         image: redis    # 指定一个成品镜像  类似DockerfilE的 FROM指令
+         container_name: myredis    # 指定容器名
+         networks:     # 使用下面创建的mynet网络
+             -mynet    # (同-后有空格，避免markdown语法冲突) 
+         volumes:      # 使用下面创建的myvolume数据卷,并映射到容器的/root目录
+             -myvolume:/root  # -后有空格，（特别注意 :后面不允许有空格）
+         hostname: myredis    
+             # 因为容器创建时IP可能动态改变，指定名称，则可通过名称来代替IP
+             # 若不指定 hostname， 则默认为服务名， 即 myredis
+             
+ networks:    # 创建网络
+     mynet:   # 给网络起名为 mynet 
+         driver: &quot;bridge&quot;    # 指定为桥接模式
+ volumes:     # 创建数据卷
+     myvolume:    # 给数据卷起名为 myvolume
+         driver: &quot;local&quot;     # 默认就是local，即数据卷存储在宿主机的目录下
+</code></pre>
+</li>
+<li>
+<h3 id="预检查docker-composeyml文件语法格式是否有误">预检查docker-compose.yml文件语法格式是否有误</h3>
+<pre><code> docker-compose config
+ 注：需要在 docker-compose.yml 所在目录下执行
+</code></pre>
+</li>
+<li>
+<h3 id="启动停止-docker-comopse">启动/停止 docker comopse</h3>
+<pre><code> docker-compose up    # 前台终端阻塞执行（就是执行之后，你不能在终端输入东西了）
+ docker-compose up -d # 后台终端非阻塞执行 （作为服务一样后台执行）
+ 
+ docker-compose stop  # 停止编排（即停止 所有 编排运行的容器）
+</code></pre>
+</li>
+</ul>
+<h1 id="end">END</h1>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-redis-yu-python-cao-zuo-redis-yu-fa-dui-bi-jie-xi/">
+                  <h3 class="post-title">
+                    PY =&gt; Redis与Python操作Redis语法对比解析
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

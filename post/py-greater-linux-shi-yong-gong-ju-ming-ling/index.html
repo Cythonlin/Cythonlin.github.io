@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Linux实用工具命令 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Ubuntu16升级到18.04
+“”“
+    有特殊新颖强迫症癖好可以升下，如果你觉得16.04好用，就根本没必要升了
+”“”
+我当时租的 云服务器通常都是16.04，现在估计也是16.04较多
+我是个Python3的玩家， 我只想用P..." />
+    <meta name="keywords" content="IDE" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Linux实用工具命令</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="ubuntu16升级到1804">Ubuntu16升级到18.04</h3>
+<pre><code>“”“
+    有特殊新颖强迫症癖好可以升下，如果你觉得16.04好用，就根本没必要升了
+”“”
+我当时租的 云服务器通常都是16.04，现在估计也是16.04较多
+我是个Python3的玩家， 我只想用Python的最新版，或最新标准版3.6-3.7
+道理很简单，我追求新颖，虽然新版不稳定，但是你可以尝鲜并领先于别人。。。
+废话不多说：
+    Ubuntu16.04: 默认装的是Python2.7 + Python3.4 或3.5 
+    Ubuntu18.04: 默认装的是Python2.7 + Python3.6.+
+我喜欢升级系统版本来直接让对应软件升级：
+    lsb_release -a    # 查看系统版本
+    apt update        # 一路选Y   
+    apt dist-upgrade  
+    apt autoremove    # 一路选Y
+    apt install update-manager-core    # 比较重要
+    do-release-upgrade -d              # 完事
+注：
+    如果其中某个命令过程弹出一个黑窗口让你选择， 我记得有个 
+        core-new-update 字眼的，选这个即可    # 选择 新 核心
+</code></pre>
+<h3 id="vim多行注释python为例">vim多行注释（Python为例）</h3>
+<pre><code>Ubuntu是肯定可以用， CentOS我记得好像用不了
+
+直接一套连招：
+注释：
+    1. ctrl + v
+    2. 按 下 箭头方向键，选中多行
+    3. shift + i
+    4. 输入 # 
+    5. 按两下 ESC键
+    
+取消注释：
+    1. ctrl + v
+    2. 按 下 箭头方向键，选中多行
+    3. 按 x 键
+
+注： 此套连招，需要熟练度， 如果不行就多练练。 手不好使，就不要怪我了~~~~
+</code></pre>
+<h3 id="vimrc简单配置">vimrc简单配置：</h3>
+<pre><code>“”“
+    tab = 4缩进,
+    设置行号
+    基于文件名的简单语法高亮
+    不要想着删一行，直接打开vimrc 全部复制上去，保存退出就可以用了
+”“”
+vi ~/.vimrc
+    syntax on
+    set nu
+    set expandtab
+    set tabstop=4
+    set shiftwidth=4
+    set softtabstop=4
+</code></pre>
+<h3 id="locate查询库">locate查询库</h3>
+<pre><code>locate xxx    # 虽然很简单的命令，但是如果，一直为下线，并且还想查找新东西，那么需要更新库
+updatedb      # 更新搜索库， 完事
+
+如果 updatedb命令出错，那就安装一下 mlocate就好了：
+    yum/apt-get install mlocate
+</code></pre>
+<h3 id="htop查看服务器负载">htop查看服务器负载</h3>
+<pre><code>ubuntu/centos中有 
+    top ： 此命令可以详细查看服务器各种负载，资源状况，但是看着不方便，非常费劲
+    htop ： top的升级版， 容易看出资源消耗情况
+    如果未安装，可通过  
+        apt-get/yum install htop   安装
+
+    htop -d 0.1    # 0.1秒动态更新一次资源数据。 看起来有一点炫。
+</code></pre>
+<h3 id="pkill">pkill</h3>
+<pre><code>ps -el 查看 PId + kill -9 PID        # 这套连招可强制杀死一个进程
+
+但假如你有一连串的python进程 想要 全部KILL
+    pkill python            # 完事，和python有关的全KILL掉了，也可以通过通配符* 的方式来简写
+</code></pre>
+<h3 id="patree列出进程">patree列出进程</h3>
+<pre><code>tree:    此命令用来列出目录层级结构
+pstree:  用来列出 正在运行的 程序（所有进程的层级结构，进程名）
+pstree -p: 以层级的方式，不仅列出进程名， 还列出所有进程的(PID)
+</code></pre>
+<h3 id="alias改名">alias改名</h3>
+<pre><code>vi /etc/profile
+    alias python='python3'        # 这里是举个例子，配完，python命令就等价于 python3命令
+    alias pip='pip3'
+source /etc/profile            # 不要忘记，这条命令 更新一下配置文件
+</code></pre>
+<h3 id="重定向管道-与-tee">重定向管道 ( &gt; 与 tee )</h3>
+<pre><code>date &gt; date.txt	     # 截流， 屏幕上不显示
+date | tee date.txt  # 不截流， 屏幕上显示， 并且还能输入到文件
+</code></pre>
+<h3 id="叹号命令">! 叹号命令</h3>
+<pre><code>”“
+    !命令前缀 : 运行最后一条以这个前缀开头的命令
+”“
+假如下面是你最后按顺序再command终端 输入的四条命令：
+    python aaa.py
+    python bbb.py
+    npm run dev
+    pip install ccc
+
+需求：你想迅速运行 python bbb.py这条命令
+你只需
+    !py    # 即可，  愣着干啥呢， 已经完事了，这条命令就等于你上面那一大串
+    
+    解惑：
+        1. !py   -&gt; py开头的有两条，为啥不执行第一条 python aaa.py
+            因为 ! 叹号 的语法意思就是选择 最后出现以py开头的执行。
+        2. 为啥直接 !p 不行呢？
+            因为以p开头的最后一条命令是 pip install ccc。  这也不是你想要的啊。
+</code></pre>
+<h3 id="ctrlz-和-和-nohup-和-screen">ctrl+z 和 &amp; 和 nohup 和 screen</h3>
+<pre><code>ctrl+c： 强制终止（最常用的，先提出来。。。。 应该都知道的。。）
+ctrl+z： 可以把正在运行中的程序挂起到后台（注意这时候程序就暂停了）
+jobs:    粗略列出 后台挂起的程序
+jobs -l: 详细列出 后台挂起的程序 （其实就是多列出了个PID）
+         kill -9 PID   # 顺水推舟地使用此命令来通过 PID 干掉后台挂起的程序
+    
+fg:      把挂起的后台的程序 拿回来继续执行
+fg 程序编号:  如果有多个后台挂起的程序，选择一个继续执行，编号可通过 jobs 查看。
+
+使用场景： 
+    加入正在 vim 编辑东西，想跳出编辑器，写点别的，那么可以 进行下面操作：
+    不要保存， 直接 ctrl+z
+    然后去 做别的事
+    做完了想回到 vim继续编辑剩下的内容, 直接 fg
+    
+&amp;： 运行 的 时刻 就直接 放到后台  (不实用)
+    eg: (通常是费时的操作，或者长时间占用 command命令行）
+        sleep 100 &amp;        # 这样费时100秒的操作，直接让它滚去后台执行，别占我地方
+    局限：
+        假如你用  python xxxx.py &amp; 运行一个web服务器，虽然它会滚去后台一直运行。
+        前台command界面看起来很干净了。
+        但是，如果有用户请求过来， 你服务器收到打印在终端的信息 可不会乖乖打印在后台。
+        打印信息会钻出来到前台command界面来恶心你。。。。。
+        为了解决这一问题， 请移步 下面 ...
+
+nohup: (通常和 上面的 &amp; 联合使用)     （实用性一般）
+    eg: 同样运行一个服务器
+        nohup python xxx.py &amp;        
+            #  它会乖乖的滚去后台执行，并且将要打印的消息 也不会打印到前台，也不会打印到后台。
+                那打印的内容去哪了呢？？
+                nohup会自动给你 把打印的东西重定向 到一个  nohup.out文件，通常在当前目录下
+            #  这时你的前台command 就不会受到 骚扰了。。。。
+    也许你以为它很好用了，可以完美的决绝运行一个费时的进程。但是 它依然是个 loser。。.
+    局限：
+        当我一直用 nohup.out 部署一些服务程序的时候，一部署就是很多天。
+        当时学校断电（我租的阿里云ECS服务器）. 虽然服务器可以不间断的执行。
+        但是 我需要 用 xshell 一直去远程 查看我的 程序运行的怎么样了啊， 是否崩了？
+        可惜的是，每次xshell关闭了，你再上去， 想找 通过 nohup &amp; 连招 放到后台程序的时候，
+        你会痛苦无比。。。非常惨
+        后来。。。。。。。。。
+        
+screen: （会话机制）  
+    没错，后来我就发现了 这个 screen工具 
+    如果你那里没有，就安装一下喽：  apt-get / yum install screen 
+    然后需要配置一下：
+        vi ~/.screenrc       # 创建文件        
+            shell -$SHELL    # 输入此行内容，保存退出
+    至于为何配置这个： 说实话我有点忘了
+        貌似不同screen会话对于不同的shell 权限有限制，导致很多东西用不了，so do it
+    
+    直接说一套我常用且超级实用连招把：
+    eg:
+        screen -S 会话名       # 创建 并 进入这个会话（就像进入另一个世界，但资源共享）
+        python xxx.py         # 举例子，这是我的爬虫程序，需要运行 三天
+        ctrl + a + d          # 跳出会话，回到正常命令行，但是这个会话以及你的程序依然在运行，
+        ....... 这段时间（除了关闭服务器）你做什么都行，关闭 shell也可以的。
+        screen -r 上面的会话名    # 恢复到会话中，  你会发现，爬虫程序还在那里好好的运行呢。
+        
+        如果你忘记会话名了，不要紧：
+        screen -ls     # 这条命令会列出所有 你创建过的会话，你也可以看到会话名
+        
+    总结：
+        所以，我不知道阁下能不能感受到 screen的魅力。
+        我们可以 通过  screen -r 这一条命令来 迅速回到程序运行的环境。
+        nohup &amp;： 你用这个执行的程序，关了 xshell, 你再连，你就不好找这个运行的程序了
+        screen 有一套完好的系统（就像有开关一样）来控制会话
+               你进入screen会话中写程序，screen 自然就能有条不紊的管理好 你程序的运行状态
+
+        举个白话例子：
+            你正遛二哈呢，突然有急事：
+            nohup &amp; :  你说：‘二哈，等我回来，自己玩把’        
+                       你回来时， 二哈跑丢了。 （不受控制，程序找不到了，虽然可以花力气找到）
+            screen  :  你说：‘二哈，等我回来，自己玩吧，但我要把你拴起来’        
+                       你回来时， 二哈还在那里乖乖的玩。（程序有效的受到控制，你可以轻松定位）
+</code></pre>
+<h3 id="sudo-su等操作">sudo su等操作</h3>
+<pre><code>不好意思，用了好几年linux：
+    什么 su- su 之类的，  我至今都没搞太明白。。。。。。。。。。
+
+但是，我只用下面这一条命令，这些年就没遇到过问题：
+    sudo -s    # 变为root, 如果你之前输入过密码， 这条命令还会免去让你输入密码的环节
+</code></pre>
+<h3 id="环境变量">环境变量</h3>
+<pre><code>把某路径加入到环境变量中：
+    vi /etc/profile
+        export PATH=$PATH:/XXX/XX
+
+做一些配置：
+    vi /etc/profile            
+    vi ~/.bashrc 
+    等修改完后
+    source /etc/profile        # 用一个 source 命令执行一下使配置更新生效
+    
+注： Linux-shell我研究的不深,所以这里可能有些说的不是特别明朗。
+    其实 这些配置文件 以及 source . sh bash 这些命令 和 用户 以及权限等都是有很大关系的。   
+    有兴趣可自行深入了解
+</code></pre>
+<h3 id="激活ubuntu的root用户">激活Ubuntu的root用户</h3>
+<pre><code>也许你ubuntu只能用root权限
+但你不能使用root用户登录，或不能使用root用户进行ssh连接
+ubuntu其实是存在 root 用户的, 不用创建，给个密码就能直接使用
+sudo passwd root
+</code></pre>
+<h3 id="root用户远程ssh连接">root用户远程SSH连接</h3>
+<pre><code>假如你的 xshell 连接不上远程服务器， 可能未开启 或 未安装 sshd服务
+如下命令即可：
+    sudo apt-get install ssh
+    systemctl start ssh
+如果你想要用root用户直接ssh连接, 可作如下配置：
+    sudo vim /etc/ssh/sshd_config
+        PermitRootLogin yes
+    systemctl restart ssh
+</code></pre>
+<h3 id="mysql57mariadb修改密码小坑">MySQL5.7+/MariaDB修改密码小坑</h3>
+<pre><code>当阁下还在停留在Mysql5.7版本之前，修改密码可以用下面这两种方式：
+    mysqladmin -uroot password -p
+    或内部设置：
+    update user set password=password('root') where user='root'
+
+但是 MySQL5.7 之后 或者 MariaDB ,上面这俩方法 都不能 修改密码了。
+正确修改方式：
+    先进入MySQL交互式： MySQL -uroot -p 
+
+    update mysql.user set authentication_string=password(&quot;密码&quot;) where user=&quot;用户名&quot;
+    update user set plugin=&quot;mysql_native_password&quot;;
+    flush privileges
+    
+    最后重启服务， 完事
+    
+另外，值得提醒的一点容易出现的问题：
+    无论你连接的是什么数据库，如果你连不上
+    
+    首先你应该想到的是，数据库配置文件：
+        bind 0.0.0.0        # 每种数据库几乎都需要先改成这样，才能被外界访问
+        
+    其次，你用的是云服务器的话
+        看看是否放通了 对应数据库的宽口
+        
+    最后，是否开了防火墙：
+        没记错的话，Centos 和 Ubuntu 防火墙不是同一种，真正需要关闭可自行百度
+</code></pre>
+<h3 id="其他命令">其他命令</h3>
+<pre><code>&quot;&quot;&quot;
+    一时间也记不起来还用过哪些了
+&quot;&quot;&quot;
+
+wc             : 统计字,词，行（自己选参数）
+curl           : 可以请求 url，并返回数据（相当于一个小小爬虫），也可以向某个接口发送请求
+ssh-keygen     ：生成公私密钥
+cd -           : 跳回到上一次的路径
+lsb_release -a : 查看Linux发行版信息
+grep           : 过滤字符
+tar            : 压缩/解压
+netstat        : 查端口
+等</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="tag">
+                    IDE
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-zheng-ze-quan-jie-xiang-jie/">
+                  <h3 class="post-title">
+                    PY =&gt; Python正则全解详解
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

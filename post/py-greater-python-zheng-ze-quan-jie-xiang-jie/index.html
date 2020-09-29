@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python正则全解详解 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="预编译
+import re
+re1 = re.compile(r'元字符 组成的正则规则')    # 元字符下面会说
+re1.方法()                     # 方法下边也会说
+
+元字符：
+表示普通字符：
+    .  ..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python正则全解详解</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="预编译">预编译</h3>
+<pre><code>import re
+re1 = re.compile(r'元字符 组成的正则规则')    # 元字符下面会说
+re1.方法()                     # 方法下边也会说
+</code></pre>
+<h3 id="元字符">元字符：</h3>
+<pre><code>表示普通字符：
+    .    # 除了\n外 都可以匹配的到                
+    \d   # 只匹配 纯数字 0-9
+    \D   # 和 \d相反， 除了数字全都匹配
+    \s   # 只匹配空格
+    \S   # 和 \s相反，除了空格，全都匹配         # 我喜欢用 [\s\S]*? 匹配所有
+    \w   # 只匹配 纯数字 或 大小写字母 或 下划线
+    \W   # 与 \w 恰好相反，     除了 纯数字、大小写字母、下划线 全都匹配
+    []   # [abcde] 只要包含这个列表的字符，都可以匹配的到。但默认只取一个， 简写 [a-e]
+             eg: re.compile(r'[e-h]').match('hello python ').group(0)
+             &gt;&gt;&gt; h
+         此外:  [^abcde] 或 [^a-e] 表示 '排除'，意思就是 除了abcde全匹配
+    
+匹配表示边界的：
+    ^    # 匹配 起始 位置，受 re.M 影响	 #注意：不要和 [^123] 除123之外搞混
+         eg:
+            import re
+            r1 = re.compile(r'^\d+')
+            print(r1.search('456hello123').group())
+            &gt;&gt;&gt; 456
+
+    $    # 匹配 结尾 位置，受 re.M 影响
+         eg:
+            import re
+            
+            s = &quot;&quot;&quot;
+            123abc456
+            678abc789
+            &quot;&quot;&quot;
+            r1 = re.compile(r'\d+$',re.M)    # 注意这里加入了re.M
+            print(r1.findall(s))
+            &gt;&gt;&gt; ['456', '789']    # 这是写了re.M，就意味着 每一行都给你单独按照规则处理
+            &gt;&gt;&gt; ['789']           # 如果没写re.M, 那么就按照整体，去最后一行的尾部
+            注： 其实re.M的本质是 是根据\n，进行 断行，断行后对每一行按照规则单独处理
+            
+    \b： # 匹配 单词的 边界（除了 数字、中英字母、下划线 的 所有符号）
+        eg:
+            import re
+            s = '你好啊----好个P'
+            r1 = re.compile(r'\b好')
+            print(r1.findall(s))
+            &gt;&gt;&gt; 好    
+            # 解释：这个‘好’是，后面  的那个。因为后面的 ’好‘ 字 左边是符号，而非单词字符
+                       
+    \B： # 匹配 单词 非 边界（包括 数字、中英字母、下划线）
+        eg:
+            import re
+            s = '你好啊----好个P'
+            r1 = re.compile(r'\b好')
+            print(r1.findall(s))
+            &gt;&gt;&gt; 好    
+            # 解释：这个‘好’是，前面  的那个。因为前面的 ’好‘ 字 左边是中文字符。属于非边界
+            # 所以就匹配上了
+        
+        再次总结： \b 与 \B：
+            \b： 匹配边界字符。边界字符：（除了 数字、字母、汉字、下划线的所有符号）
+            \B： 匹配非边界字符。非边界字符：（数字、字母、汉字、下划线）
+    
+匹配表示数量的：
+    *    ：	0次 或 多次                    eg： 你*
+    +    ：	1次 或 多次                    eg:  你+
+    ?    ：	0次 或 一次                    eg:  你?
+    {m}  : 	出现m次                        eg:  你{3}
+    {m,} :	至少 出现m次                   eg:  你{3,}   # 涉及到贪婪模式，不深的不要用
+    {m,n}: 	m次 到 n次  之间任意一次就行    eg:  你{3,6}
+    
+表示分组：
+    |    ： 相当于或运算符， 两边写的是 正则表达式，  优先选择左边的
+    ()   :  括起来里面的内容，就变成了分组。 可以用 .group(1)提取，如果有更多那就 group(2)..
+    (?P&lt;name&gt;) ： 在上面分组的基础上 起别名
+    (?P=name)  :  根据分组的别名来使用分组
+        eg:
+            s = '&lt;h1&gt;你好&lt;/h1&gt;'
+            r1 = re.compile(r'&lt;(?P&lt;name1&gt;\w+)&gt;(\w+)&lt;/(?P=name1)&gt;').match(s).group(2)
+            print(r1)
+            &gt;&gt;&gt; 你好
+            
+    \数字 ：提取的分组可以在 同一个正则中 复用  
+         eg: 
+             s = '&lt;h1&gt;你好&lt;/h1&gt;'
+             r1 = re.compile(r'&lt;(\w+)&gt;(\w+)&lt;/\1&gt;')    # \1 代表复用第一个分组
+             print(r1.match(s).group(2))         # 2代表提取第二个分组
+             &gt;&gt;&gt; 你好
+</code></pre>
+<h3 id="匹配模式">匹配模式</h3>
+<pre><code>re.M    # 多行匹配， 影响   ^ 和 $，上面讲  ^ 与 $已经详解了。
+re.I    # 忽略大小写
+        eg:
+            s = 'aAbB'
+            r1 = re.compile(r'aabb', re.I).match(s).group()
+            print(r1)
+            &gt;&gt;&gt; aAbB
+
+re.S    # 提升 . 的权限，  让 .  可以 匹配到换行符
+        s = &quot;&quot;&quot;
+        hello
+        python
+        &quot;&quot;&quot;
+        r1 = re.compile(r'.*', re.S).match(s).group()    # 注意这里 re.S
+        print(r1)
+        &gt;&gt;&gt; hello
+            python
+        注意：如果不写 re.S 那么 .* 只能匹配到第一行的空字符串，因为遇到第一个空行的\n就停止了
+        
+re.X    # 可以给正则分行写，并可以加注释，
+    eg:
+        import re
+    
+        title = '1好2你3'
+        r1 = re.compile(r&quot;&quot;&quot;
+        	1	 # 注释1  看这两行
+        	好	# 注释2  看这两行，1 和 好 没有加逗号。但是他们属于整体的规则，你可以加注释
+        &quot;&quot;&quot;, re.X)		# 把正则可以分行写,  用了re.X后，分行的正则会被看作为一行
+        result = r1.match(title).group()
+        print(result)	# 输出结果： 1好
+</code></pre>
+<h3 id="贪婪模式-与-非贪婪模式">贪婪模式 与 非贪婪模式</h3>
+<pre><code>个人理解： 
+    贪婪模式：(Python默认使用的就是 贪婪模式) 
+        你想匹配 一个句子中的 一个单词， 但是你写的规则恰好可以 满足 匹配所有单词。
+        那么它就会 贪婪的 把所有单词 全部 都给你匹配出来。   (贪)
+        
+        使用方法：
+            * 或 +
+            
+    非贪婪模式：
+        即使你把规则写的很好，并且能把所有字符串都匹配到， 但是如果你加上了  非贪婪模式。
+        在满足规则条件的前提下，只匹配一个.
+        
+        使用方法：
+            *? 或 +?
+
+    eg1：基于search的贪婪模式（match同此）
+        我们先回忆一下：search()方法的 最核心思想就是：从前往后搜，搜到一个满足的就直接返回。
+        OK，继续。
+        
+        贪婪：（默认）：
+            import re
+            r1 = re.compile(r'\d+')
+            print(r1.search('你好333你好333你好').group())
+            &gt;&gt;&gt; 333        # 满足规则后 尽可能贪， 所以第一串连着的 '333'  搜到了就直接返回了
+        
+        非贪婪（就多了个问号 ? ）：
+            import re
+            r1 = re.compile(r'\d+?')
+            print(r1.search('你好333你好333你好').group())
+            &gt;&gt;&gt; 3          # 嗯，你的规则就是 至少一个数字，搜到了一个就可以返回了，干得漂亮。
+            
+    
+    eg2: 基于findall的贪婪模式（如果你findall与规则，理解的不透彻，这个会有点绕的，前方高能）
+        先回忆一下：findall()方法的 最核心思想就是：拿着 定死的 规则，把所有满足规则的都提出来
+        OK，继续。
+        
+        贪婪（默认）：
+            import re
+            r1 = re.compile(r'\d+')
+            print(r1.findall('你好333你好333你好'))
+            &gt;&gt;&gt; ['333', '333']
+            
+            解释： 规则是匹配至少一位数字。
+                  但是 贪婪模式 提醒了 规则：“你的任务是给我尽可能的 多匹配数字”
+                  findall 拿着 被贪婪化的 规则 去匹配原始字符串
+                  
+                  被贪婪模式 提醒过的规则果然不负众望，  一次提一串连着的 ‘333‘  
+                  findall 拿着它 提取了   两次   ,就把所有数字提取出来了
+                  结果就是    ['333', '333']
+                  
+        非贪婪：
+            import re
+            r1 = re.compile(r'\d+?')
+            print(r1.findall('你好333你好333你好'))
+            &gt;&gt;&gt; ['3', '3', '3', '3', '3', '3']
+
+            解释： 规则 同样是 匹配至少一位数字。
+                  但是 非 贪婪模式 提醒了 规则：“你的任务是给我尽可能的 少  匹配数字”
+                  findall 拿着 被贪婪化的 规则 去匹配原始字符串
+          
+                  被贪婪模式 提醒过的规则果然不负众望，  一次只提取一个 ‘3‘  
+                  findall 拿着它 提取了   六次   ,才把所有数字提取出来了
+                  结果就是    ['3', '3', '3', '3', '3', '3']
+</code></pre>
+<h3 id="匹配方法">匹配方法</h3>
+<pre><code>match():
+    '''
+        match()方法是 根据规则从第一个开始，向后逐个匹配，如果有一个字符匹配不上，就返回None
+    '''
+    
+    s = 'hello python'
+    re1 = re.compile(r'he')  
+    re1.match('')
+    result = re1.match(s).group() if re1.match(s) else None   # 注意：非None才有group方法
+    print(result)        # 通过 group()方法获得的才是最终 正则匹配的字符串
+    &gt;&gt;&gt; he
+    
+    简单分组提取：
+        s = 'hello python'
+        re1 = re.compile(r'h(e)llo') # 给e加个一个(),就代表添加了分组，一会要把他提出来
+        result = re1.match(s).group(1) if re1.match(s) else None 
+            # 注意上方的  group(1)  这个参数是1，代表 只 提取 分组 里面的内容
+                &gt;&gt;&gt; e
+            # 如果是 group() 或 group(0)  代表提取 整个正则规则 的内容
+                &gt;&gt;&gt; hello
+        print(result)    
+        &gt;&gt;&gt; e
+    
+    嵌套-平行（深度-广度）分组提取：
+        原理：分组提取先提取嵌套的，后提取平行的 (专业点就是先深度，后广度)
+        eg：
+            a = '123-%%%-dd'
+            result = re.compile(r'123(-(%%%)-)d(d)').match(a).groups()   
+            # 或者用 group(1), group(2), group(3) 代替groups() 单个看也行
+            print(result)
+            &gt;&gt;&gt; ('-%%%-', '%%%', 'd') 
+
+search():
+    &quot;&quot;&quot;
+        search() 方法是： 从前向后按规则‘搜索’, 直到搜到位置，搜不到就返回None
+    &quot;&quot;&quot;
+    s = &quot;aaa123aaa&quot;
+    r1 = re.compile(r'\d+').search(s).group()
+    print(r1)     
+    &gt;&gt;&gt; 123
+
+findall():
+    &quot;&quot;&quot;
+        findall() 方法是： 按照正则规则，搜索所有符合规则的字符串，以列表的形式作为结果返回
+    &quot;&quot;&quot;
+    s = &quot;aaa---123---bbb&quot;
+    r1 = re.compile(r'\w+').findall(s)
+    print(r1)
+    &gt;&gt;&gt; ['aaa', '123', 'bbb']
+    
+    微不足道的扩展：
+        a = '123-%%%-dd'
+        result = re.compile(r'-(.*?)-').findall(a)
+        print(result)
+        &gt;&gt;&gt; %%%
+        # 解释： findall() 方法中 如果规则中含有分组，那么就会只返回分组中提取的的内容
+        
+finditer():
+    &quot;&quot;&quot;
+        finditer() 和 findall() 使用方式一样，只不过返回结果是 可迭代对象，easy,此处不在多说
+    &quot;&quot;&quot;
+    
+split():
+    &quot;&quot;&quot;
+        split()方法是：按照规则去切割，切割结果以列表的方式返回
+    &quot;&quot;&quot;
+    语法关联：
+        我们知道字符串  有 split() 方法，可以按照一个参数损耗来切割，但是这个参数只能指定一个
+        如果让你在多种规则的前提下切割，需要怎么办。
+        巧了，正则切割split() 方法就是解决这个问题的， 实例如下：
+        
+    s = &quot;aaa%%123@@bbb&quot;                  # 可以看见，%和@符号把字符分开了，现在我们只想要字符
+    r1 = re.compile(r'\W+').split(s)     # \W 大写： 以非单词性字符作为损耗规则，来切割
+    print(r1)
+    &gt;&gt;&gt; ['aaa', '123', 'bbb']
+
+sub():
+    &quot;&quot;&quot;
+        sub()方法是： 按照规则匹配选出代替换的字符，然后自己 给定字符去替换
+    &quot;&quot;&quot;
+    场景1：常用方式，自己给定目标字符串，按规则匹配并直接替换原始字符串
+        eg:
+            s = &quot;aaa%%123@@bbb&quot;
+            r1 = re.compile(r'\W+').sub('你好',s)
+            print(r1)
+            &gt;&gt;&gt; aaa你好123你好bbb
+        
+    场景2：正则匹配后的结果 经过函数操作，函数的返回值作为 替换的最终结果
+        eg:
+            s = &quot;aaa%%123@@bbb&quot;
+            r1 = re.compile(r'\W+').sub(lambda a:a.group()*2, s)
+            print(r1)
+            &gt;&gt;&gt; aaa%%%%123@@@@bbb
+            解释： 按照规则匹配到的字符是 %%和@@，经过函数 乘以2后， 就替换成了 %%%%和@@@@
+            
+subn():
+    &quot;&quot;&quot;
+        subn() 和 sub()语法几乎一样，唯一的扩展功能就是 返回结果是元组，(字符串, 次数)
+    &quot;&quot;&quot;
+    s = &quot;aaa%%123@@bbb&quot;
+    r1 = re.compile(r'\W+').subn('你好',s)
+    print(r1)
+    &gt;&gt;&gt; ('aaa你好123你好bbb', 2)
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-hao-yong-shen-du-ji-neng-gong-ju-jie-shao/">
+                  <h3 class="post-title">
+                    PY =&gt; Python好用深度技能工具介绍
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

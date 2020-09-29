@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python__黑魔法__ | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="类的继承
+类继承有三种调用方式，其实是 有区别 的，听我慢慢道来
+class A:
+	def say(self, name):
+		print(f'Im {name}')
+class B(A):
+	def say(self, name):
+..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python__黑魔法__</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="类的继承">类的继承</h3>
+<pre><code>类继承有三种调用方式，其实是 有区别 的，听我慢慢道来
+class A:
+	def say(self, name):
+		print(f'Im {name}')
+class B(A):
+	def say(self, name):
+    # 第一种：父类.方法(self, 参数) 直接调用
+	    A.say(self, name)    
+	    
+	def say(self, name):
+	# 第二种：super().方法(参数)    直接调用
+	# 在谁的类下调用super，就找此类对应 mro()的下一个,就是要继承的
+	 	super().say(name)
+	 	
+	def say(self, name):
+	# 第三种：super(B, self).方法(参数)
+	# 找类名 对应的 mro()的下一个，就是 继承的，一般写本身的类名
+		super(B, self).say(name)
+
+B().say('Tom')
+</code></pre>
+<h3 id="上下文管理器">上下文管理器</h3>
+<pre><code>&quot;&quot;&quot;
+    上下文管理器可以用两种方式实现：
+&quot;&quot;&quot;
+     方式1：通过类来实现
+        主要实现两种协议
+            1. __enter__(self)
+            2. __exit__(self, *args, **kwargs)
+                
+        class A():
+        	def __init__(self, name):
+        		self.name = name
+        	def __enter__(self):
+        		print('进入')
+        		return self
+        	def __exit__(self, *args, **kwargs):
+        		print('退出')
+        		return True
+        
+        with A('Tom') as a:
+        	print(a.name)
+
+    方式2：通过函数来实现
+        from contextlib import contextmanager
+        @contextmanager
+        def f():
+        	print('开始')    # yield 之前 对应 with f()
+        	yield '中间'     # yield 的值 就是    as 之后的值
+        	print('结束')    # yield 之后 对应 print(str1) 这个语句体
+        
+        with f() as str1:
+        	print(str1)
+        ------------------Output----------------------
+        开始
+        中间
+        结束
+</code></pre>
+<h3 id="属性描述符-property-setter">属性描述符-property-setter</h3>
+<pre><code>class A:
+@property
+def name(self):
+	return '123'
+@name.setter
+def name(self, value):
+	self.age=value
+
+a = A()
+print(a.name)
+a.name = '456'
+print(a.age)
+</code></pre>
+<h3 id="init"><strong>init</strong>()</h3>
+<pre><code>实例化对象时自动调用，这里先卖个关子，见下面 __new__()
+</code></pre>
+<h3 id="call"><strong>call</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+   对象当做函数执行的时候会自动调用 __call__()
+&quot;&quot;&quot;
+class A():
+    pass
+a = A()    # 此处自动调用了 __init__()
+a()        # 此处自动调用了 __call__()
+</code></pre>
+<h3 id="str"><strong>str</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    对对象进行print操作的时候 会自动调用 __str__()
+&quot;&quot;&quot;
+class A:
+	def __str__(self):
+		return '5'
+a = A()
+print(a)  # 此处自动调用了 __str__()
+</code></pre>
+<h3 id="new"><strong>new</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    上面说过 __init__()是实例化对象的时候自动调用，在它之前还隐式调用了 __new__()
+    __new__返回的是什么，对象就是什么
+&quot;&quot;&quot;
+In [2]: class A:
+   ...:   def __new__(self):
+   ...:     print('__new__')    # 初始化对象只调用 __new__ 而不调用 __init__
+   ...:     return 1
+   ...:   def __init__(self):
+   ...:     print(2)
+   ...: print(A())
+    __new__
+    1
+</code></pre>
+<h3 id="setattr-和-getattr-和-delattr"><strong>setattr</strong>() 和 <strong>getattr</strong>() 和 <strong>delattr</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    __setattr__()：=号 属性赋值 会自动调用此方法 
+    __getattr__()：.号 属性取值 会自动调用此方法    # 注：找不到属性才会调用此方法
+    __delattr__()：del 属性删除 会自动调用此方法
+&quot;&quot;&quot;
+class A:
+
+	def __init__(self, name):
+		self.name = name        # 赋值操作就会调用 __setattr__()
+    
+	def __setattr__(self, name, value):
+		print(f'{name}:{value}')
+	def __getattr__(self, name):
+		print(name)
+	def __delattr__(self,name):
+	    print('del了')
+		
+a = A('Jack')    # 调用了 __init__
+a.name = 'Tom'   # 赋值操作再次调用 __setattr__()
+a.name           # 取值操作调用 __getattr__()
+---------------------output---------------------
+name:Jack
+name:Tom
+name
+del了
+</code></pre>
+<h3 id="getattribute"><strong>getattribute</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    和 __getattr__() 一样，只不过 __getattribute__最先调用，并拦截了 __getattr__()
+&quot;&quot;&quot;
+class A:
+	def __init__(self):
+		self.name = 1
+	def __getattr__(self,x,*args, **kwargs):
+		print(456)
+	def __getattribute__(self, x):
+		print(123)
+
+a = A()
+a.aaaaaa
+-----------output---------------
+123
+</code></pre>
+<h3 id="getitem"><strong>getitem</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    对对象进行 切片、索引、遍历 等 会自动调用此方法
+&quot;&quot;&quot;
+class A:
+def __getitem__(self,x,*args, **kwargs):
+	return x
+
+a = A()
+触发方式1： 如果直接索引此对象，那么索引值就会传递到上面 x 当作参数
+    print(a[5])
+    &gt;&gt; 5
+触发方式2： 如果直接切片此对象，那么slice对象 就会传递到上面 x 当作参数
+    print(a[1:5])
+    &gt;&gt; slice(1, 5, None)
+触发方式3： 如果for循环迭代此对象，那么 上面的 x 每次将会被赋予从零开始 自增1的自然整数
+    for x in a:
+	    print(x)
+	&gt;&gt; 0,1,2,3,4.................... 
+</code></pre>
+<h3 id="init_subclass"><strong>init_subclass</strong>（）</h3>
+<pre><code>&quot;&quot;&quot;
+    被继承的类 会自动调用__init_subclass__ 
+&quot;&quot;&quot;
+class A:
+	def __init_subclass__(self):
+		print('我被继承了')
+
+class B(A):
+	pass
+</code></pre>
+<h3 id="base"><strong>base</strong>（）</h3>
+<pre><code>&quot;&quot;&quot;
+    查看基类
+&quot;&quot;&quot;
+class A:
+    pass
+class B(A):
+	pass
+print(B.__base__)
+-----------output---------------
+&lt;class '__main__.A'&gt;
+</code></pre>
+<h3 id="contains"><strong>contains</strong>()</h3>
+<pre><code>&quot;&quot;&quot;
+    xx in xx 就会自动调用  __contains__()
+&quot;&quot;&quot;</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-san-cheng/">
+                  <h3 class="post-title">
+                    PY =&gt; Python三程
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

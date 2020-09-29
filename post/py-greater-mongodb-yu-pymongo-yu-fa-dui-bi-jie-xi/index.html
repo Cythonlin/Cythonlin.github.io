@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; MongoDB与PyMongo语法对比解析 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="阅读须知
+由于是对比书写:
+    M: 代表 Mongo原生语法
+    P: 代表 PyMongo书写方法
+    
+    后面提到：”同上“ 字眼：
+        意思就是 Mongo 和 PyMongo 语句是一模一样的， 一个..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; MongoDB与PyMongo语法对比解析</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="阅读须知">阅读须知</h1>
+<pre><code>由于是对比书写:
+    M: 代表 Mongo原生语法
+    P: 代表 PyMongo书写方法
+    
+    后面提到：”同上“ 字眼：
+        意思就是 Mongo 和 PyMongo 语句是一模一样的， 一个字都不差，复制上去，可以直接运行
+        （也许你很好奇，为什么 一个是Python语言里的PyMongo，一个是Mongo）
+        他们的语句为什么可以做到一模一样 ？？
+        答：因为 Mongo和Python都可以 给变量赋值， PyMongo的语法设计也是模仿Mongo的。
+            所以：我巧妙的 把二者的变量设为同一个，函数90%都一致， 所以整条语句就一模一样了！
+    
+    主要语法区别：
+        1. 函数命名
+            Mongo  方法函数大都以 驼峰命名
+            PyMongo方法函数大都以 _ 下划线分割命名
+        2. 函数参数
+            Mongo :  基本都是 {} + [] 各组组合格式 
+            PyMongo：同上， 但{}的 key需要使用字符串格式， 有些情况，还需要使用命名参数代替 {}
+        3. 空值 与 Bool
+            Mongo: null  true false
+            PyMongo: None True False
+</code></pre>
+<h1 id="前置安装配置环境">前置安装配置环境</h1>
+<ul>
+<li>
+<h3 id="客户端连接">客户端连接：</h3>
+<pre><code>   pip install pymongo
+   import pymongo
+      
+   M: Mongo
+   P: cursor = pymongo.MongoClient('ip',port=27017) 
+</code></pre>
+</li>
+<li>
+<h3 id="选择数据库">选择数据库：</h3>
+<pre><code>   M: use test
+   P: db = cursor['test']       # 记住这个db，  下面复用这个参数
+</code></pre>
+</li>
+<li>
+<h3 id="选择集合-记住table变量名下面就直接用他们了-注意注意注意">选择集合：   (记住table变量名，下面就直接用他们了)  注意，注意，注意</h3>
+<pre><code>   M: table = db.zhang                         
+   P: table = db['zhang']  
+
+   注：选择库，选择集合的时候 注意事项：
+   Mongo中：  xx.xx  用 . 的语法
+   PyMongo中：也可以 用 xx.xx 这样,  但是这样用在PyCharm中没有语法提示
+   
+   所以提倡     xx['xx']      用索引的方式使用
+</code></pre>
+</li>
+<li>
+<h3 id="mongo-与-pymongo-返回结果的游标比较">Mongo 与 PyMongo 返回结果的游标比较</h3>
+<pre><code>   Mongo中：
+       大多数查询等结果返回都是游标对象
+       如果不对游标遍历，那么Mongo的游标会默认为你取出 前 20 个 值
+       当然，你也可以索引取值
+       关闭操作： .close()                   
+   PyMongo中：
+       同样，大多数查询等结果返回都是游标对象（如果你学过ORM，可以理解游标就像 ORM的查询集）
+       所以必须通过 list() 或 遍历 或 索引 等操作才能真正取出值
+       关闭操作： .close()  或者 用 Python 的 with 上下文协议
+</code></pre>
+</li>
+</ul>
+<h1 id="增">增</h1>
+<ul>
+<li>
+<h3 id="save">save()</h3>
+<pre><code>  M: table.save({})    # 估计要废弃了
+  P: 将要被废弃 用insert_one代替它
+</code></pre>
+</li>
+<li>
+<h3 id="insert">insert()</h3>
+<pre><code>  M: table.insert()         # 包括上面两种，可以一个 {}，可以多个 [{},{}]
+  P: PyMongo源码明确说明，insert()语法将被废弃，请用 insert_one({}) 和 insert_many([])代替
+</code></pre>
+</li>
+<li>
+<h3 id="insert_one-和-insert_many">insert_one() 和 insert_many()</h3>
+<pre><code>  M: 
+     table.insertOne( {} )            # 驼峰
+     table.insertMany([ {},{} ])      # 驼峰
+  P:
+     table.insert_one( {} )           # 下划线
+     table.insert_many([ {},{} ])     # 下划线
+</code></pre>
+</li>
+</ul>
+<h1 id="删">删</h1>
+<ul>
+<li>
+<h3 id="remove">remove()</h3>
+<pre><code>  参数1：删除查询条件
+  参数2：删除选项
+  M: table.remove({'name':'zhangsan'}, {'justOne': true})   # 我更喜欢用delete的
+  P: PyMongo中,此方法将被废弃。 将会被 delete_one() 和 delete_many() 代替
+</code></pre>
+</li>
+<li>
+<h3 id="deleteone-只删除一条">deleteOne()    # 只删除一条</h3>
+<pre><code>  M: table.deleteOne({'name': 'lin3'})
+  P: table.delete_one({'name': 'lin3'})    # 
+</code></pre>
+</li>
+<li>
+<h3 id="deletemany-删除多条">deleteMany()   # 删除多条</h3>
+<pre><code>  M: table.deleteMany({'name': 'lin3'})
+  P: table.delete_many({'name': 'lin3'})
+
+  注意：
+      不知道这两个函数是否让你想起了前面讲的  insertOne 和 insertMany，他们看起来很像，语法不同：
+          insertMany([]) # 参数需要用   [] 包起来
+          deleteMany({}) # 参数不需要
+  注意2：
+      table.deleteMany({})    # 空 {}， 代表删除所有文档 （慎行，慎行，慎行）
+</code></pre>
+</li>
+<li>
+<h3 id="删除整个集合">删除整个集合：</h3>
+<pre><code>  table.drop()    # 删除集合（连同 所有文档， 连同 索引，全部删除）
+</code></pre>
+</li>
+</ul>
+<h1 id="改">改</h1>
+<pre><code>&quot;&quot;&quot;
+    文档修改,  注意： _id 不可修改
+&quot;&quot;&quot;
+</code></pre>
+<ul>
+<li>
+<h2 id="三种更新方法">三种更新方法：</h2>
+<ol>
+<li>
+<p>update(将要废弃，可跳过，直接看2，3点的方法)<br>
+update({查询条件},  {更新操作符} , {更新选项})</p>
+<p>M: table.update({'name': {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 12: regex&#039;:&#039;li&#039;}̲},{&#039;'>regex&#039;:&#039;li&#039;}},{&#039;</span>set':{'name':'lin2'}}, {multi: true})<br>
+P: table.update({'name': {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 13: regex&#039;: &#039;li&#039;}̲}, {&#039;'>regex&#039;: &#039;li&#039;}}, {&#039;</span>set': {'name': 'lin3'}},multi=True)</p>
+<p>注意1: 第三个参数 multi如果不设置，默认只更新一条文档，设置为 true ，就会更新多条文档<br>
+注意2：<br>
+Mongo写法： {multi: true}        # Mongo 和往常一样，采用json格式， true小写<br>
+Python写法： multi = True        # python是采用命名参数来传递， True大写</p>
+</li>
+<li>
+<p>updateOne(更新一条)<br>
+M: updateOne( {查询条件},  {更新操作符} )<br>
+P: update_one</p>
+</li>
+<li>
+<p>updateMany(更新多条)<br>
+M: updateMany( {查询条件},  {更新操作符} )     其实参数是一模一样的，只不过方法名区分<br>
+P: update_many</p>
+</li>
+</ol>
+<pre><code>注： 这三个方法的参数 是基本一模一样的
+     所以下面讲具体  {查询条件},  {更新操作符} 时
+     就统一用 update()来写了
+</code></pre>
+</li>
+<li>
+<h2 id="普通更新操作符">普通更新操作符：</h2>
+</li>
+<li>
+<h3 id="set更新">$set(更新)</h3>
+<h1 id="注规则就是有则改之-无则添加">注：规则就是：&quot;有则改之， 无则添加&quot;</h1>
+<p>M: table.update({'5':5},{'$set': {'lin': [5,6,7,8]} })<br>
+P: 同上</p>
+<p>微扩展(关于内嵌数组)：<br>
+table.update({'5':5},{'$set': {'lin.0': '呵呵' })  # lin.0代表数组的第一个元素<br>
+当数组的索引越界，这个时候就视为数组的添加操作。<br>
+eg: 假定我们给 lin.10 一个值，那么 中间空出的那么多索引，会自动填充 null</p>
+</li>
+<li>
+<h3 id="unset删除">$unset(删除)</h3>
+<h1 id="注删除的键对应的value可以随便写写啥都会删除-写-只是为了语义明确规范">注：删除的键对应的value可以随便写，写啥都会删除， 写 '' 只是为了语义明确（规范）</h1>
+<p>M: table.update({'6':6}, {'$unset': {'6':''}})     # 把此条记录的 '6' 字段删除<br>
+P: 同上</p>
+<p>微扩展(关于嵌套数组)：<br>
+table.update({'5':5}, {'$unset': {'lin.0':''}}) # lin.0同样代表数组第一个元素<br>
+注：数组的删除 并不是真正的删除， 而是把值 用 null 替换</p>
+</li>
+<li>
+<h3 id="rename改名替换">$rename(改名，替换)</h3>
+<p>M: table.update({'name':'lin'}, {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 24: …{&#039;name&#039;:&#039;nick&#039;}}̲)  # name变成了nic…'>rename&#039;:{&#039;name&#039;:&#039;nick&#039;}})  # name变成了nick
+   P: 同上
+   微扩展（文档嵌套）：
+       如果文档是嵌套的 eg:   { a: {b:c} } 
+           M: table.update({&#039;lin&#039;:&#039;lin&#039;}, {&#039;</span>rename': {'a.b':'d'}})<br>
+P: 同上<br>
+结果 =&gt; {&quot;a&quot; : {  }, &quot;d&quot; : &quot;c&quot; }<br>
+解析：<br>
+b   属于 子文档<br>
+a.b 表示 通过父文档的a 来取出 子文档的b<br>
+如果整体a.b被 rename为 d，那么 d会被安排到父文档的层级里，而a设为空。<br>
+举个栗子：<br>
+你有一个箱子，里面 有一个 儿子级别 和 孙子级别 的箱子 （共3层）<br>
+现在你把 孙子级别的箱子 单独拿出来， 把整个箱子替换掉<br>
+就是这种思想。。。自己体会吧</p>
+<pre><code>          （这种语法，好像Python列表的切片赋值。。形容可能不太恰当）
+</code></pre>
+</li>
+<li>
+<h3 id="inc">$inc：</h3>
+<p>{$inc: { 'age': -2}}    # 减少两岁，正数表示加法，负数表示减法，简单，不举例了<br>
+特例：如果字段不存在，那么，此字段会被添加， 并且值就是你设定的值(0+n=n)</p>
+</li>
+<li>
+<h3 id="mul">$mul:</h3>
+<p>{$mul: { 'age': 0.5}}   # 年龄除以2，整数表示乘法，小数表示除法，简单，不举例了<br>
+特例：如果字段不存在，那么，此字段会被添加， 并且值为0 (0*n=0)</p>
+</li>
+<li>
+<h3 id="min">$min</h3>
+<p>{$min: { 'age': 30}}    # 30比原有值小：就替换， 30比原有值大，则不做任何操作</p>
+</li>
+<li>
+<h3 id="max">$max</h3>
+<p>{$max: { 'age': 30}}    # 30比原有值大：就替换， 30比原有值小，则不做任何操作<br>
+特例：min和max特例相同，即如果字段不存在，那么，此字段会被添加， 并且值就是你设定的值</p>
+</li>
+<li>
+<h2 id="数组更新操作符">数组更新操作符：</h2>
+<p>&quot;&quot;&quot;<br>
+单数组:   xx<br>
+内嵌数组: xx.索引<br>
+&quot;&quot;&quot;</p>
+</li>
+<li>
+<h3 id="addtoset有序无重复尾部添加">$addToSet（有序，无重复，尾部添加）</h3>
+<p>原始数据： {'1':1}</p>
+<p>M: table.update({'1':1}, {'$addToSet':{'lin':[7,8]}})<br>
+P: 同上</p>
+<p>结果 =&gt; {&quot;1&quot;: 1,&quot;lin&quot;: [ [7, 8 ] ]}   # [7,8] 整体插入进来， 特别注意这是二级列表</p>
+</li>
+<li>
+<h3 id="each-给78加个-each注意看结果变化">$each ( 给[7,8]加个 $each，注意看结果变化 )</h3>
+<p>M: table.update({'1': 1}, {'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;}&#039;, got &#039;EOF&#039; at end of input: …et&#039;: {&#039;lin&#039;: {&#039;'>addToSet&#039;: {&#039;lin&#039;: {&#039;</span>each':[7, 8]} }})<br>
+P: 同上<br>
+结果 =&gt; {&quot;1&quot;: 1, &quot;lin&quot;: [7,8]}  # 7,8单独插入进来，参考python的 * 解构</p>
+</li>
+<li>
+<h3 id="push数据添加-比addtoset强大可任意位置可重复"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi><mi>u</mi><mi>s</mi><mi>h</mi><mo>(</mo><mi mathvariant="normal">数</mi><mi mathvariant="normal">据</mi><mi mathvariant="normal">添</mi><mi mathvariant="normal">加</mi><mi mathvariant="normal">，</mi><mi mathvariant="normal">比</mi></mrow><annotation encoding="application/x-tex">push(数据添加， 比</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault">p</span><span class="mord mathdefault">u</span><span class="mord mathdefault">s</span><span class="mord mathdefault">h</span><span class="mopen">(</span><span class="mord cjk_fallback">数</span><span class="mord cjk_fallback">据</span><span class="mord cjk_fallback">添</span><span class="mord cjk_fallback">加</span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">比</span></span></span></span>addToSet强大，可任意位置,可重复)</h3>
+<p>&quot;&quot;&quot;<br>
+补充说明:<br>
+$addToSet:添加数据有重复，会自动去重<br>
+$push    :添加数据有重复，不会去重，而是直接追加<br>
+&quot;&quot;&quot;<br>
+原始数据: {'1':1}</p>
+<p>M: table.update(<br>
+{ '1': 1 },<br>
+{<br>
+'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;}&#039;, got &#039;EOF&#039; at end of input: …
+             &#039;'>push&#039;: {
+          &#039;lin&#039;: {
+             &#039;</span>each': [ {'a': 5, 'b': 8 }, { 'a': 6, 'b': 7 }, {'a': 7, 'b': 6 } ],<br>
+'<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mi>o</mi><mi>r</mi><msup><mi>t</mi><mo mathvariant="normal">′</mo></msup><mo>:</mo><mrow><msup><mrow></mrow><mo mathvariant="normal">′</mo></msup><msup><mi>a</mi><mo mathvariant="normal">′</mo></msup><mo>:</mo><mo>−</mo><mn>1</mn></mrow><msup><mo separator="true">,</mo><mo mathvariant="normal">′</mo></msup></mrow><annotation encoding="application/x-tex">sort&#x27;: { &#x27;a&#x27;: -1 },
+             &#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.751892em;vertical-align:0em;"></span><span class="mord mathdefault">s</span><span class="mord mathdefault">o</span><span class="mord mathdefault" style="margin-right:0.02778em;">r</span><span class="mord"><span class="mord mathdefault">t</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.946332em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord"><span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mord"><span class="mord mathdefault">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord">−</span><span class="mord">1</span></span><span class="mpunct"><span class="mpunct">,</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span>position': 0,<br>
+'$slice': 2<br>
+}}})    # 这里为了清晰点，我就把所有括号折叠起来了<br>
+P: 同上</p>
+<p>结果 =&gt;   {&quot;1&quot; : 1, &quot;lin&quot; : [ { &quot;a&quot; : 7, &quot;b&quot; : 6 }, { &quot;a&quot; : 6, &quot;b&quot; : 7 } ] }<br>
+终极解析：<br>
+1. 添加数组： 先走 $sort =&gt; 根据a 逆序排列<br>
+2. 再走 $position,  0表示：索引定位从0开始<br>
+3. 再走 $slice, 2表示： 取2个<br>
+4. 最后走 $each,把数组元素逐个放进另一个数组，说过的，相当于python的 * 解构操作，</p>
+</li>
+<li>
+<h3 id="pop只能-删除-头或尾-元素">$pop（只能 删除 头或尾 元素）</h3>
+<p>M: table.update({'a': a}, {'$pop': {'lin': 1}})        # 删除最后一个<br>
+P: 同上</p>
+<p>注1：$pop参数， 1代表最后一个，  -1代表第一个。 这个是值得注意一下的，容易记反<br>
+注2：如果全部删没了，那么会剩下空[]， 而不是彻底删除字段</p>
+</li>
+<li>
+<h3 id="pull-删除-任何位置-的-指定的元素">$pull (删除 任何位置 的 指定的元素)</h3>
+<p>M: table.update({'1': 1},{'$pull':{ 'lin':[7,8]}})   # 删除数组中[7,8]这个内嵌数组<br>
+P: 同上</p>
+</li>
+<li>
+<h3 id="pullall基本和-pull-一致">$pullAll(基本和 $pull 一致)</h3>
+<p>M: table.update({'1': 1},{'<span class='katex-error' title='ParseError: KaTeX parse error: Expected &#039;EOF&#039;, got &#039;}&#039; at position 28: …lin&#039;:[ [7,8] ]}}̲)   # 同'>pullAll&#039;:{ &#039;lin&#039;:[ [7,8] ]}})   # 同</span>pull，但多了个 []<br>
+P: 同上</p>
+<p>注： $pull 和 $pullAll 针对于 内嵌文档 和 内嵌数组 有细小差别， 差别如下：<br>
+内嵌数组：<br>
+$pull 和 $pullAll 都严格要求内嵌数组的 排列顺序，顺序不一致，则不返回<br>
+内嵌文档:<br>
+$pullAll : 严格要求内嵌文档的顺序， 顺序不一致，则 不返回<br>
+$pull    : 不要求内嵌文档的循序，   顺序不一致，一样可以返回</p>
+</li>
+</ul>
+<h1 id="查">查</h1>
+<pre><code>&quot;&quot;&quot;
+    第一个参数的条件是 筛选出 数据的记录（文档）
+    第二个参数的条件是 筛选出 数据的记录中的 属性（字段），不配置 就是 默认 取出所有字段
+    find({查询条件}, {投影设置}) 
+&quot;&quot;&quot;
+</code></pre>
+<ul>
+<li>
+<h3 id="投影解释">投影解释</h3>
+<pre><code> 哪个字段 设置为 0， 此字段就不会被投影， 而其他字段全部被投影
+ 哪个字段 设置为 1， 此字段就会被单独投影， 其他字段不投影
+ {'name': 0, 'age': 0}      # 除了 name 和 age  ，其他字段 都 投影
+ {'name': 1, 'age': 1}      # 只投影 name 和 age, 其他字段 不 投影，（_id除外）
+
+ 注意:所有字段必须满足如下要求：
+     一： 你可以不设置，默认都会被投影
+     二： 如果你设置了，就必须同为0，或者同为1,不允许0，1 混合设置(_id除外)
+     三： _id虽然可以参与混合设置，但是它只可以设为0， 不可以设为1，因为1是它默认的
+
+ 通俗理解（0和1的设定）：另一种理解思想 ====&gt; 
+     设置为1：  就是 加入 白名单 机制
+     设置为0，  就是 加入 黑名单 机制
+  
+ 注： _id字段是 MongoDB的默认字段，它是会一直被投影的(默认白名单)
+     但是，当你强制指定 {'_id': 0}    ，强制把 _id指定为0，他就不会被投影了（变为黑名单）
+
+ 语法：
+     M: queryset = table.find({}, {'name': 0})
+     P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="投影-数组切片slice">投影-数组切片($slice)</h3>
+<pre><code> &quot;&quot;&quot;针对投影时的value为数组的情况下，对此数组切片，然后再投影&quot;&quot;&quot;
+ 数据条件： {'arr1': [5,6,7,8,9] }
+ 整形参数：
+     M: queryset = table.find({},{'arr1':{'$slice': 2}})     # 2表示前2个, -2表示后两个
+     P: 同上，一模一样，一字不差
+     结果: { 'arr1': [5,6] }
+ 数组参数： [skip, limit]    
+     M: queryset = table.find({},{'arr1':{'$slice': [2,3]}}) # 跳过前2个，取3个
+     P: 同上，一模一样，一字不差
+
+     输出结果 =&gt;  { 'arr1': {7,8,9] }
+  
+     注： 这种数组参数，你可以用 skip+limit 方式理解
+          也可以用, python的索引+切片方式理解 （skip开始查索引（0开始数）, 然后取limit个）
+</code></pre>
+</li>
+<li>
+<h3 id="投影-数组过滤elemmatch">投影-数组过滤($elemMatch)</h3>
+<pre><code> &quot;&quot;&quot;
+  针对投影时 的value为数组的情况下，根据指定条件 对 数组 过滤，然后再投影
+  注意这个过滤机制： 从前向后找，遇到一个符合条件的就立刻投影(类似 python正则的 search)
+ &quot;&quot;&quot;
+ 数据条件: {'arr1': [6,7,8,9]}
+ 
+ M: queryset = table.find({}, {'arr1': {'$elemMatch': {'$gt':5}} })
+ P: 同上
+
+ 输出结果 =&gt; &quot;arr1&quot; : [ 6 ]
+
+ 解析：（我自己总结的伪流程，可参考理解）
+     1. 准备投影
+     2. 发现数组，先处理数组，可看到数组中有 elemMatch条件
+        elemMatch在投影中定义为： 
+        ”你给我一个条件，我把符合条件的 数组每个元素从前向后筛选
+         遇到第一个符合条件的就返回, 剩下的都扔掉  （这里的返回你可以理解为 return）
+        “
+     3. 把 2 步骤 返回的数据 投影
+</code></pre>
+</li>
+<li>
+<h3 id="limit">limit()</h3>
+<pre><code> limit: （只取前n条）
+     M: queryset = table.find({'name':'lin'}).limit(n)    # n就是取的条数
+     P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="skip">skip()</h3>
+<pre><code> skip: （跳过n条，从第n+1条开始取）
+     M: queryset = table.find({'name':'lin'}).skip(n)    # 从0开始数
+     P: 同上
+  
+     解释一下skip这个参数n：
+         假如n等于2 ，就是从第三个（真实个数）开始取   =&gt; 你可以借鉴数组索引的思想 a[2]
+</code></pre>
+</li>
+<li>
+<h3 id="count">count()</h3>
+<pre><code> count: （统计记录数）
+     M: count_num = table.find({'name':'lin'}).skip(1).limit(1).count()
+     P: count_num = table.count_documents(filter={'name':'lin'}, skip=1, limit=1)
+  
+     分析：
+         find()   -&gt; 查出 3 条数据
+         skip(1)  -&gt; 跳过一条，就是从第二条开始取
+         limit(1) -&gt; 接着上面的来，从第二条开始取（算本身哦），取一个，实际上取的就是第二条
+         count()  -&gt; 3    # 也许你很惊讶，按常理来说，结果应该为 1(看下面)
+  
+     count(applySkipLimit=false)    # 这是 API原型，这个参数默认为False
+         applySkipLimit: 看名字你就知道这函数作用了吧
+             默认不写为 False: 不应用(忽略) skip(), limit() 来统计结果 ==&gt; 上例结果为 3
+             设为 True：           结合 skip(), limit() 来统计最终结果 ==&gt; 上例结果为 1
+  
+     注： 对于 count()  ，Mongo 和 PyMongo都有此方法，且用法是一模一样的。
+          那为什么上面PyMongo中我却用了 count_documents() 而不是 count()  ?????
+          答：
+              因为 运行 或者后 戳进PyMongo源码可清晰看见，未来版本 count() API将要废除。
+              官方建议我们用  count_documents()
+              它的好处是把 skip() 和 limit() 由两个函数调用 变为 2个参数传进去了。
+</code></pre>
+</li>
+<li>
+<h3 id="sort">sort()</h3>
+<pre><code> sort: 排序
+ M: queryset = table.find({'name':'lin'}).sort({'_id': -1})  # 注意，参数是{} 对象
+ P: queryset = table.find({'name':'lin'}).sort( '_id', -1 )    # 注意，这是2个参数
+     第一个参数，代表 排序依据的字段属性
+     第二个参数，代表 升/降  
+         1 : 升序      eg: 456
+         -1: 降序      eg: 654
+
+ 特别注意： 3连招顺序（优先级要牢记）  ()
+ sort -&gt; skip -&gt; limit   （排序 - 定位 - 挑选） 无论你代码什么顺序，它都会这个顺序执行
+ eg: queryset = table.find({'name': 'lin'}).sort('_id', -1).skip(1).limit(1)
+
+ 也许你会有这样一个疑惑： 为什么 count_documents 没有放进连招里面？
+ 答：
+     你仔细想想， 统计个数，和你排不排序有关系吗？  
+     没错，一点关系都没有。。。     sort() 和 count() 没有联系
+</code></pre>
+</li>
+<li>
+<h3 id="数组操作符">数组操作符</h3>
+<pre><code> 已有数据条件： { name: ['张','李','王'] }
+
+ $all: 
+    M: queryset = table.find({'name': {'$all': ['张','李']}})  # 数组值里必须包含 张和李
+    P：同上，一模一样，一字不差
+ $elemMatch：
+    M: queryset = table.find({'name': {'$elemMatch': {'$eq':'张'} }}) # 数组值有张 就行
+    P: 同上，一模一样，一字不差
+</code></pre>
+</li>
+<li>
+<h3 id="正则">正则</h3>
+<pre><code> M: db.xx.find( {name: { $regex: /^a/, $options:'i' }} )
+ P: queryset = db.xx.find({'name': {'$regex': 'LIN', '$options': 'i'}})
+ PyMongo版的或者这样写-&gt;
+     import re
+     e1 = re.compile(r'LIN', re.I)      # 把Python的正则对象 代替 Mongo语句
+     queryset = db.xx.find({'name': {'$regex': re1 }}) 
+</code></pre>
+</li>
+</ul>
+<h1 id="聚合">聚合</h1>
+<ul>
+<li>
+<h2 id="聚合表达式">聚合表达式</h2>
+</li>
+<li>
+<h3 id="字段路径表达式">字段路径表达式：</h3>
+<pre><code>  $name    # 具体字段
+</code></pre>
+</li>
+<li>
+<h3 id="系统变量表达式">系统变量表达式：</h3>
+<pre><code>  $$CURRENT # 表示管道中，当前操作的文档
+</code></pre>
+</li>
+<li>
+<h3 id="反转义表达式">反转义表达式：</h3>
+<pre><code>  $literal: '$name'    # 此处 $name 原语法被破坏，现在它只是单纯的字符串
+</code></pre>
+</li>
+<li>
+<h2 id="聚合管道">聚合管道</h2>
+<pre><code>  &quot;&quot;&quot;
+      单个管道，就像 Python中的 map等高阶函数原理， 分而治之。
+      只不过，MongoDB善于将管道串联而已。
+      .aggregate([ 里面写管道各种操作  ])
+  &quot;&quot;&quot;
+</code></pre>
+</li>
+<li>
+<h3 id="match管道查询">$match（管道查询）</h3>
+<pre><code>  M: queryset = table.aggregate([{'$match': {'name': 'zhangsan'}}])
+  P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="project管道投影">$project(管道投影)</h3>
+<pre><code>  数据条件 =&gt; 
+  [
+      {&quot;id&quot;:'xxx', &quot;name&quot; : &quot;zhangsan&quot;, &quot;age&quot; : 15 },
+      {&quot;id&quot;:'xxx', &quot;name&quot; : &quot;lisi&quot;, &quot;age&quot; : 18 },
+      {&quot;id&quot;:'xxx', &quot;name&quot; : &quot;wangwu&quot;, &quot;age&quot; : 16 }
+  ]
+  M: queryset = table.aggregate([{'$project': {'_id': 0,'new':'5'}}])
+  P: 同上
+  
+  结果 =&gt; [{'new': '5'}, {'new': '5'}, {'new': '5'}]
+  注：'new'是在投影的时候新加的，会被投影。但是加了此新值，除了_id，其他属性默认都不会被投影了
+</code></pre>
+</li>
+<li>
+<h3 id="skip-管道跳过原理同前面讲过skip-略">$skip  (管道跳过，原理同前面讲过skip() 略)</h3>
+</li>
+<li>
+<h3 id="limit管道截取原理同前面讲过的limit">$limit（管道截取，原理同前面讲过的limit() ）</h3>
+<pre><code>  M: queryset = table.aggregate([{'$skip': 1},{'$limit':1}])
+  P: 同上
+  解释：
+      一共三条文档， skip跳过了第一条，从第二条开始取，limit取一条，所以最终取的是第二条
+</code></pre>
+</li>
+<li>
+<h3 id="sort-管道排序同上不解释">$sort (管道排序，同上,不解释)</h3>
+<pre><code>  M: queryset = table.aggregate([{'$sort':{'age':1}}])
+  P: 同上
+</code></pre>
+</li>
+<li>
+<h3 id="unwind管道展开数组-相当于-数学的-分配律">$unwind（管道展开数组， 相当于 数学的 分配律）</h3>
+<pre><code>  数据条件 =&gt; {&quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : [ &quot;sing&quot;, &quot;dance&quot; ]}
+  
+  path小参数:
+      M: table.aggregate([{'$unwind':{'path': '$hobby'}}])   # 注意 path是语法关键词
+      P: 同上
+      结果 =&gt; 
+          { &quot;_id&quot; : xx, &quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;sing&quot; }
+          { &quot;_id&quot; : xx, &quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;dance&quot; }
+      形象例子：
+          a * [b+c] =&gt; a*b + a*c
+  
+  includeArrayIndex小参数：
+      M: queryset = table.aggregate([{'$unwind': {
+                  'path':'$hobby', 
+                  'includeArrayIndex':'index'    # 展开的同时会新增index字段记录原索引       
+          }}])
+      P: 同上
+      结果 =&gt; 
+          {&quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;sing&quot;, &quot;index&quot; : NumberLong(0) }
+          {&quot;name&quot; : &quot;Tom&quot;, &quot;hobby&quot; : &quot;dance&quot;, &quot;index&quot; : NumberLong(1) }    
+          
+  注意：
+      $unwind 上面有两种特殊情况：
+      情况一：
+          文档中无 hobby字段   或   hobby字段为 空数组[]
+          那么该文档不参与unwind展开操作， 自然就不会显示结果。
+          若想让这种文档也参与 unwind展开操作,那么需要追加小参数 
+              'preserveNullAndEmptyArrays':true        # 与 path同级书写
+          最终结果，这种字段的文档也会被展示出来，并且 index会被赋予一个 null值
+      情况二：
+          文档中有 hobby字段，但是该字段的值并不是数组
+          那么该文档 会 参与 unwind展开操作，并且会显示出来， 同样 index 会被赋予一个 null值
+</code></pre>
+</li>
+<li>
+<h3 id="lookup使用方式一">$lookup（使用方式一）</h3>
+<pre><code>  使用方式（一）：集合关联 ===&gt; 我的理解是，相当于关系型数据库的 多表查询机制
+
+      集合 &lt;=&gt; 表  ，  多表查询 &lt;=&gt; 多集合查询 
+          自身集合 与 外集合 根据我们指定的 关联字段 关联后， 如有关联，
+          则新字段的值为 [外集合的关联文档， 。。。]， 有几条文档关联，这个数组就会有几条
+
+  废话不多说，先重新创建两个集合：
+  db.user.insertOne({'name':'猫', 'country': ['China','USA']})    # 一条
+  db.country.insertMany([{'name':'China'}, {'name':'USA'}])      # 两条
+  
+  table = db.user        # 看好，我赋值了一下，下面直接写table就行了
+  
+  M: queryset = table.aggregate([{
+      '$lookup': {
+          'from': 'country',           # 需要连接的另外一个集合的名称（外集合）
+          'localField': 'country',     # （主集合）连接的 依据 字段
+          'foreignField': 'name',      # （外集合）连接的 依据 字段
+          'as': 'new_field'            # 最终关联后查询出来的数据，生成新字段，as用来起名
+      }
+  }])
+  P: 同上
+  
+  结果 =&gt; 
+  {
+  	&quot;_id&quot; : ObjectId(&quot;5d2a6f4dee909cc7dc316bf1&quot;),
+  	&quot;name&quot; : &quot;猫&quot;,
+  	&quot;country&quot; : [
+  		&quot;China&quot;,
+  		&quot;USA&quot;
+  	],                  # 这行之前应该不用解释，这就是 user集合本身的数据，没变
+  	&quot;new_field&quot; : [     # 这行是新加的字段，后面解释
+  		{
+  			&quot;_id&quot; : ObjectId(&quot;5d2a6fcbee909cc7dc316bf2&quot;),
+  			&quot;name&quot; : &quot;China&quot;
+  		},
+  		{
+  			&quot;_id&quot; : ObjectId(&quot;5d2a6fcbee909cc7dc316bf3&quot;),
+  			&quot;name&quot; : &quot;USA&quot;
+  		}
+      ]    
+  }    
+  解释：
+      1. new_field是我们新添加的字段
+      2. 因为user集合和country集合 我们给出了2个依据关联字段
+         并且这两个关联字段 'China' 和 'USA' 的值都相等
+         所以最终 user集合的new_field字段中 会添加 两条 country集合的文档 到 [] 中
+      3. 如果无关联, 那么   new_field字段中的值  为  空[]
+</code></pre>
+</li>
+<li>
+<h3 id="lookup使用方式二">$lookup（使用方式二）:</h3>
+<pre><code>  使用方式二：不做集合的关联，而是直接把（外集合）经过条件筛选，作为新字段放到（主集合）中。
+  
+  M: queryset = table.aggregate([{
+      '$lookup': {
+          'from': 'country',                # 外集合
+          'let': {'coun': '$country'},      # 使（主集合）的变量 可以放在（外集合）使用
+          'pipeline': [{                    # 外集合的专属管道，里面只可以用外集合的属性
+              '$match': {                   # 因为设置了 let，所以这里面可以用主集合变量
+                  '$expr': {                # $expr使得$match里面可以使用 聚合操作
+                      '$and': [
+                              {'$eq': ['$name', 'China']},   # 注意，这是聚合的 $eq用法
+                              {'$eq': ['$$coun',['China', 'USA']]}
+                      ]
+                  }
+              }
+          }],
+          'as': 'new_field'
+      }
+  }]) 
+  P: 同上
+  解释：
+      把（外集合） pipeline里面按各种条件 查到的文档， 作为（主集合）new_field 的值。
+      当然，如果不需要主集合中的属性，可以舍弃 let 字段
+</code></pre>
+</li>
+<li>
+<h3 id="group-分组-统计种类">$group （分组--统计种类）</h3>
+<pre><code>  用法1（分组--统计字段种类）
+      M: queryset = table.aggregate([{'$group': {'_id': '$name'}}])    # _id是固定写法
+      P: 同上
+      结果 =&gt; [{'_id': '老鼠'}, {'_id': '狗'}, {'_id': '猫'}]
+      
+  用法2（分组--聚合）
+      数据条件：
+          { &quot;name&quot; : &quot;猫&quot;, &quot;country&quot; : [ &quot;China&quot;, &quot;USA&quot; ], &quot;age&quot; : 18 }
+          { &quot;name&quot; : &quot;狗&quot;, &quot;country&quot; : &quot;Japna&quot; }
+          { &quot;name&quot; : &quot;老鼠&quot;, &quot;country&quot; : &quot;Korea&quot;, &quot;age&quot; : 12 }
+          { &quot;name&quot; : &quot;猫&quot;, &quot;country&quot; : &quot;Japna&quot; }
+  
+      M: queryset = table.aggregate([{
+          '$group': {
+              '_id': '$name',                    # 根据name字段分组
+              'type_count': {'$sum': 1},         # 统计每个分类的 个数
+              'ageCount': {'$sum': '$age'},      # 统计age字段的 数字和
+              'ageAvg': {'$avg': '$age'},        # 统计age字段的 平均值
+              'ageMin': {'$min': '$age'},        # 统计age字段的 最小值
+              'ageMax': {'$max': '$age'},        # 统计age字段的 最大值
+          }
+         }])
+      p: 同上
+      
+      结果:
+                  {
+                  	&quot;_id&quot; : &quot;老鼠&quot;,
+                  	&quot;type_count&quot; : 1,
+                  	&quot;ageCount&quot; : 12,
+                  	&quot;ageAvg&quot; : 12,
+                  	&quot;ageMin&quot; : 12,
+                  	&quot;ageMax&quot; : 12
+                  }
+                  {
+                  	&quot;_id&quot; : &quot;狗&quot;,
+                  	&quot;type_count&quot; : 1,
+                  	&quot;ageCount&quot; : 0,
+                  	&quot;ageAvg&quot; : null,
+                  	&quot;ageMin&quot; : null,
+                  	&quot;ageMax&quot; : null
+                  }
+                  {
+                  	&quot;_id&quot; : &quot;猫&quot;,
+                  	&quot;type_count&quot; : 2,
+                  	&quot;ageCount&quot; : 18,
+                  	&quot;ageAvg&quot; : 18,
+                  	&quot;ageMin&quot; : 18,
+                  	&quot;ageMax&quot; : 18
+                  }
+      注意：
+          若想直接对整个集合的 做统计，而不是分组再统计
+          把 _id改为 null即可  { _id: 'null' }      
+          # (或者随便写一个匹配不到的 字符串或数字都行，分不了组，就自动给你统计整个集合了)
+</code></pre>
+</li>
+<li>
+<h3 id="out-聚合操作后将结果写入新集合">$out (聚合操作后，将结果写入新集合)</h3>
+<pre><code>  &quot;&quot;&quot;
+      我的理解是重定向 操作， 或者理解为 视图 操作
+      写入的集合如果存在，那么会全部覆盖（但保留索引）
+      聚合过程遇到错误，那么会自动执行 ’回滚’操作
+  &quot;&quot;&quot;
+  M: 
+      table.aggregate([
+          { '$group': {'_id': '$name'} },
+          { '$out': 'newCollection' }
+      ])
+  P: 同上
+  最后验证： db.newCollection.find()   ，你就会看到新集合 及其 里面的内容
+
+  聚合管道 ==&gt; 第二个参数
+      table.aggregate([之前说的都是这里面的参数],  下面说这个参数)
+      
+      allowDiskUse: true
+          每个聚合管道占用内存需 &lt; 16M， 过大就会出问题
+          allowDiskUse设置为true， 会将内存的 写入到临时文件中，减缓内存压力。
+
+          官方文档：write data to the _tmp subdirectory in the dbPath directory
+                   Default: /data/db on Linux and macOS, \data\db on Windows
+          它说： 默认在  dbPath配置变量下的 子目录_tmp下，  dbPath默认为 : /data/db
+      
+      M:
+          queryset = table.aggregate([{
+              '$group': {'_id': '$name'}}],
+              {'allowDiskUse': true}           
+          )
+      P:     
+          queryset = table.aggregate([{
+              '$group': {'_id': '$name'}}],
+              allowDiskUse=True,                 # 注意，这里语法稍有不一样
+          )
+</code></pre>
+</li>
+</ul>
+<h1 id="索引">索引</h1>
+<ul>
+<li>
+<h2 id="创建索引">创建索引：</h2>
+</li>
+<li>
+<h3 id="单键索引">单键索引</h3>
+<pre><code>  M: table.createIndex({'name':1})
+  P: table.create_index([('name',-1)])        # -1代表逆序索引，注意是元组
+</code></pre>
+</li>
+<li>
+<h3 id="联合索引">联合索引</h3>
+<pre><code>  索引命中：最左匹配原则  eg  1,2，3  这三个创建联合索引， 可命中索引为：【1,12,123】
+  M: table.createIndex( {'name':1}, {}, {} )           # 多个{}
+  P: table.create_index([ ('name',-1), (), () ])       # 多个元组
+</code></pre>
+</li>
+<li>
+<h3 id="多键索引">多键索引</h3>
+<pre><code>  多键是针对于数组来讲的，创建单键的字段 指定为 数组字段， 默认就会设置为多键索引
+</code></pre>
+</li>
+<li>
+<h3 id="唯一索引-unique">唯一索引 （unique）</h3>
+<pre><code>  '''注意： 如果集合中，不同文档的字段有重复，创建唯一索引的时候会报错'''
+  M: table.createIndex({'name':1}, {'unique':true})
+  P: table.create_index([('name', 1),('counrty',1)], unique=True)
+</code></pre>
+</li>
+<li>
+<h3 id="稀疏索引-sparse">稀疏索引 (sparse)</h3>
+<pre><code>  eg:
+  一个集合中：
+      给 name创建 唯一索引
+      插入文档1: 有 name字段
+      插入文档2: 无 name字段 （MongoDB会在索引库中，把没有的字段的 索引设为 {字段:null}  ）
+
+      再插入文档3, 无name字段  --&gt; 同样也会把索引库中 name设为 null  
+          但是就在这个时候，刚要把索引库中的 name字段设为 null的时候。。。
+          
+          唯一索引告诉你：” 我这里已经有了一个，{ name:null }，请你滚 ”
+          然后就无情的给你报错了（重复索引字段）
+
+      那咋整啊， 别急，稀疏索引就是给你办这事的
+      
+      设置稀疏索引。 MongoDB就不会把  没有的字段 加入到索引库了
+      所以，索引库里面就不会自动添加  {字段: null} 
+      重新再次插入文档3， 无name字段， 可成功插入，不存在null的重复问题了
+
+      M: table.createIndex({'name':1}, {'unique':true, 'sparse':true})
+      P: table.create_index([('name', 1),('counrty',1)], unique=True, sparse=True)
+</code></pre>
+</li>
+<li>
+<h2 id="查询索引">查询索引</h2>
+<pre><code>  M：queryset = table.getIndexes()
+  P: queryset = table.list_indexes()
+</code></pre>
+</li>
+<li>
+<h2 id="删除索引">删除索引</h2>
+<pre><code>  方式1：
+      M: table.dropIndex('索引名')     # 索引名可通过 上面查询索引的指令查
+      P: table.drop_index('索引名')    
+  方式2：
+      M: table.dropIndexes()          # 删除全部，_id除外， 想指定删除多个，可用列表列出
+      P: table.drop_indexes()
+</code></pre>
+</li>
+<li>
+<h2 id="查看索引性能是否有效">查看索引性能(是否有效)</h2>
+<pre><code>  table.上面说过的任一函数().explain()           # 链式调用 explain，表示列出此操作的性能
+  eg:
+      M: queryset = table.explain().find({'name':'猫'})
+      P: 同上
+  结果中找到：            
+      queryPlanner -&gt; winningPlan -&gt; inputStage -&gt; stage   # stage结果对应说明如下
+          COLLSCAN    # 未优化，还是搜的整个集合
+          IXSCAN      # 索引起到作用
+          
+  索引对投影的优化：
+      queryPlanner -&gt; winningPlan -&gt; stage   # stage结果对应说明如下
+          FETCH         # 索引 对投影 未优化
+          PROJECTION    # 索引 对投影 起到优化作用
+          
+  索引对排序的优化：
+      同上 stage  最好 不是 sort
+      按索引 正序（逆序） 取数据， 这样就有效避免了机械排序的过程
+</code></pre>
+</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-linux-shi-yong-gong-ju-ming-ling/">
+                  <h3 class="post-title">
+                    PY =&gt; Linux实用工具命令
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

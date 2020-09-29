@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python好用深度技能工具介绍 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="单元素元祖：
+a = (1)    # 这是整数1
+a = (1,)   # 这才是元祖
+也许这两行，你们当时疑惑过，并且现在也都知道了，当然重点并不在这里。。
+
+我无聊的时候想过，为什么单元素元祖要这样设计 -&gt; (1,)?
+不多废..." />
+    <meta name="keywords" content="Python" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python好用深度技能工具介绍</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h3 id="单元素元祖">单元素元祖：</h3>
+<pre><code>a = (1)    # 这是整数1
+a = (1,)   # 这才是元祖
+也许这两行，你们当时疑惑过，并且现在也都知道了，当然重点并不在这里。。
+
+我无聊的时候想过，为什么单元素元祖要这样设计 -&gt; (1,)?
+不多废话，看下面代码，自己理解：
+    a = (3,)
+    a = (3)
+    
+    a = (1+2)
+    a = (1+2,)
+    
+    a = (1+2) + (3+4)
+    a = (1+2,) + (3+4,)
+
+注：
+    这是我个人原创理解的一个微不足道的知识点，但是印象却特别深刻。
+    因为我反向推测出 设计者为什么会设计出这种语法。
+    （当然，也许我的推测和设计者当时的想法的并不一样~~~手动滑稽）
+</code></pre>
+<h3 id="深浅拷贝-copydeepcopy皮肉">深/浅拷贝-copy/deepcopy（皮/肉）</h3>
+<pre><code>&quot;&quot;&quot;
+    最开始接触深浅拷贝的时候没太大感觉，只是普通的觉得避免数据污染就够了
+    后来有一次用scrapy写爬虫的时候，层次太多导致内存有些顶不住。
+    后来用的 deepcopy() 来 优化  scrapy 的 meta， 虽然效果不是特别明显，但是感觉深浅拷贝很有用
+&quot;&quot;&quot;
+    一、 =号，不拷贝
+        =号就意味着，引用指向同一个地址空间，‘敌动我动，敌不动我不懂’ 的感觉。 LOL一句话:&quot;连体婴儿&quot;~~
+    二、 copy：也称浅拷贝
+        我用最简单的话解释一下：浅拷贝就是只能拷贝最外面的一层皮，来独立开辟空间使用，再深还是共用的     
+
+            from copy import copy
+            from copy import deepcopy
+            
+            a = [[1,2,3],[4,5,6]]
+            b = deepcopy(a)
+            b[0] = 0            # 这就是最外面的一层皮
+            print(b)
+            print(a)
+    三、 deepcopy：顾名思义了，深拷贝
+       如果你听懂我上面的话，我感觉这个就更好理解了， 浅拷贝是皮，深拷贝那就是肉了呗。
+       没错，无论套了几层的序列结构，每一层都是独立开辟空间，独立指向。
+            from copy import copy
+            from copy import deepcopy
+            
+            a = [[1,2,3],[4,5,6]]
+            b = deepcopy(a)
+            b[0][1] = 0    # 看清楚，这回就是里面的肉了， 深拷贝：你改哪里都行，哪里都与我无关
+            print(b)
+            print(a)
+</code></pre>
+<h3 id="lambda黑科技">lambda黑科技</h3>
+<pre><code>&quot;&quot;&quot;lambda相当于匿名函数，可以使代码简介，但有时也会被人唾弃，但我仍然喜欢用lambda&quot;&quot;&quot;
+
+1. 试想：如果你想在lambda调用多个函数，该如何写？
+    lambda: (print(1),print(2))    # 最外层加个括号即可
+    
+2. 如果你想让这个 lambda函数直接自执行，而不是通过赋予一个函数引用再执行？
+    1. 这个也是我自己瞎鼓捣出来的。
+    2. 虽然我JS水平很垃圾，但是我知道JS匿名函数有一种执行方式叫做 ‘自执行’。
+    3. 把上面类比一下。
+    
+    看吧，这就是Python版的匿名函数自执行方法。
+        Python版本： (lambda a:print(a))(1)        
+        JS版：       (function(){})()
+</code></pre>
+<h3 id="lambda的虚伪替代品-operator">lambda的虚伪替代品-operator</h3>
+<pre><code>&quot;&quot;&quot;
+    据说这个模块可以替代lambda， 个人理解此模块并不那么太有实用价值，理解成本也偏高，
+    建议：如果不喜欢lambda或者lambda用的很少的人，可以研究一下此模块。此模块的意图还是可以的。
+    我还是喜欢使用 lambda
+&quot;&quot;&quot;
+直接上个例子：（字典基于Value来排序） 
+    传统lambda写法：
+        In [27]: a = {'1':6, '2':5, '3':4}
+        In [28]: sorted(a.items(), key=lambda a:a[1])   # 看key= 这里
+        Out[28]: [('3', 4), ('2', 5), ('1', 6)]
+                                
+    operator写法：
+        from operator import itemgetter
+        
+        In [25]: a = {'1':6, '2':5, '3':4}
+        In [26]: sorted(a.items(), key=itemgetter(1))   # 就是key= 这里有区别
+        Out[26]: [('3', 4), ('2', 5), ('1', 6)]
+
+如果上面两种新旧方法都很模糊，那么我再解释一下： 我认为上面能让人头疼的也就是 索引 1 了！！！！
+    sorted, map这种高阶函数，我之前也单独讲过，它会把 一个序列的每一个元素用管道函数进行映射。
+    
+    sorted稍微特殊一点，它的管道函数方法变成了key=这里： (变相理解为 指定排序的基准/参考)
+        1. key=lambda a:a[1]
+            指定基准：序列a的 每子元素 的 第1号索引子元素    # eg： [[1,2],[3,4],[5,6]]  就是2,4,6
+        
+        2. key=itemgetter(1)
+            指定基准：同上一模一样，只不过写法不一样，逻辑步骤就是 原原本本从 lambda那里演变过来的。
+            
+总结与个人观点：
+    1. operator 模块只是 lambda 使用思想 的 高一层的封装
+    2. 让使用者可以忽略lambda格式细节
+    3. 但是我认为 如果lambda都用不好， 那么 这个 itemgetter(1) 这种子元素 索引的指定 也会很困难
+    4. 所以我还是建议用 lambda, 当你 lambda思想练熟了之后， 用 operator看看官方文档就是很快的事情
+</code></pre>
+<h3 id="封包拆包解构赋值函数占位参数骚操作">封包/拆包(解构赋值)/函数占位参数骚操作</h3>
+<pre><code>&quot;&quot;&quot;
+    再次说明一下：我写的所有的都是Py3的/   Py2的解构赋值可能有些出入，此处我只说Py3
+&quot;&quot;&quot;
+
+封包：
+    1）
+        def f(a,*b):
+        	print(a)    # 1
+        	print(b)    # (2,3,4)
+        f(1,2,3,4)
+    2） 
+        def f(**kwargs):
+        	print(kwargs)    # {'a': 3, 'b': 4}
+        f(**dict(a=3,b=4))
+        
+拆包（解构赋值）：
+    &quot;&quot;&quot;
+        我说过太多次了， ES6的语法和Python很像。解构赋值这个词也是从ES6听到的。
+        不过ES6的解构，还可以解构 {} 和 解构空值 和 解构默认值,   而Python不可以
+    &quot;&quot;&quot;
+    1)  只要第一个
+            a, *_ = range(5)
+            print(a, _)     # 0  [1, 2, 3, 4]
+
+    2)  只要第一个和最后一个
+            a, *_, c = range(5)
+            print(a, _, c)    # 0  [1, 2, 3]  4
+            
+    3)  只要最后一个
+            *_, b = range(5)
+            print(_, b)      # [0, 1, 2, 3]  4
+
+
+函数占位参数骚操作：
+    &quot;&quot;&quot;
+        这是我在源码中看到的，当时觉得很惊讶，自己试了一下，下面说下自己的理解:
+        这个*的作用就是： （*后面的参数是 调用时 必须命名 且 必须传递 的参数）
+            a你必须给我传过来，但是你不写   a=
+            b你必须给我传过来，但是你必须写 b=
+    &quot;&quot;&quot;
+    def f(a,*,b):
+    	print(a)
+    	print(b)
+    f(1,b=3)    # f(a=1,b=3)    # 只能通过这两种方式调用
+</code></pre>
+<h3 id="反射-getattr-setattr-hasattr-delattr-import_module">反射-getattr &amp; setattr &amp; hasattr &amp; delattr &amp; import_module</h3>
+<pre><code>综合例子:
+    from importlib import import_module
+    random = import_module('random')          # 动态反射导入模块  
+    # 或 random = __import__('random')         
+    if hasattr(random, 'randint'):            # 检测模块中是否有函数
+    	randint = getattr(random,'randint')   # 动态反射导入函数
+        print(eval('randint(0,1)'))               # 字符串转语句执行（类似反射）
+    
+getattr &amp; setattr &amp; hasattr &amp; delattr 讲解：
+    hasattr &amp; getattr
+        random = __import__('random')
+        if hasattr(random,'randint'):	# 检测 random 模块中是否有 randint 函数
+        	randint = getattr(random,'randint')
+        	print(randint(0,1))
+        	
+    delattr &amp; hasattr 
+        delattr(random, 'randint')      # 动态删除模块中的 randint函数
+        if not hasattr(random,'randint'):
+        	print('没有此函数了，让delattr删除了')
+        	
+    setattr &amp; getattr                   # 动态重新设置模块的 randint函数，并给个函数体
+        setattr(random, 'randint', lambda:print('设置这个方法凑合用把。'))
+        randint = getattr(random, 'randint')
+        randint()     
+</code></pre>
+<h3 id="模块重新导入到内存-reload">模块重新导入到内存-reload</h3>
+<pre><code>from imp import reload
+import time
+reload(time)
+print(time.time())
+</code></pre>
+<h3 id="进度条-tqdm">进度条-tqdm</h3>
+<pre><code>for x in tqdm(range(100)):
+    import time
+    time.sleep(1)
+    print(x)
+tqdm包装一个可迭代对象， 只是装饰了一下，使用方法还是像原来一样使用。 
+</code></pre>
+<h3 id="票数统计-counter">票数统计-Counter</h3>
+<pre><code>In [2]: from collections import Counter
+
+In [3]: Counter([1,2,3,4])
+Out[3]: Counter({1: 1, 2: 1, 3: 1, 4: 1})
+
+In [4]: Counter([1,1,1,2,2,3])    # 统计频次
+Out[4]: Counter({1: 3, 2: 2, 3: 1})
+
+In [5]: Counter([1,1,1,2,2,3]).most_common(1)    # 频次最多的前1个
+Out[5]: [(1, 3)]
+</code></pre>
+<h3 id="文件-复制移动-shutil">文件 复制/移动-shutil</h3>
+<pre><code>import shutil
+shutil.copy(源，目标)    # 复制
+shutil.move(源，目标)    # 移动，改名
+shutil.rmtree(r'目录名')  # 删除目录（级联删除）    # 参数只能是目录
+</code></pre>
+<h3 id="文件遍历-oswalk">文件遍历-os.walk</h3>
+<pre><code>&quot;&quot;&quot;
+    os.walk() 是一个深度遍历模式的文件遍历函数
+    返回值是一个迭代器，遍历这个迭代器后，每一次的返回值都是如下顺序三种构成
+        1. current_path: 当前路径 
+        2. dir_list:     其下目录列表
+        3. file_list:    其下文件列表
+    
+&quot;&quot;&quot;
+import os
+file_generator = os.walk('D:/虚拟E盘-代码空间/TF2')
+for current_dir, dir_list, file_list in file_generator:
+	print(current_dir, dir_list, file_list)
+</code></pre>
+<h3 id="非阻塞执行cmdshell-subprocess">非阻塞执行cmd/shell-subprocess</h3>
+<pre><code>&quot;&quot;&quot;
+    主要代替os.system
+&quot;&quot;&quot; 
+import subprocess
+res = subprocess.run('dir', shell=True, stdout=subprocess.PIPE) # 结果输入到res管道中去
+print(res.stdout.decode('gbk'))    # res管道中有输出日志，如果在win下，需要 decode
+</code></pre>
+<h3 id="排列组合-itertools模块">排列组合-itertools模块</h3>
+<pre><code>import itertools
+list(itertools.product([1,2,3],repeat=3))    # 复制3份有序全排列， repeat=3    
+list(itertools.permutations([1,2,3], 3))     # 内部有序排列， 3表示最后排列为几位
+list(itertools.permutations([1,2,3,4],3))    # 无序组合， 3表示3位
+</code></pre>
+<h3 id="枚举-emunerate">枚举-emunerate</h3>
+<pre><code>In [100]: list(enumerate(list('abcde'),start=1))    # 默认从0，开始标号， start=1就从1开始
+Out[100]: [(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')]
+
+In [108]: list(enumerate(((1,2),(3,4))))
+Out[108]: [(0, (1, 2)), (1, (3, 4))]        
+
+In [106]: list(enumerate({&quot;a&quot;:'c','b':'d'}))
+Out[106]: [(0, 'a'), (1, 'b')]
+</code></pre>
+<h3 id="global-nonlocal-globals-locals">global &amp; nonlocal &amp; globals() &amp; locals()</h3>
+<pre><code>global: 函数外的变量只能在函数内部取值，而不能修改， 如果想要在函数内部修改外部变量, ‘global 变量名’ 即可
+    a = 1
+    def f():
+        global a
+        a += 1
+        print(a)
+    f()
+        
+nonlocal: 原理同上一模一样，只不过应用场景是闭包了，代码如下：
+    def f():
+        a = 1
+        def f1():
+            nonlocal a
+            a = a+1
+            print(a)
+        f1()
+    f()
+</code></pre>
+<h3 id="日历-calendar">日历-calendar</h3>
+<pre><code>import calendar
+calendar.calendar(2019)    # 返回2019年的日历
+calendar.month(2919,5)    # 返回2019年5月的日历
+calendar.isleap(2000)    # 判断2000年是否为闰年
+</code></pre>
+<h3 id="时间日期-timedatetime">时间/日期-time/datetime</h3>
+<pre><code>import time
+1. 时间戳：
+    time.time()
+    
+2. 字符串转时间(p-pass方便记忆)
+    from datetime import datetime
+    fordate = datetime.strptime('2019-5-25 9:30:30', '%Y-%m-%d %H:%M:%S')
+    print(fordate)
+
+3. 时间转字符串(f-from方便记忆)
+    from datetime import datetime
+    strdate = datetime.strftime(fordate, '%Y-%m-%d %H:%M:%S')
+    print(strdate)
+    
+4. 初始化时间
+    from datetime import datetime
+    dt1 = datetime(2019,5,25,9,37)    # 初始化时间为 datetime格式
+    dt1 = datetime.now()   # 获取当前时间为 datetime格式
+    print(dt1.year)
+    print(dt1.month)
+    print(dt1.day)
+    print(dt1.hour)
+    print(dt1.minute)
+    print(dt1.second)
+</code></pre>
+<h3 id="retrying模块">retrying模块</h3>
+<pre><code>&quot;&quot;&quot;
+    retrying模块的retry是个装饰器
+    被装饰的函数会执行如下基本操作：
+        如果此函数内部代码  无异常， 那么 retry装饰器 不起到任何作用
+        如果此函数内部代码  无异常， 那么 retry装饰器 会一直反复执行这个函数
+            直到无异常，才执行下面的代码（才放你走）
+            如果你这个程序压根就是个错误程序，那么不好意思，慢慢等，等到死吧。。。。。
+            
+    所以说到底，retry装饰器 的设计目的就是（类似  轮询/回调那种思想）：
+        希望你这个函数执行 出现异常，但此异常会通过程序之外的因素来控制，至无异常为止
+    
+    当然设计者并不会苦苦相逼的。。 他不会让你等到死， 你也可以通过手动设置参数来自己控制异常
+    这里我就说2个常用的参数：
+        stop_max_attempt_number = 10000 
+            # 此参数就是会 自动执行这个函数 10000次
+                10000次之内，如果有有一次，函数顺利执行，无异常，那么继续执行下面的代码(放行)
+                10000次之内，全部都是异常，不好意思， 我也不等你了，直接抛出一个异常，程序终止
+        stop_max_delay = 20*1000,
+            # 此参数就是会 等你 20*1000 毫秒  ====  20秒
+                20秒之内， 如果能顺利执行此函数， 继续执行下面程序（放行）
+                20秒之内， 全都是异常， 抛出异常，程序终止
+                
+        这两个参数也可以联用
+        具体语法见下方代码
+&quot;&quot;&quot;
+pip install retrying
+
+from retrying import retry
+
+# 最多等你执行 10000次，  最多等你执行 20秒， 还连不上，就滚蛋，程序抛异常终止。
+
+@retry(
+    stop_max_attempt_number = 10000,
+    stop_max_delay = 20*1000,
+)
+def verify_request():
+    response = requests.get(&quot;http://selenium:4444&quot;, timeout=0.5)
+    print(response)
+verify_request()
+
+
+注：时间 和 次数这两个参数联合用，哪个参数先达到设定值， 就按哪个优先停止程序。
+如果对连个联合参数 有次序疑问，可用如下代码自己调节测试：
+    from retrying import retry
+    a = 1
+    @retry(        
+    	stop_max_attempt_number = 10000000,
+    	stop_max_delay = 3*1000
+    )
+    def f():
+    	global a
+    	print(a)
+    	a+=1
+    	1/0
+    f()
+
+其实还有很多参数，不算太常用，感兴趣可以看看：
+    https://github.com/rholder/retrying</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="tag">
+                    Python
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python__-hei-mo-fa-__/">
+                  <h3 class="post-title">
+                    PY =&gt; Python__黑魔法__
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

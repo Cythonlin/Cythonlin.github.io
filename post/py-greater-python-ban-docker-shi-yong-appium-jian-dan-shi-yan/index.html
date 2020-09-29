@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python版-Docker使用Appium简单实验 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="Docker-Appium安装
+Github docker-appium地址  ： https://github.com/appium/appium-docker-android
+创建临时容器（用于简单命令测试）
+docker run --..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python版-Docker使用Appium简单实验</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="docker-appium安装">Docker-Appium安装</h2>
+<h4 id="github-docker-appium地址-httpsgithubcomappiumappium-docker-android">Github docker-appium地址  ： https://github.com/appium/appium-docker-android</h4>
+<h4 id="创建临时容器用于简单命令测试">创建临时容器（用于简单命令测试）</h4>
+<pre><code>docker run --privileged -d -p 4723:4723 -v ~/.android:/root/.android -v /dev/bus/usb:/dev/bus/usb --name container-appium appium/appium
+</code></pre>
+<h2 id="若使用模拟器等非usb连接">若使用模拟器等（非USB连接）</h2>
+<h4 id="模拟器的adb将usb模式转为tcp连接方式">模拟器的adb将USB模式转为TCP连接方式：</h4>
+<pre><code>adb -s 127.0.0.1:62001 tcpip 1119
+</code></pre>
+<h4 id="远程docker连接此模拟器">远程Docker连接此模拟器：</h4>
+<pre><code>docker exec -it container-appium adb connect 192.168.0.103:1119
+</code></pre>
+<h4 id="查看虚拟设备是否连接成功">查看虚拟设备是否连接成功</h4>
+<pre><code>docker exec -it container-appium adb devices
+</code></pre>
+<h2 id="若使用真机usb连接可直接使用如下配置">若使用真机（USB连接）可直接使用如下配置</h2>
+<h2 id="dockerfile内容如下">Dockerfile内容如下</h2>
+<pre><code>FROM python
+RUN pip install -i http://pypi.douban.com/simple \
+    requests  retrying  appium-python-client --trusted-host pypi.douban.com
+</code></pre>
+<h2 id="docker-composeyaml内容如下">docker-compose.yaml内容如下</h2>
+<pre><code>version: &quot;3.7&quot;
+services:
+  myspider:
+    build: .
+    volumes:
+      - /root/mycode:/root/mycode
+    command: python /root/mycode/1.py
+    depends_on:
+      - appium
+  appium:
+    image: appium/appium # 拉取镜像完成自动化全套配置
+    ports:
+      - &quot;4723:4723&quot;
+    privileged: true
+    hostname: appium
+#    command: adb connect 192.168.0.103:1119
+#    command:
+#      - /bin/sh
+#      - -c
+#      - |
+#        adb connect 192.168.0.103:1119
+#        adb devices
+#    entrypoint: adb connect 192.168.0.103:1119
+    volumes:
+      - ~/.android:/root/.android
+      - /dev/bus/usb:/dev/bus/usb
+</code></pre>
+<h3 id="爬虫脚本代码1py如下">爬虫脚本代码1.py如下</h3>
+<pre><code>from appium import webdriver
+from retrying import retry
+import requests
+import time
+
+config = {}
+config['platformName'] ='Android'
+config['platformVersion'] = '7.1.1'
+config['deviceName'] = '坚果 Pro 2'
+config['noReset'] = True
+config['appPackage'] = 'org.mozilla.firefox'
+config['appActivity'] = 'org.mozilla.gecko.BrowserApp'
+################### 查看 appPackage 和 appActivity #################
+## 注意：
+##     这两个值是针对某一软件的配置，你需要在手机上打开你这个软件，然后再执行此命令：
+##     我此例就是用的 手机里面的火狐浏览器。
+##     那么我首先需要，将火狐打开。
+##     然后再执行如下命令才能查到想对应的配置。
+##     否则，查的是你手机运行状态的主界面应用程序的配置信息
+## 命令如下：
+##     docker exec -it container-appium adb shell    # 进入 adb shell
+##     dumpsys activity | grep mFocusedActivity       
+##         返回结果  / 前面的是  appPackage  的值
+##         返回结果  / 后面的是  appActivity 的值
+
+@retry(
+    stop_max_attempt_number = 1000000,
+    stop_max_delay = 10*1000,
+)
+def verify_request():
+    response = requests.get(&quot;http://appium:4723/wd/hub&quot;,timeout=0.5)
+    print(response)
+verify_request()
+
+with webdriver.Remote(
+    command_executor='http://appium:4723/wd/hub',
+    desired_capabilities=config
+) as driver:
+    driver.get('https://tieba.baidu.com/index.html')
+    time.sleep(5)
+
+    with open('/root/mycode/test.html', 'w') as f:
+        f.write(driver.page_source)
+        print('写入成功')
+    time.sleep(3)
+</code></pre>
+<h2 id="前情链接">前情链接</h2>
+<h4 id="pycharm-与-docker-相关操作httpssegmentfaultcoma1190000020050218">Pycharm 与 Docker 相关操作：https://segmentfault.com/a/1190000020050218</h4>
+<h4 id="docker-中-selenium的使用-httpssegmentfaultcoma1190000020067591">Docker 中 Selenium的使用： https://segmentfault.com/a/1190000020067591</h4>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/">
+                  <h3 class="post-title">
+                    PY =&gt; Pycharm连接Docker及代码自动上传与运行
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

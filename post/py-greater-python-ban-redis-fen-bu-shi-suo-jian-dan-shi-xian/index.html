@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Python版-Redis分布式锁简单实现 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="定义代码如下
+import redis
+import contextlib
+import pickle
+import os, socket, threading
+
+
+class RedisLock:
+    def __init__(sel..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Python版-Redis分布式锁简单实现</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h2 id="定义代码如下">定义代码如下</h2>
+<pre><code>import redis
+import contextlib
+import pickle
+import os, socket, threading
+
+
+class RedisLock:
+    def __init__(self, lock_name, host='', port=6379, db=0):
+        self.lock_name = lock_name
+        self.redis = redis.Redis(connection_pool=redis.ConnectionPool(host=host, port=port, db=db))
+
+    def acquire_lock(self, lock_id, expire=None):
+        lock_id = lock_id if lock_id else self.get_lock_id()
+        return True if self.redis.set(self.lock_name, pickle.dumps(lock_id), nx=True, ex=expire) else False
+
+        # Above 1 line code can replace with follow codes to debug
+        # if self.redis.set(self.lock_name, pickle.dumps(lock_id), nx=True, ex=expire):
+        #     print('Lock Succeed')
+        #     return True
+        # else:
+        #     print('Lock Failed')
+        #     return False
+
+    def release_lock(self, lock_id=None):
+        lock_id = lock_id if lock_id else self.get_lock_id()
+        if lock_id == pickle.loads(self.redis.get(self.lock_name)):
+            self.redis.delete(self.lock_name)
+            # print('Unlock Succeed')
+            return True
+        else:
+            # print('Unlock Failed')
+            return False
+
+    @contextlib.contextmanager
+    def lock(self, lock_id=None, expire=None):
+        if not self.acquire_lock(lock_id, expire):
+            exit(0)
+        yield self
+        self.release_lock(lock_id)
+
+    def get_lock_id(self):
+        &quot;&quot;&quot; hostname+processID+threadName&quot;&quot;&quot;
+        return f'{socket.gethostname()}{os.getpid()}{threading.current_thread().name}'
+</code></pre>
+<h2 id="调用代码如下">调用代码如下</h2>
+<pre><code>redis_lock = RedisLock('lockname', host='Your IP') # 第一个匿名参数必传，作为 redis的key
+with redis_lock.lock() as lock:
+    print('You Can Do Something Here')
+</code></pre>
+<h2 id="注意说明">注意说明</h2>
+<pre><code>1. 注释部分是我写的时候，调试用的代码，最后写完的时候都替换为简洁的语法.
+
+2. 因为锁具有互斥特性， 所以选择 set() 的 nx 参数来实现，
+    nx参数：我个人一直这样记（读作 not exist）  ====&gt; 不存在
+    理解：
+        不存在则添加，存在就不添加了。
+        举一反三，没有锁就加个锁。有锁就不加锁了。
+
+3. set方法 的 ex 参数， 可代替expire方法的来设置过期时间
+
+4. redis 有 很多指令变形。 比如 set(nx=, ex=)  可拆分为 setnx setex
+   但 &quot;set() 这种指令更优&quot;， 能用就尽量用， 理由如下：
+       &quot;set指令 好处是 set具有原子性&quot;, 避免了解决资源竞争的同时引发自身可能出现的资源竞争
+   
+5. 我使用装饰器版 的 上下文管理器，对代码做了封装， 所以调用时，用&quot;with语句&quot;即可
+
+6. with redis_lock.lock() as lock ，&quot;lock() 这里可以自己指定2个参数&quot;：
+    lock_id=None   # 这是区分不同线程的唯一标识符，默认为（主机名+进程ID+线程名），可自传
+    expire=None    # 过期时间，秒为单位
+
+7. 需要注意一个点，与redis通信是以二进制形式。 所以我在代码内部对 lock_id 做了&quot;pickle序列化&quot;
+   当然如果是字符串用 encode() 与 decode() 来实现也是可以的。
+</code></pre>
+<h4 id=""></h4>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-python-ban-docker-shi-yong-appium-jian-dan-shi-yan/">
+                  <h3 class="post-title">
+                    PY =&gt; Python版-Docker使用Appium简单实验
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>

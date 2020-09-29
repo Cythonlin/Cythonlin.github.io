@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>PY =&gt; Pycharm连接Docker及代码自动上传与运行 | Cython_lin</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico?v=1601350009258">
+<link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
+
+
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+
+    <meta name="description" content="一、Pycharm创建Docker客户端
+
+二、修改Docker客户端配置
+在pycharm底部点这个打开配置
+
+填写Docker服务端，的IP地址及端口（tcp:// 不能少）
+
+上面这个配置完后，下面会出现 connected succ..." />
+    <meta name="keywords" content="DB" />
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://cythonlin.github.io">
+        <img src="https://cythonlin.github.io/images/avatar.png?v=1601350009258" class="site-logo">
+        <h1 class="site-title">Cython_lin</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://cythonlin.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">PY =&gt; Pycharm连接Docker及代码自动上传与运行</h2>
+            <div class="post-date">2020-09-29</div>
+            
+            <div class="post-content" v-pre>
+              <h1 id="一-pycharm创建docker客户端">一、Pycharm创建Docker客户端</h1>
+<figure data-type="image" tabindex="1"><img src="/img/bVbwhXy" alt="clipboard.png" loading="lazy"></figure>
+<h1 id="二-修改docker客户端配置">二、修改Docker客户端配置</h1>
+<h4 id="在pycharm底部点这个打开配置">在pycharm底部点这个打开配置</h4>
+<figure data-type="image" tabindex="2"><img src="/img/bVbwhXP" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="填写docker服务端的ip地址及端口tcp-不能少">填写Docker服务端，的IP地址及端口（tcp:// 不能少）</h4>
+<figure data-type="image" tabindex="3"><img src="/img/bVbwh9e" alt="clipboard.png" loading="lazy"></figure>
+<pre><code>上面这个配置完后，下面会出现 connected successfully，说明配置成功。
+如果配置失败，有几种情况：
+    一、 你当前主机环境 无法 ping 通 Docker所在服务器（云服务器、防火墙、的端口没放通）
+    二、 Docker未做 IP配置
+        如何配置参考下面链接的解决方案即可配置成功。
+        https://segmentfault.com/q/1010000020042977
+        配置完成后，记得重启 Docker服务
+</code></pre>
+<h1 id="三-pycharm-sftp向docker所在主机上传代码">三、Pycharm sftp向Docker所在主机上传代码</h1>
+<figure data-type="image" tabindex="4"><img src="/img/bVbwhZa" alt="clipboard.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="/img/bVbwhZG" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="连接测试成功后-不要点ok-选最上面的-mappings项继续配置">连接测试成功后， 不要点OK， 选最上面的 Mappings项,继续配置</h4>
+<figure data-type="image" tabindex="6"><img src="/img/bVbwhZ4" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="上面配置完后点ok然后开始上传">上面配置完后，点OK，然后开始上传</h4>
+<figure data-type="image" tabindex="7"><img src="/img/bVbwh9K" alt="clipboard.png" loading="lazy"></figure>
+<h1 id="四-创建docker里的python解释器">四、创建Docker里的Python解释器</h1>
+<h4 id="ctrlalts打开配置-然后按下图操作添加解释器">ctrl+alt+s打开配置， 然后按下图操作添加解释器</h4>
+<figure data-type="image" tabindex="8"><img src="/img/bVbwh1j" alt="clipboard.png" loading="lazy"></figure>
+<figure data-type="image" tabindex="9"><img src="/img/bVbwh13" alt="clipboard.png" loading="lazy"></figure>
+<h1 id="五-给脚本指定解释器-及-相关配置">五、给脚本指定解释器 及 相关配置</h1>
+<figure data-type="image" tabindex="10"><img src="/img/bVbwh17" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="下面其他都是默认配好的-主要配置下面红框部分的-2-处内容">下面其他都是默认配好的， 主要配置下面红框部分的 2 处内容</h4>
+<figure data-type="image" tabindex="11"><img src="/img/bVbwh3d" alt="clipboard.png" loading="lazy"></figure>
+<h4 id="切记-上面的第一个红框-path-mappings项-必须配不然就会出现下图的错误">切记： 上面的第一个红框： Path mappings项 必须配，不然就会出现下图的错误</h4>
+<p><img src="/img/bVbwhLU" alt="clipboard.png" loading="lazy"><br>
+这个错误，stack, github都没找到解决办法。 （明明已经是绝对路径了，还是让你提供绝对路径）<br>
+后来无奈之下，随手把 Path mappings 这项映射配了。  居然就成功了。。。。。！！</p>
+<h1 id="六-最后直接执行本地python文件即可">六、最后直接执行本地python文件即可</h1>
+<h4 id="就是我们平时在pycharm正常写代码的执行操作">就是我们平时在pycharm正常写代码的执行操作。。。</h4>
+<h1 id="总结-解惑">总结 + 解惑</h1>
+<h4 id="总结">总结</h4>
+<ol>
+<li>我们创建了Docker客户端,并修改了相关配置</li>
+<li>sftp上传代码（我们映射部分，填的是路径， 它会自动把该路径下的文件上传到云服务器）</li>
+<li>创建python解释器，并做出详细配置（各种映射）</li>
+</ol>
+<h4 id="疑惑解析">疑惑解析：</h4>
+<ol>
+<li>为啥修改代码保存一次，远程服务器也会同步自动修改？？？？？？？？？<br>
+因为我们在sftp的时候，mapppings选项中 配置了客户端和云服务器的代码目录 映射。<br>
+并且，我们在第一次同步代码的时候勾选了，自动同步选项 （Automatic upload）</li>
+<li>为啥可以操作远程的Docker里面的python解释器？？？？？？<br>
+首先我们创建了 docker 的客户端。并做出了 连接远程服务器的配置。<br>
+基于上述条件，我们在建解释器时做了如下操作:
+<ol>
+<li>选定云服务器的Docker,</li>
+<li>选定Docker中的镜像</li>
+<li>选定Docker中的镜像中的python解释器</li>
+</ol>
+</li>
+<li>python镜像是Docker（内部），为什么我们可以直接访问云服务器（外部）来达到需求 ？？？？？？<br>
+因为我们在配置解释器的时候， 配置了数据卷映射（第 五 章截图内Docker Container settings项）<br>
+当然这属于Docker数据卷（volume）知识点范畴。<br>
+Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#articleHeader37</li>
+</ol>
+<h1 id="end">END</h1>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="tag">
+                    DB
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://cythonlin.github.io/post/py-greater-docker-yu-fa-quan-mian-hui-yi/">
+                  <h3 class="post-title">
+                    PY =&gt; Docker语法全面回忆
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+
+
+  </body>
+</html>
