@@ -2,13 +2,171 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-10-04T10:24:09.433Z</updated>
+    <updated>2020-10-04T10:24:36.935Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[PY => Github-Cli]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/">
+        </link>
+        <updated>2020-10-03T01:53:58.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="下载">下载</h1>
+<p>选个OS版本（我用的Win）：<a href="https://github.com/cli/cli/releases">https://github.com/cli/cli/releases  </a></p>
+<h1 id="列出配置">列出配置</h1>
+<pre><code>git config --list
+</code></pre>
+<p>由于我github2个号切换，导致，push的时候有403错误混淆，<br>
+所以删除了家目录的 .gitconfig(应该是这个有些记不清了)</p>
+<h1 id="设置代理">设置代理</h1>
+<p>为了加速clone，这里先设置，若没有PROXY, 那此步可略过</p>
+<pre><code>git config --global http.proxy &quot;socks5://127.0.0.1:7890&quot;
+git config --global https.proxy &quot;socks5://127.0.0.1:7890&quot;
+</code></pre>
+<p>清除代理也很简单</p>
+<pre><code>git config --global --unset http.proxy
+git config --global --unset https.proxy
+</code></pre>
+<h1 id="设置ssh-key">设置SSH Key</h1>
+<h3 id="说明">说明</h3>
+<pre><code>如果你不习惯用SSH，而是习惯用HTTP的方式，那这步可省
+</code></pre>
+<h3 id="生成密钥命令">生成密钥命令</h3>
+<pre><code>ssh-keygen
+</code></pre>
+<p>进入用户家目录，把id_rsa.pub公钥复制出来<br>
+粘贴到-&gt; <a href="https://github.com/settings/ssh/">https://github.com/settings/ssh/new</a></p>
+<h1 id="登录">登录</h1>
+<pre><code>gh auth login
+</code></pre>
+<p>提前声明，遇到选项，都是用上下箭头选择<br>
+第1个选项： 选择Github.com（也就是个人用户）<br>
+第2个选项：选择 Login with a web browser<br>
+Command中会给一串代码，复制代码-&gt;CMD回车-&gt;自动跳转到Web-&gt;粘贴代码-&gt;确认-&gt;确认授权</p>
+<pre><code>这里也可以选择使用 Token 代替 web browser。但是这种方式需要生成一个Token
+生成URL如下：
+:  -&gt;   https://github.com/settings/tokens
+
+点击 Generate bew token ，新建一个新 token：
+    注意： 需要把 repo的所有权限勾上
+               外加一个admin:org下面的  read:org  选项
+    温馨提示：  read:org  必须勾上，不然创建失败。
+</code></pre>
+<p>第3个选项：选择SSH（HTTPS也可以）</p>
+<h3 id="查看登录状态">查看登录状态</h3>
+<pre><code>gh auth status
+</code></pre>
+<h3 id="退出登录">退出登录</h3>
+<pre><code>gh auth logout
+</code></pre>
+<h1 id="仓库">仓库</h1>
+<h3 id="创建仓库">创建仓库</h3>
+<pre><code>gh repo create my-gh
+    -&gt; Public
+    -&gt; xxx  in your current directory（Y/N） y   (回车默认就是yes，下同)
+    -&gt; Create a local project directory for xxx （Y/N）y
+</code></pre>
+<h3 id="查看远程权限">查看远程权限</h3>
+<pre><code>git remote -v
+    origin  https://github.com/Cythonlin/my-gh.git (fetch)
+    origin  https://github.com/Cythonlin/my-gh.git (push)
+</code></pre>
+<h3 id="克隆">克隆</h3>
+<pre><code>gh repo clone gin-gonic/gin
+cd gin
+git remote -v
+    origin  https://github.com/gin-gonic/gin.git (fetch)
+    origin  https://github.com/gin-gonic/gin.git (push)
+    # 我们可以发现，这分支并不是我们的自己的
+    # 所以我们可以 fork 下来
+</code></pre>
+<h3 id="fork">fork</h3>
+<p>fork 指的是，把克隆到自己的仓库，作为上游（upstream）项目，然后自己就可自由同步它</p>
+<pre><code>cd gin  # 上面已经进此路径，这步可省
+gh repo fork
+    -&gt; Would you like to add a remote for the fork? (Y/n) 回车yes
+</code></pre>
+<p>上面是先clone,然后进入路径，再fork<br>
+如果事先未clone， 也可以用gh repo fork + 用户名/仓库名， 直接 fork+clone一步到位</p>
+<pre><code># 这就不需要像上面先 cd进入clone的目录下再fork了，这种方式直接fork即可
+gh repo fork pytorch/pytorch
+</code></pre>
+<h1 id="gist">Gist</h1>
+<p>gist是github分享数据内容的平台 -&gt; <a href="https://gist.github.com/">https://gist.github.com/</a><br>
+上面的地址可以分享公有/私有的文件，创建上传后，Github会跳转生成一个链接，来给我们使用</p>
+<h3 id="github-cli实现gist">github-cli实现Gist</h3>
+<p>默认是私有的，命令如下：</p>
+<pre><code>gh gist create 1.txt
+</code></pre>
+<p>公有命令如下：</p>
+<pre><code>gh gist create 1.txt --public
+</code></pre>
+<p>二者都会生成个URL，即可访问。<br>
+也可以一个gist中存2个文件：</p>
+<pre><code>gh gist create 1.txt 2.txt
+</code></pre>
+<h3 id="修改-gist共享的文件参数为生成url的尾部路径参数">修改 Gist共享的文件，参数为生成url的尾部路径参数</h3>
+<pre><code>gh gist edit 5ff497631f0cc1e0a4463079a6a9eeff
+</code></pre>
+<h3 id="列出-上传过的gist文件-public代表公有文件-secret私有-不加参数代表所有">列出 上传过的Gist文件, --public代表公有文件，--secret私有, 不加参数代表所有</h3>
+<pre><code>gh gist list
+gh gist list --secret  
+gh gist list --public
+</code></pre>
+<h1 id="pr-pull-request">PR (Pull Request）</h1>
+<h2 id="pr概念">PR概念</h2>
+<p>&quot;我fork了你们的代码，现在我发送一个请求，请你们回收我的代码&quot;😂</p>
+<h2 id="pr流程">PR流程</h2>
+<ol>
+<li>fork别人仓库（先fork在clone， 前面已经提到 gh 可以直接fork一步到位了）</li>
+<li>切换分支（也可以在 master 下），add,commit,push 修改代码。</li>
+<li>在你fork后的仓库主页点击右上角的 Compare &amp; pull request 提交合并申请</li>
+<li>等待别人合并你的请求</li>
+</ol>
+<h2 id="实验流程">实验流程</h2>
+<h3 id="一-用当前的号去-fork另一个号另外那个也是自己的号方便做实验的仓库">一、用当前的号，去 fork另一个号（另外那个也是自己的号方便做实验）的仓库。</h3>
+<pre><code>gh repo fork hacker-lin/bio2bioes
+cd bio2bioes
+</code></pre>
+<h3 id="二-创建切换分支addcommitpushadd">二、 创建+切换分支+add+commit+push+add</h3>
+<pre><code>git checkout -b dev
+echo 111 &gt; 1.txt
+git add . &amp;&amp; git commit -m &quot;my_test&quot; 
+到这里即可，先不要push（下面PR创建的过程，会自动帮我们push，这里push我试了会出错）
+</code></pre>
+<h3 id="三-用github-cli命令-代替-点击compare-pull-request-按钮提交合并申请">三、用GitHUB-Cli命令 代替 点击Compare &amp; pull request 按钮提交合并申请</h3>
+<p>创建PR</p>
+<pre><code>gh pr create
+     -&gt; Where should we push the 'dev' branch # 选第一个
+     -&gt; Title  # 随便写个  some update
+     -&gt; Body # 直接 回车 跳过就行。
+     -&gt; What's next? # 选 Submit  提交即可 
+</code></pre>
+<p>列出提交的PR</p>
+<pre><code>gh pr list 
+# 执行后，你会发现 PR信息， # 后面的数字记住下面Closed和diff用得到
+</code></pre>
+<p>Merge PR</p>
+<pre><code>gh pr merge
+    -&gt; What merge method would you like to use # Create a merge commit即可
+</code></pre>
+<p>Closed PR</p>
+<pre><code>gh pr close 3
+# 这个3 就是上面 gh pr list 的结果
+</code></pre>
+<p>比较 PR 信息</p>
+<pre><code>gh pr diff 3
+# 最下面是最新的
+</code></pre>
+<p>查看 PR 详细信息</p>
+<pre><code>gh pr status
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[GO => 交换元素的四种方式]]></title>
         <id>https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
@@ -3028,179 +3186,6 @@ SparkHistory:    http://192.168.0.108:18080/<br>
 spark:           http://192.168.0.108:4040/<br>
 standalone启动指定的端口(如果你使用的 standalone方式，而不是local,可能用到如下端口):<br>
 pyspark --master spark://lin:7077</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[AI => Seq2Seq+Attention+Transformer(简)]]></title>
-        <id>https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/</id>
-        <link href="https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/">
-        </link>
-        <updated>2020-09-29T04:13:05.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="数据预处理tf20-keras-preprocessing">数据预处理（TF20-Keras-Preprocessing）</h1>
-<h3 id="我们自己的普通数据集常用">我们自己的普通数据集（常用）</h3>
-<p>主要使用tensorflow.keras.preprocessing这个库中的（image, text，sequence）这三个模块。<br>
-text： 可以用来 （统计词频，分字，word_2_id, id_2_word等操作。）<br>
-sequence 可以（给句子做结构化操作（填充0，裁剪长度））<br>
-from tensorflow.keras.preprocessing.text import Tokenizer    # 主干，句子编码<br>
-from tensorflow.keras.preprocessing.sequence import pad_sequences # 辅助，填充，剪枝</p>
-<pre><code>q1 = '欢 迎 你 你 你'
-q2 = '我 很 好'
-q_list = [q1,q2]    # 需要特别注意，因为此API对英文友好，所以，我们必须把句子用 空格 隔开输入
-
-token = Tokenizer(
-    num_words=2, # num_words代表设置过滤num_words-1个词频， 例如num_words=2，
-                 # 那么过滤掉2-1=1个词频， 所以一会你会看到下面词频为1的都被过滤掉了
-)  # 这里面参数很多，还有标点符号过滤器等
-token.fit_on_texts(q_list)  # 把原始句子集合，放进去拟合一下（封装成一个类）
-
-print(token.document_count) # 2    # 句子个数
-print(token.word_index)  # {'你': 1, '欢': 2, '迎': 3, '我': 4, '很': 5, '好': 6}   # word_2_id
-print(token.index_word)  # {1: '你', 2: '欢', 3: '迎', 4: '我', 5: '很', 6: '好'}   # id_2_word
-print(token.word_counts) # OrderedDict([('欢', 1), ('迎', 1), ('你', 3), ('我', 1), ('很', 1), ('好', 1)])  # 统计词频
-
-seq = token.texts_to_sequences(q_list) # 先把所有的输入，变成一一变成编码化
-print(seq) # [[1, 1, 1], []]     # 会不会好奇？数据怎么没了？因为我们上面设置了过滤词频为1的都过滤了
-
-pad_seq = pad_sequences(
-        seq,                # 输入编码化后的 句子
-        maxlen=2,           # 统一句子最大长度
-        padding='pre',      # 不足的补0， 从前面补0， （也可以用 post，代表后面）
-        truncating='pre'    # 多余的长度裁剪，从前面裁剪
-    )
-print(pad_seq)     # 打印一下我们填充后的句子形状。
-# [
-#   [1 1],      # 如你所愿,最大长度为2，[1,1,1] 已经裁剪成了 [1,1]
-#   [0 0],      # 如你所愿，之前[] ，已经都填满了0
-# ]
-</code></pre>
-<p>虽然我们用不到 image这个模块数据增强模块，但是我把了解的API也写出来。<br>
-train_datagen = keras.preprocessing.image.ImageDataGenerator( # 数据增强生成器（定义）<br>
-rescale=1. / 255,         # 数据归一化<br>
-rotation_range = 40,      #  -40-40  随机角度 （数据增强）<br>
-width_shift_range = 0.2,  # 宽度位移（0-20%随机选个比例去平移） （数据增强）<br>
-height_shift_range = 0.2, # 高度位移（同上）   （数据增强）<br>
-shear_range=0.2,          # 图片剪切（0.2）    （数据增强）<br>
-zoom_range=0.2,           # 图片缩放（0.2）    （数据增强）<br>
-horizontal_flip=True,     # 图片随机水平反转    （数据增强）<br>
-fill_mode='nearest',      # 图片填充像素（放大后失帧）用附近像素值来填充 （数据增强）<br>
-)</p>
-<pre><code># train_generator = train_datagen.flow_from_dataframe()  # 如果你用Pandas，你可以选这个
-train_generator = train_datagen.flow_from_directory(     # 从文件中读取（Kaggle）
-    train_dir,                       # 图片目录
-    target_size = (height, width),   # 图片读取进来后缩放大小
-    batch_size = batch_size,         # 就是批次
-    seed=6,                          # 随机化种子
-    shuffle=True,                    # 样本随机打散训练，增强模型泛化能力
-    class_mode='categorical',        # label格式，是否需要one_hot， 是
-)
-...
-...
-train_num = train_generator.samples  # 打印样本形状
-
-history = model.fit_generator(       # 注意我们上面是用的数据生成器，所以这要用 fit_generator
-    train_generator,
-    steps_per_epoch=train_num//batch_size, # 每个epoch多少 step(因为数据增强API是生成器方式，所以需要自己手动计算一下)
-    epochs=epochs,
-    validation_data=valid_generator,  # 如果你有验证集，你也可以用这个。否则可以不用
-    validation_steps=valid_num//batch_size # 同上
-)
-</code></pre>
-<h1 id="seq2seq">Seq2Seq</h1>
-<h3 id="思想">思想</h3>
-<pre><code>语言不同，那么我们可以搭建桥梁。 
-即使我们表面上不相同。 但是我们映射到这个桥梁上的结果是几乎类似的。
-</code></pre>
-<h3 id="样本句子长度统一">样本句子长度统一</h3>
-<p>为什么每个句子的长度需要统一？<br>
-因为，每个句子for循环操作会很耗算力， 而转化为矩阵/向量化操作，会节约太多算力。<br>
-因为矩阵运算严格要求样本的形状，所以每个句子的长度需要一致<br>
-如何做到句子长度统一？<br>
-填0， 对应TF操作就是padding， 不过TF20 的keras预处理包中已经有 成品的数据统一化操作。<br>
-并且还具有 word_2_id，词向量编码操作。</p>
-<h3 id="组成">组成</h3>
-<ol>
-<li>编码器 （输入每条样本句子的每个单词， 编码器的最后一个RNN单元，浓缩了整个句子的信息）</li>
-<li>中间向量 （作为中间特征桥梁， 用来保存，输入进来的整个句子）</li>
-<li>解码器 （中间向量作为解码器第一个RNN单元的输入，而每个单元的输出y,作为下一个单元的输入）<br>
-其中解码器部分的输出y会用 softmax 对 词库（词典）求多分类概率。<br>
-然后求损失（MSE或者CrossEntropy）<br>
-注意了： softmax求出的概率该如何选择，这是个问题:<br>
-假如: 每个单元的输出y的概率都取最大值, 那么可能一步错，步步错。 太极端了（贪心搜索）<br>
-接下来，聊一聊一周 集束搜索的算法 BeamSearch</li>
-</ol>
-<h3 id="beamsearch">BeamSearch</h3>
-<p>由于贪心搜索（只取概率的一个最大值，的结果不尽人意。所以 BeamSearch来啦）<br>
-BeamSearch的主要思想:<br>
-只取一个太冒险了，所以:     BeamSearch 取每个经过softmax输出概率集合的 Top-N个<br>
-Top-N: 的 N 代表你保留几个概率   （举一反三理解: 贪心算法就是 Top-1）<br>
-假如我们取Top-3个<br>
-那么你一个RNN节点的预测y将会保留3个概率值， 并将这3个概率值作为 下一个节点的输入。<br>
-具体流程看:下图 (可能有点丑)<br>
-然后，我们会选择出:        3 个 &quot;红线&quot; 最优路径。<br>
-最终: 我们通过单独的语言模型，来从这 3 个 &quot;红线&quot; 较优路径中，选出一个 最优路径。<br>
-<img src="/img/bVbyAZs" alt="clipboard.png" loading="lazy"></p>
-<h1 id="attention注意力机制">Attention(注意力机制)</h1>
-<h3 id="前情回顾">前情回顾</h3>
-<p>Seq2Seq 的 Encoder部分虽然用的是 高效的 LSTM，并且也很好的解决了，记忆的问题。<br>
-但是他不能很好的解决每个单词的权重分配问题。<br>
-虽然: Encoder的所有单元都会通过LSTM的记忆传递， 输入进“中间桥梁向量”。<br>
-但是: 还是有&quot;偏心&quot;成分, 最后一个LSTM单元信息一定是最浓的。 （新鲜的，热乎的）<br>
-所以: 你第1个LSTM单元的信息，或者说前面的LSTM单元的信息，这些记忆到最后可能会被稀释。<br>
-为了解决上面的问题, Attention就出来帮忙了~~~</p>
-<h3 id="attentioin原理">Attentioin原理</h3>
-<p>我觉得墨迹半天不如自己画一张图~~~ （只会mspaint画图）<br>
-<img src="/img/bVbyBuW" alt="clipboard.png" loading="lazy"><br>
-上图中计算权重那里&quot;通过一个函数，可以是求相似度&quot;， 我简写了。 其实有两种常用的方式：<br>
-Bahdanau注意力:<br>
-weight = FC层( tanh ( FC层(Encoder的每个输出y) + FC层(Decoder的一个H) ) )<br>
-luong注意力:<br>
-weight = Encoder的每个输出y @ W随机权重矩阵 @ Decoder的一个H    # @是TF20的矩阵乘法操作符<br>
-无论使用上面哪种: 都要套一层 Softmax<br>
-weight = softmax(weight, axis=1)<br>
-注意力向量C = sum( weight * Encoder的每个输出y , axis=1)   # 加权求和，最终得到一个向量<br>
-Decoder的下一个输入 = concat( 注意力向量C, 上一个预测y4 )</p>
-<h1 id="transformer">Transformer</h1>
-<p>第一印象挑明： 他是一种无RNN的一种特殊的 Seq2Seq 模型。</p>
-<p>RNN-LSTM-GRU虽然这些NN的主要特色就是&quot;时间序列&quot;。（缺点：慢，记忆弥散）<br>
-但是我们上面说了，要想取得好的效果。那么需要加Attention。<br>
-于是有人想到了，既然Attention效果这么好，为什么不直接用Attention呢？<br>
-Attention效果虽好，关联性强，但是它不能保证时间序列模式。<br>
-于是后来出现了 Transformer。（既能保证记忆注意力，又能保证时间序列）。具体如下！</p>
-<h3 id="transformer整体结构组成">Transformer整体结构组成</h3>
-<figure data-type="image" tabindex="1"><img src="/img/bVbA3uH" alt="image.png" loading="lazy"></figure>
-<h3 id="self-attention">Self-Attention</h3>
-<p>self-attention原理就是各种链式矩阵乘法（并行计算，可用GPU加速）<br>
-self-attention计算过程如下：（假设输入句子切分单词为：矩阵X = [&quot;早&quot;,&quot;上&quot;,&quot;好&quot;]）<br>
-矩阵X @ 权重矩阵Q（Q1，Q2，Q3）=&gt; Q矩阵（Q1，Q2，Q3）<br>
-矩阵X @ 权重矩阵K（Q1，Q2，Q3）=&gt; K矩阵（Q1，Q2，Q3）<br>
-矩阵X @ 权重矩阵V（Q1，Q2，Q3）=&gt; V矩阵（Q1，Q2，Q3）</p>
-<pre><code>α = softmax( (Q矩阵 @ K矩阵) / q^0.5 )
-self_attention = α @ V矩阵
-# 单词1 = Q1*K1*V1 + Q1*K2*V2 + Q1*k3*V3
-# 用自己的Q，查别人的KV，加权求和，最终得出的就是自己（自身单词的注意力）
-</code></pre>
-<h3 id="multi-head-self-attention">Multi-Head Self-Attention</h3>
-<p>Multi-Head Attention 对 Self-Attention 对了如下扩展：<br>
-self-attention:             一组 Q矩阵，K矩阵，V矩阵<br>
-Multi-Head Self-Attention:  多组 Q矩阵，K矩阵，V矩阵<br>
-扩张为多头注意力的过程：<br>
-Q @ W ====&gt; [Q1, Q2, Q3]<br>
-K @ W ====&gt; [K1, K2, K3]<br>
-V @ W ====&gt; [V1, V2, V3]</p>
-<pre><code>可理解为，多个卷积核的意思能提取不同特征的意思。
-</code></pre>
-<h3 id="position-encoder">Position Encoder</h3>
-<p>上述的self-attention有个问题， 我们没有用到RNN等序列NN，那么矩阵相乘的过程中。<br>
-单词的计算顺序可能是不同的。<br>
-那么如何保证让他们位置有条不紊？<br>
-可以使用位置编码，融入到Embedding，形成带有时间序列性质的模型。<br>
-可自行查找计算位置编码的博文。</p>
-<h3 id="传送门">传送门</h3>
-<p>至于Transformer，现在官方已经有TF20和Pytorch的库了。<br>
-传送门如下。<br>
-<a href="https://github.com/huggingface/transformers">https://github.com/huggingface/transformers</a><br>
-Transformer延申的各种模型，像Bert等也有可调用的API<br>
-<a href="https://huggingface.co/transformers/">https://huggingface.co/transformers/</a></p>
 ]]></content>
     </entry>
 </feed>
