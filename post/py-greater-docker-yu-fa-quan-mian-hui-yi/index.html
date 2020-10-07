@@ -73,7 +73,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1602019875340" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1602032453028" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -207,6 +207,8 @@
      # 端口映射， 宿主机（6006）：容器(6379)        (-P代表容器内部所有端口 与宿主机随即映射)
  docker run --restart always
      # --restart always 代表 docker服务重启时， 里面的容器也会跟着重启
+ docker run --name mysql -e MYSQL_ROOT_PASSWORD=123 -p 3306:3306 -itd mysql
+     # mysql示例，前提是已经 docker pull mysql
 </code></pre>
 </li>
 <li>
