@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; RabbitMQ/Pika使用记录 | Cython_lin</title>
+<title>PY =&gt; 音声合成 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,10 +15,12 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="安装
-https://github.com/docker-library/docs/tree/master/rabbitmq
-docker run -d --hostname my-rabbit -p 5672:5672 --name so..." />
-    <meta name="keywords" content="Python" />
+    <meta name="description" content="背景
+音声合成 基于 很久之前写的文章 音声分离
+一些 Light Music 的 Electronic Drum 太吵了。
+于是突发奇想，如何  N v 1 分离出 Drum 并且 Drop
+音声分离（更新为5stems-16kHz Mo..." />
+    <meta name="keywords" content="" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -88,21 +90,19 @@ docker run -d --hostname my-rabbit -p 5672:5672 --name so..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">13 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2020-10-12"><i class="fa fa-calendar"></i><span class="lately">24 分钟前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-rabbitmqpika-shi-yong-ji-lu/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-rabbitmqpika-shi-yong-ji-lu/"> </span>
+              <a href="https://cythonlin.github.io/post/py-greater-yin-sheng-he-cheng/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-yin-sheng-he-cheng/"> </span>
               </a>
-              <span id="/py-greater-rabbitmqpika-shi-yong-ji-lu/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/py-greater-yin-sheng-he-cheng/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
-                    
               </div>
-              <h1 class="title ularge white bold">PY =&gt; RabbitMQ/Pika使用记录</h1>
+              <h1 class="title ularge white bold">PY =&gt; 音声合成</h1>
             </div>
           </div>
         </div>  
@@ -112,199 +112,35 @@ docker run -d --hostname my-rabbit -p 5672:5672 --name so..." />
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="安装">安装</h1>
-<pre><code>https://github.com/docker-library/docs/tree/master/rabbitmq
-docker run -d --hostname my-rabbit -p 5672:5672 --name some-rabbit rabbitmq:3
+                  <h1 id="背景">背景</h1>
+<p>音声合成 基于 很久之前写的文章 <a href="https://www.cklin.top/post/py-greater-yin-sheng-fen-chi/">音声分离</a><br>
+一些 Light Music 的 Electronic Drum 太吵了。<br>
+于是突发奇想，如何  N v 1 分离出 Drum 并且 Drop</p>
+<h1 id="音声分离更新为5stems-16khz-model">音声分离（更新为5stems-16kHz Model）</h1>
+<p>2stems (vocals / accompaniment)</p>
+<pre><code>spleeter separate  -o audio_output -i audio_example.mp3
 </code></pre>
-<h1 id="无交换机">无交换机</h1>
-<p>基本机制：生产者 - 管道 - 消息队列 - 管道 - 消费者</p>
-<h4 id="consumepy">consume.py</h4>
-<pre><code>import pika
-import time
-def callback(channel, method, properties, body):
-   time.sleep(1)
-   print(channel,  body)
-   channel.basic_ack(delivery_tag=method.delivery_tag)
-
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
-    channel = connection.channel()
-    queue_name = 'myqueue'
-    channel.queue_declare(		# 声明队列
-        queue=queue_name,
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        exclusive=False,    # 只能一个连接使用，并且连接后，队列雄安是
-        auto_delete=False,  # 消费者不再使用队列时，自动删除队列
-    )
-    channel.basic_qos(prefetch_count=10) # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
-    channel.basic_consume(
-        queue_name,
-        callback,
-        auto_ack=False
-        # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
-            # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
-        # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
-    )
-    channel.start_consuming()
+<p>4stems (vocals / bass / drums / other )</p>
+<pre><code>spleeter separate -o audio_output -p spleeter:4stems  -i audio_example.mp3
 </code></pre>
-<h4 id="productpy">product.py</h4>
-<pre><code>import pika
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
-    channel = connection.channel()
-    queue_name = 'myqueue'
-    channel.queue_declare(
-        queue=queue_name,
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        exclusive=False,    # 只能一个连接使用，并且连接后，队列雄安是
-        auto_delete=False,  # 消费者不再使用队列时，自动删除队列
-    )
-
-    for x in range(50):
-        channel.basic_publish(
-            exchange='',
-            routing_key=queue_name,
-            body=str(x),
-            properties=pika.BasicProperties(
-                delivery_mode=2     # 设为2表示，队列里面的 消息 的 持久化
-            )
-        ) 
+<p>5stems (vocals / bass / drums / piano / other)</p>
+<pre><code>spleeter separate -o audio_output -p spleeter:5stems-16kHz -i audio_example.mp3
 </code></pre>
-<h1 id="有交换机">有交换机</h1>
-<p>基本机制：生产者 - 管道 - routing_key - 交换机 - binding_key - 消息队列 - 管道 - 消费者<br>
-生产者不用连接队列，因为被交换机连接。 消费者必须连接队列。</p>
-<h3 id="直连交换机-direct-routing_key和-binding_key严格匹配">直连交换机 (direct - routing_key和 binding_key严格匹配)</h3>
-<p>注意情况，若binding_key 对应的队列是临时队列， 那么 需要先启动消费者，再启动生产者<br>
-如果先启动的是生产者，那么发出到交换机的数据 找不到匹配的消费者， 那么数据就会丢失，因为交换机是临时的</p>
-<h4 id="consumepy-2">consume.py</h4>
-<pre><code>import pika
-import time
-def callback(channel, method, properties, body):
-    time.sleep(1)
-    print(body)
-    channel.basic_ack(delivery_tag=method.delivery_tag)
-
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
-    channel = connection.channel()
-    exchange_name = 'direct'
-    channel.exchange_declare(
-        exchange_name,
-        exchange_type='direct',
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-    )
-    queue_name = 'queue'
-    channel.queue_declare(queue_name,exclusive=True)  # exclusive 代表当前连接独享队列，队列随着连接消失
-
-    binding_keys = ['debug', 'info', 'warning'] # product的routing_key要包含在这里面
-    for binding_key in binding_keys:
-        channel.queue_bind(
-            queue_name,    # 右连队列
-            exchange_name, # 左连交换机
-            routing_key=binding_key
-        )
-
-    channel.basic_qos(prefetch_count=10) # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
-    channel.basic_consume(
-        queue_name,
-        callback,
-        auto_ack=False
-        # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
-            # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
-        # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
-    )
-    channel.start_consuming()
+<p>这次用的是 5stems预训练模型， 得到了如下5个文件：</p>
+<pre><code>bass.wav
+drums.wav
+other.wav
+piano.wav
+vocals.wav
 </code></pre>
-<h4 id="productpy-2">product.py</h4>
-<pre><code>import pika
-with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
-    channel = connection.channel()
-    exchange_name = 'direct'
-    channel.exchange_declare(
-        exchange_name,
-        exchange_type='direct',
-        durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-    )
-    routing_key = 'debug'
-
-    for x in range(50):
-        channel.basic_publish(
-            exchange=exchange_name,
-            routing_key=routing_key,
-            body=str(x)
-        )
+<h1 id="寻找解决方案">寻找解决方案</h1>
+<p>最开始不知道从何搜起，后来直接索性Github贴了一个 <a href="https://github.com/deezer/spleeter/issues/506">Question Issues</a>。<br>
+有人给出stack的<a href="https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg">解决方案</a>， 个人简化使用如下：</p>
+<pre><code>ffmpeg -i other.wav -i vocals.wav -i bass.wav -i piano.wav -filter_complex amix=inputs=4:duration=longest output.mp3
 </code></pre>
-<h3 id="主题交换机-topic-routing_key和-binding_key模糊匹配">主题交换机 (topic - routing_key和 binding_key模糊匹配)</h3>
-<p>基本机制： 和直连基本一样，topic - routing_key和 binding_key 模糊匹配成功后，才能正确通信<br>
-代码部分，只修改<br>
-exchange_name = 'topic'<br>
-exchange_type = 'direct'<br>
-其他基本一致， binding_key 改为模糊语法即可<br>
-语法格式：<br>
-* 匹配一个代词<br>
-# 匹配 0个或多个单词<br>
-eg:<br>
-a.b  可对应为 a.*<br>
-a.b.c 可对应为 a.#</p>
-<h3 id="扇形交换机-fanout-广播机制">扇形交换机 (fanout -- 广播机制)</h3>
-<p>基本机制：开启多个 消费者等待， 然后开启一个生产者，所有队列都会开始消费<br>
-简单来说，就是 一个提供数据， 多个队列消费此数据<br>
-资源从哪里开始分配，取决于 channel.basic_qos(prefetch_count=10) 的设置</p>
-<p>不依赖 routing_key 和 binding_key。<br>
-将 exchange_type 改为 fanout</p>
-<h4 id="consumepy-3">consume.py</h4>
-<pre><code>import pika
-import time
-
-def callback(channel, method, properties, body):
-    time.sleep(1)
-    print(body)
-    channel.basic_ack(delivery_tag=method.delivery_tag)
-
-def main():
-    with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223')) as connection:
-        channel = connection.channel()
-        exchange_name = 'fanout'
-        channel.exchange_declare(
-            exchange_name,
-            # exchange_type='direct',
-            exchange_type='fanout',
-            durable=True,  # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        )
-        queue_name = 'queue'
-        channel.queue_declare(queue_name)  # exclusive 代表当前连接独享队列，队列随着连接消失
-        channel.queue_bind(
-            queue_name,  # 右连队列
-            exchange_name,  # 左连交换机, 注意，因为不依赖 routing_key 和 binding_key ，所以不用写routing_key参数
-        )
-        channel.basic_qos(prefetch_count=10)  # 一次性 喂给消费者10条，消费者自己一点一点消费，10条过后，回复确认
-        channel.basic_consume(
-            queue_name,
-            callback,
-            auto_ack=False
-            # auto_ack 设为 False 就意味着，需要手动回复确认, 需要设置callback里的 channel.basic_ack （默认为False）
-                # 收到一条，确认后，再发下一条， 若中断，则 依然从 ack标识处，续传
-            # auto_ack 设为 True 就意味着， 系统帮助消费者自动回复确认，即（自动清空 队列中 生产者的数据）
-        )
-        channel.start_consuming()
-main()
-</code></pre>
-<h4 id="productpy-3">product.py</h4>
-<pre><code>import pika
-
-def main():
-    with pika.BlockingConnection(pika.ConnectionParameters(host='39.107.86.223',port=5672)) as connection:
-        channel = connection.channel()
-        exchange_name = 'fanout'
-        channel.exchange_declare(
-            exchange_name,
-            exchange_type='fanout',
-            durable=True,      # 持久化，但只是队列不消失，队列里面的数据不一定。 durable=True队列持久化
-        )
-        for x in range(50):
-            channel.basic_publish(
-                exchange=exchange_name,
-                routing_key='',
-                body=str(x)
-            )
-main()</code></pre>
+<h1 id="结果">结果</h1>
+<p>最终成功把 Electronic Drum 声 Drop。<br>
+唯一美中不足的就是，5个Stems预训练模型分的不够细致, Github Wiki最新方案的就是5stems~</p>
 
                 </div>
                 <div class="clear"></div>
@@ -314,26 +150,13 @@ main()</code></pre>
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/c137hZpK4.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/sublime-py-cha-jian/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">Sublime-Py插件</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sJAb6NuUK.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-git-chang-yong-ming-ling-zu-he-tao-lu/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/1L4lr0i2f.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/py-greater-k8s/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Git常用命令/组合套路</h4>
+                  <time datetime="2020-10-07">2020-10-07</time>
+                  <h4 class="title white no-margin">PY =&gt; K8S（未完待续）</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">

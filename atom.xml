@@ -2,13 +2,87 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2020-10-07T01:01:01.857Z</updated>
+    <updated>2020-10-12T12:43:52.057Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[PY => 音声合成]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-yin-sheng-he-cheng/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-yin-sheng-he-cheng/">
+        </link>
+        <updated>2020-10-12T12:20:17.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="背景">背景</h1>
+<p>音声合成 基于 很久之前写的文章 <a href="https://www.cklin.top/post/py-greater-yin-sheng-fen-chi/">音声分离</a><br>
+一些 Light Music 的 Electronic Drum 太吵了。<br>
+于是突发奇想，如何  N v 1 分离出 Drum 并且 Drop</p>
+<h1 id="音声分离更新为5stems-16khz-model">音声分离（更新为5stems-16kHz Model）</h1>
+<p>2stems (vocals / accompaniment)</p>
+<pre><code>spleeter separate  -o audio_output -i audio_example.mp3
+</code></pre>
+<p>4stems (vocals / bass / drums / other )</p>
+<pre><code>spleeter separate -o audio_output -p spleeter:4stems  -i audio_example.mp3
+</code></pre>
+<p>5stems (vocals / bass / drums / piano / other)</p>
+<pre><code>spleeter separate -o audio_output -p spleeter:5stems-16kHz -i audio_example.mp3
+</code></pre>
+<p>这次用的是 5stems预训练模型， 得到了如下5个文件：</p>
+<pre><code>bass.wav
+drums.wav
+other.wav
+piano.wav
+vocals.wav
+</code></pre>
+<h1 id="寻找解决方案">寻找解决方案</h1>
+<p>最开始不知道从何搜起，后来直接索性Github贴了一个 <a href="https://github.com/deezer/spleeter/issues/506">Question Issues</a>。<br>
+有人给出stack的<a href="https://stackoverflow.com/questions/14498539/how-to-overlay-downmix-two-audio-files-using-ffmpeg">解决方案</a>， 个人简化使用如下：</p>
+<pre><code>ffmpeg -i other.wav -i vocals.wav -i bass.wav -i piano.wav -filter_complex amix=inputs=4:duration=longest output.mp3
+</code></pre>
+<h1 id="结果">结果</h1>
+<p>最终成功把 Electronic Drum 声 Drop。<br>
+唯一美中不足的就是，5个Stems预训练模型分的不够细致, Github Wiki最新方案的就是5stems~</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[PY => K8S（未完待续）]]></title>
+        <id>https://cythonlin.github.io/post/py-greater-k8s/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-k8s/">
+        </link>
+        <updated>2020-10-06T22:18:23.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="安装">安装</h1>
+<p>官档： <a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/">https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/</a><br>
+官档中的镜像时Google的，需要换成阿里源。</p>
+<h3 id="ubuntu">Ubuntu</h3>
+<pre><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https
+
+curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+
+cat &lt;&lt;EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+EOF
+
+apt-get update
+apt-get install -y kubelet kubeadm kubectl
+</code></pre>
+<h3 id="centos">CentOS</h3>
+<pre><code>cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+
+setenforce 0
+yum install -y kubelet kubeadm kubectl
+systemctl enable kubelet &amp;&amp; systemctl start kubelet</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[PY => Github-Cli]]></title>
         <id>https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/</id>
@@ -2466,726 +2540,6 @@ properties={&quot;driver&quot;: &quot;com.mysql.jdbc.Driver&quot;}<br>
 )</p>
 <pre><code># 同是特别注意： 和读一样， 它写入的新表，也是一个整体的表结构。
 #     此表的一个列&quot;TBL_NAME&quot;，它才对应了我们真正要操作的表</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => PySpark-Spark Core（RDD）]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-pyspark-spark-corerdd/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-pyspark-spark-corerdd/">
-        </link>
-        <updated>2020-09-29T04:15:57.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="前言">前言</h1>
-<p>第一篇传送门：<a href="https://segmentfault.com/a/1190000020841646">https://segmentfault.com/a/1190000020841646</a></p>
-<h1 id="rdd认知">RDD认知</h1>
-<h3 id="rdd是什么">RDD是什么？</h3>
-<p>RDD: 弹性分布式数据集（Resiliennt Distributed Datasets）</p>
-<p>转为格式RDD的几种方式：<br>
-1. parallelize:<br>
-rdd = sc.parallelize([1,2,3,4,5])   # 里面传的就是普通python类型</p>
-<pre><code>2. 读文件/读数据库/读ES等各种方式，此处以读文件为例：
-    rdd = sc.textFile('file:///home/lin/data/hello.txt')
-</code></pre>
-<h3 id="rdd核心概念">RDD核心概念</h3>
-<p>Application:<br>
-application: 一个app 就是一个自定义的 py脚本（被 spark-submit提交的）或一个spark-shell<br>
-app = 1个 driver + 多个executors(相当于多个进程)</p>
-<pre><code>注意：数据在不同的 app之间 不能被共享， 若想要共享（需要考虑外部存储）
-</code></pre>
-<p>Driver:<br>
-每一个.py脚本中都有一个 sparkcontext，它就是driver<br>
-Worker Node:<br>
-相当于standalone 的 slave节点<br>
-Executor:<br>
-Executor(进程)：每个Driver中都有多个 Executors</p>
-<pre><code>并且可以运行多个 Tasks
-</code></pre>
-<p>Job:<br>
-job:  对应下面即将要说的 action   : collect() 等</p>
-<pre><code>一个 task 对应 一个 job  (一个 transformation 对应 一个 action)
-一个 job 对应 多个 task  (多个 transformations链式调用之后，再调用一个action)
-</code></pre>
-<p>Task:<br>
-task: 对应下面即将要说的 transformation   :map() 等<br>
-每个task可用一个线程执行。多个task可并行</p>
-<p>Stage:<br>
-一个job被切分为多份<br>
-Cluster Manager:<br>
-管理 从 Standalone, YARN, Mesos 中获取的资源<br>
-就是 --master 指定的参数<br>
-其中 还包括 空间 内存等参数配置<br>
-Cache:<br>
-缓存： ### persist &amp; cache &amp; unpersist 三种API可供选择<br>
-Lineage(依赖,血缘关系)：<br>
-依赖：<br>
-父              子               孙<br>
-RDD1  -&gt; map-&gt;  RDD2 -&gt; filter-&gt; RDD3<br>
-服务器1：        part1 -&gt;        part1-&gt;          part1<br>
-服务器2：        part2 -&gt;        part2-&gt;          part2<br>
-服务器3：        part3 -&gt;        part3-&gt;          part3</p>
-<pre><code>    如上图: 假如 RDD3 的 part2 挂了， 那么就会退回到 RDD2的part2再计算一遍。
-           而不是回到&quot;最初&quot;的起点。
-           
-窄依赖（Narrow, 依赖的很少，很窄）：
-    重点:  '子part' 只依赖一个 '父part'。
-    map, filter 等:  元素被摊分在每一个part中， 子part出错就找&quot;对应&quot;（一个） 父part即可。
-
-宽依赖（Wide, 依赖的很多，很宽）：
-    重点:  '子part' 依赖多个 '父part' 同时计算得到。
-    shuffle操作: xxBy, join等： 子part出错 找&quot;对应&quot;（多个） 父part 重新共同计算。
-</code></pre>
-<p>stage:<br>
-遇到 1个宽依赖， 就会做 shuffle操作。<br>
-然后就会把&quot;之前&quot;的 “所有窄依赖”划分为 &quot;1个stage&quot;。<br>
-最后，整体全部，也当作 &quot;1个stage&quot;。</p>
-<h3 id="官档图">官档图</h3>
-<p>传送门：<a href="http://spark.apache.org/docs/latest/cluster-overview.html">http://spark.apache.org/docs/latest/cluster-overview.html</a><br>
-<img src="/img/bVbzEU3" alt="image.png" loading="lazy"></p>
-<h1 id="rdd两大算子">RDD两大算子</h1>
-<h2 id="transformation-lazy">Transformation （Lazy）</h2>
-<p>主要机制：各种操作不会被立刻执行，但这些操作之间的关系会被记录下来，等待下面action调用。<br>
-直观理解举例：<br>
-1. 像 sqlalchemy 中的 filter(), groupby(), page()等操作<br>
-2. 像 tensorflow1.x 中的 sess.run() 之前的各种操作<br>
-3. 像 数据库的事务，在提交之前的各种操作<br>
-接下来介绍，Transformation 的各种操作。</p>
-<h3 id="map">map</h3>
-<pre><code>同 python 的 map。
-你只需记住RDD类型里面包裹的就是我们熟悉的python类型
-所以： 
-    python 的 map 怎么用， RDD对象的 map 就怎么用， 下面filter同理
-
-只举一个语法格式例子：（下面同理）
-    rdd.map(lambda x:x+1)
-</code></pre>
-<h3 id="filter">filter</h3>
-<pre><code>同上，同python
-</code></pre>
-<h3 id="flatmap">flatMap</h3>
-<pre><code>和 map 几乎差不多。
-唯一有一点区别：
-    map 每次基于单个元素，返回什么，那最终结果就是什么（最后拼成序列）。
-    flatMap 每次基于单个元素，若返回的是序列（列表等），那么会自动被解包，并一字排开返回。
-</code></pre>
-<h3 id="groupby-和-groupbykey">groupBy 和 groupByKey</h3>
-<p>说一下 没有key, 和 带有key的区别（后面同理，就不啰嗦了）：<br>
-没有key:<br>
-1. 一般必须需要一个 函数句柄 (lambda), 而这个句柄是针对（操作后新形成的key）使用的<br>
-2. 针对一层序列   [, , ...]<br>
-带有key<br>
-1. 一般无参<br>
-2. 针对双层序列   [(),(),...]<br>
-直接上例子了（对比着看）：<br>
-rdd1 = sc.parallelize(['a','b','c','a'])                      # 一层序列<br>
-rdd2 = sc.parallelize( [('a',1),('b',2), ('c',3), ('a',4)] )  # 双层序列</p>
-<pre><code>group1 = rdd1.groupBy(lambda x:x)   # 针对 一层序列， 注意这里，必须写 函数句柄
-group2 = rdd2.groupByKey()          # 针对 双层序列
-
-print( group1.collect() )
-print( group2.collect() )
-
-# 可以这样告诉你， 他们俩的最外层结果是一样的: [{key:value}, ...], 
-结果如下 ~~~~
-[
-    ('a', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e4384c88&gt;),     
-    ('b', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e43848d0&gt;),
-    ('c', &lt;pyspark.resultiterable.ResultIterable object at 0x7fb7e4384940&gt;)
-]
-# 如果加了count(), 那么它们的结果就是一样的了，返回统计的个数， 等到 action再说。
-</code></pre>
-<h3 id="reducebykey">reduceByKey</h3>
-<p>照应双层或多层序列，或者 承接 groupByKey()<br>
-rdd = sc.parallelize(['Tom', 'Jerry', 'Tom', 'Putch'])<br>
-rdd.map(lambda x:(x,1)).reduceByKey(lambda x,y:x+y).collect()</p>
-<pre><code># 结果（可以忽略上面的 collect(), 它属于action，放在这里方便贴个结果）
-&gt;&gt; [('Tom', 2), ('Jerry', 1), ('Putch', 1)]
-</code></pre>
-<h3 id="sortby-和-sortbykey">sortBy 和 sortByKey</h3>
-<p>sortBy：根据元素排序（这里的例子是根据key排序， a[1]代表根据value排序）<br>
-&gt;&gt;&gt; a = sc.parallelize([['z',1], ['b',4],['h',3]])<br>
-&gt;&gt;&gt; a.sortBy(lambda a:a[0]).collect()<br>
-[['b', 4], ['h', 3], ['z', 1]]<br>
-&gt;&gt;&gt; a.sortBy(lambda a:a[1]).collect()<br>
-[['z', 1], ['h', 3], ['b', 4]]<br>
-sortByKey：根据key排序<br>
-&gt;&gt;&gt; a.sortByKey().collect()<br>
-[('b', 4), ('h', 3), ('z', 1)]<br>
-可选参数：<br>
-ascending=False  (默认为True升序)</p>
-<h3 id="union">union</h3>
-<pre><code>rdd1.union(rdd2)    # 相当于 python的 &quot;列表加法&quot; 或者 python的 &quot;extend&quot;
-</code></pre>
-<h3 id="distinct">distinct</h3>
-<pre><code>rdd.distinct()      # 去重
-</code></pre>
-<h3 id="join">join</h3>
-<p>前提： （我的理解就是，能转化成 python 字典的列表格式即可）<br>
-eg:  [ [1,2], [3,4], [5,6] ]<br>
-两层列表<br>
-每层列表的每个元素中，  只有2个元素</p>
-<pre><code>错误格式示例：
-    [['a','b','c'], ['d','e','f']]
-
-也不能说错误吧，不过若是这种3个-多个子元素的格式， join时默认会取前2个元素。其余丢弃。
-</code></pre>
-<p>内连接（innerJoin）：<br>
-左外连接（leftOuterJoin）：<br>
-右外连接（rightOuterJoin）：<br>
-全外连接（fullOuterJoin）：</p>
-<p>完整示例：<br>
-rdd1 = sc.parallelize( [['a','b'], ['d','e']] )       # 左<br>
-rdd2 = sc.parallelize( [['a','c'], ['e','f']] )       # 右<br>
-# 开头说过:能转化成字典的列表格式即可，或者你可以写成这样（但是不能传原生字典进去）：<br>
-rdd1 = sc.parallelize( list({'a': 'b', 'd': 'e'}.items()) )<br>
-rdd2 = sc.parallelize( list({'a': 'c', 'e': 'f'}.items()) )</p>
-<pre><code># 内连接（交集）
-print( rdd1.join(rdd2).collect() )             # [('a', ('b', 'c'))]
-
-# 左连接（左并集）
-print( rdd1.leftOuterJoin(rdd2).collect() )    # [('d', ('e', None)), ('a', ('b', 'c'))]
-
-# 右连接（右并集）
-print( rdd1.rightOuterJoin(rdd2).collect() )   # [('a', ('b', 'c')), ('e', (None, 'f'))]
-
-# 全连接（并集）
-print( rdd1.fullOuterJoin(rdd2).collect() )    # [('d', ('e', None)), ('a', ('b', 'c')), ('e', (None, 'f'))]
-</code></pre>
-<h3 id="persist-cache-unpersist">persist &amp; cache &amp; unpersist</h3>
-<p>cache(): 缓存<br>
-persist(): 持久化<br>
-unpersist(): 清空缓存  （他属于 action-立即触发， 为了方便对比，我就一起放到了这里）<br>
-官档：http://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence</p>
-<h2 id="action-commit">Action (Commit)</h2>
-<p>主要机制：拿到 transformation 记录的关系， 用 action的各种操作来真正触发、执行、返回结果。<br>
-对应上面，继续直观举例：<br>
-1. 像 sqlalchemy 中的 commit()<br>
-2. 像 tensorflow1.x 中的 sess.run()<br>
-3. 像 数据库的事务的 &quot;提交&quot;<br>
-接下来介绍，Action 的各种操作。</p>
-<h3 id="collect">collect</h3>
-<p>执行transformation记录的关系 并 返回结果， 在Pyspark中就是RDD类型 转 Python数据类型。<br>
-(中间你可以链式调用各种 transformation方法，结尾调用一个 collect(), 就可以出结果了)<br>
-rdd1.xx().xx().collect()</p>
-<h3 id="count">count</h3>
-<p>统计元素项的个数，同上语法, 同上理念，触发返回结果<br>
-rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
-rdd2.count()  # 无参<br>
-&gt;&gt; 2</p>
-<h3 id="reduce">reduce</h3>
-<pre><code>rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )
-rdd2.reduce(lambda x,y:x+y)    # 参数为2个参数的函数句柄，做&quot;累&quot;的操作，（累加，累乘）等
-&gt;&gt; ['a', 'c', 'd', 'e', 'f', 'g']
-</code></pre>
-<h3 id="take">take</h3>
-<p>相当于mysql的limit操作，取前n个<br>
-rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
-rdd2.take(0)  # []<br>
-rdd2.take(1)  # [['a', 'c', 'd']]<br>
-rdd2.take(2)  # [['a', 'c', 'd'], ['e', 'f', 'g']]</p>
-<pre><code>再次强调： take的参数是，个数的意思，而不是索引，不要混淆额
-</code></pre>
-<h3 id="top">top</h3>
-<p>返回最大的n个元素（会自动给你排序的）<br>
-rdd2 = sc.parallelize( [1,2,3,8,5,3,6,8])<br>
-rdd2.top(3)<br>
-&gt;&gt; [8, 8, 6]</p>
-<h3 id="foreach">foreach</h3>
-<p>遍历每个元素，对子元素做-对应函数句柄的操作，下面说这个action的两点注意事项：<br>
-注意1： 无返回值（返回None）<br>
-注意2： 通常用作 print(), 但是它不会在notebook中打印， 而是在你后台开启的spark中打印。<br>
-rdd2 = sc.parallelize( [['a','c','d'], ['e','f','g']] )<br>
-rdd2.foreach(lambda x:print(x))</p>
-<pre><code>&gt;&gt; ['a', 'c', 'd']
-   ['e', 'f', 'g']
-</code></pre>
-<h3 id="saveastextfile">saveAsTextFile</h3>
-<pre><code>rdd = sc.textFile('file:///home/lin/data')
-rdd.saveAsTextFile('file:///home/lin/mydata')  
-
-# 这里有个注意事项： saveAsTextFile的参数路径不能在都进来的路径范围内。
-# 或者说，读是从这个文件夹A（这是最后一级的目录）读进来的， 写就不能写入文件夹A了
-# 另外， mydata是目录名， 进去你会看见 part-00000  这样的文件名，这才是真数据文件。
-</code></pre>
-<h1 id="spark优化相关">Spark优化相关</h1>
-<h3 id="序列化">序列化：</h3>
-<pre><code>好处1：网络传输必备
-好处2：节省内存
-两种方式序列化方式：
-    1. Java内部序列化（默认，较慢，但兼容性好）
-    2. Kryo （较快，但兼容性不太好） 
-</code></pre>
-<h3 id="内存管理">内存管理：</h3>
-<p>可分为 execution（进程执行） 和 storage（存储）<br>
-execution相关操作: shuffle, join, sort, aggregation<br>
-storage相关操作  :   cache，<br>
-特点：<br>
-execution 和 storage 共享整体内存：<br>
-execution起到 &quot;存霸&quot; 的角色:<br>
-1. 若 execution区域内存 不够用了， 它会去抢夺 storage 区域的内存（不归还）<br>
-2. 当然，可以为 storage 设置阈值 （必须给 storage留下多少）<br>
-具体分配多少：<br>
-总内存 = n<br>
-execution内存 = (总内存 - 300M) * 50%<br>
-storage内存   = (总内存 - 300M) * 50%</p>
-<pre><code>说白了，就是留给JVM 300M， 然后 execution 和 storage 各分一半。
-</code></pre>
-<p>查看内存占用情况<br>
-可通过WebUI查看<br>
-（序列化后存储，通常会节省内存）</p>
-<h3 id="broadcasting-variable">Broadcasting Variable</h3>
-<p>情景：正常来说，每个 task（map, filter等） 都会占用1份数据，100个task就会拿100份数据。<br>
-这种情况造成了数据的冗余， BroadCasting Variable（广播变量）就是解决这一问题的。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => Ubuntu-Hadoop-YARN-HDFS-Hive-Spark安装配置]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-ubuntu-hadoop-yarn-hdfs-hive-spark-an-zhuang-pei-zhi/">
-        </link>
-        <updated>2020-09-29T04:15:19.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="环境条件">环境条件</h1>
-<p>Java 8<br>
-Python 3.7<br>
-Scala 2.12.10<br>
-Spark 2.4.4<br>
-hadoop 2.7.7<br>
-hive 2.3.6<br>
-mysql 5.7<br>
-mysql-connector-java-5.1.48.jar</p>
-<p>R 3.1+（可以不安装）</p>
-<h1 id="安装java">安装Java</h1>
-<p>先验传送门：https://segmentfault.com/a/1190000020746647#articleHeader0</p>
-<h1 id="安装python">安装Python</h1>
-<p>用Ubuntu自带Python3.7</p>
-<h1 id="安装scala">安装Scala</h1>
-<p>下载：https://downloads.lightbend.com/scala/2.12.10/scala-2.12.10.tgz<br>
-解压：<br>
-tar -zxvf 下载好的Scala<br>
-配置：<br>
-vi ~/.bashrc<br>
-export SCALA_HOME=/home/lin/spark/scala-2.12.10<br>
-export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>S</mi><mi>C</mi><mi>A</mi><mi>L</mi><msub><mi>A</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{SCALA_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord mathdefault" style="margin-right:0.07153em;">C</span><span class="mord mathdefault">A</span><span class="mord mathdefault">L</span><span class="mord"><span class="mord mathdefault">A</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
-保存退出<br>
-激活配置：<br>
-source ~/.bashrc</p>
-<h1 id="安装hadoop">安装Hadoop</h1>
-<p>提前说明： 若不使用HDFS 和 YARN，整个 Hadoop安装可忽略，可以直接安装spark。<br>
-下载：<a href="https://archive.apache.org/dist/hadoop/common/">https://archive.apache.org/dist/hadoop/common/</a><br>
-详细地址: https://archive.apache.org/dist/hadoop/common/hadoop-2.7.7/hadoop-2.7.7.tar.gz<br>
-解压：<br>
-tar -zxvf 下载好的 hadoop<br>
-配置hadoop:<br>
-vi ~/.bashrc<br>
-export HADOOP_HOME=/home/lin/hadoop/hadoop-2.7.7<br>
-export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>H</mi><mi>A</mi><mi>D</mi><mi>O</mi><mi>O</mi><msub><mi>P</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{HADOOP_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.02778em;">D</span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
-激活配置：<br>
-source ~/.bashrc</p>
-<h3 id="hdfs配置">HDFS配置：</h3>
-<p>进入解压后的 etc/hadoop   (注意这不是根目录的etc， 而是解压后的hadoop目录下的etc)<br>
-echo $JAVA_HOME        # 复制打印出的路径</p>
-<pre><code>vi hadoop-env.sh:  （找到 export JAVA_HOME 这行，并替换为如下）
-    export JAVA_HOME=/home/lin/spark/jdk1.8.0_181  
-    
-vi core-site.xml:  （hdfs后面为 主机名:端口号）  （主机名就是终端显示的 @后面的~~~）
-    &lt;property&gt;
-      &lt;name&gt;fs.default.name&lt;/name&gt;
-      &lt;value&gt;hdfs://lin:8020&lt;/value&gt;       
-    &lt;/property&gt;
-    
-vi hdfs-site.xml： (同样在 &lt;configuration&gt; 之间加入) (/home/lin/hdfs是我已经有的目录)
-    &lt;property&gt;
-      &lt;name&gt;dfs.namenode.name.dir&lt;/name&gt;
-      &lt;value&gt;/home/lin/hdfs/dfs/name&lt;/value&gt;
-    &lt;/property&gt;
-
-    &lt;property&gt;
-      &lt;name&gt;dfs.datanode.data.dir&lt;/name&gt;
-      &lt;value&gt;/home/lin/hdfs/dfs/data&lt;/value&gt;
-    &lt;/property&gt;
-</code></pre>
-<p>格式化HDFS：<br>
-hadoop namenode -format<br>
-# 然后去刚才上面配置的这个路径里面是否有新东西出现： /home/lin/hdfs<br>
-开启HDFS (先进入 sbin目录下，   sbin 和 etc bin是同级的， 这里说的都是hadoop里的目录):<br>
-./start-dfs.sh</p>
-<pre><code># 一路yes, 若让你输入密码， 则输入对应服务器的密码。（我这里都是本机）
-# 若提示权限错误，继续往下看（支线）
-    sudo passwd root              # 激活ubuntu的root用户，并设置密码
-    vi /etc/ssh/sshd_config：
-        PermitRootLogin yes       # 任意位置添加这个（此选项之前可能是存在的注释后再添加）
-    service ssh restart 
-</code></pre>
-<p>查看HDFS里面根目录 / 的内容：<br>
-hadoop fs -ls /<br>
-向HDFS里面根目录 / 中 传入文件：<br>
-echo test &gt; test.txt     # 首先，随便建立一个文件</p>
-<pre><code>hadoop fs -put test.txt /     # 向HDFS里面根目录 / 中 传入文件
-
-hadoop fs -ls /          # 再次查看，就发现有 test.txt 文件了。
-</code></pre>
-<p>从HDFS里面根目录 / 中 读取文件test.txt：<br>
-hadoop fs -text /test.txt<br>
-从Hadoop WebUI 中查看刚才的文件是否存在：<br>
-http://192.168.0.108:50070/           # 50070是默认端口</p>
-<pre><code>点击右侧下拉框 &quot;Utilities&quot;  -&gt;  &quot;Browser the file system &quot;
-清晰可见， 我们的test.txt 躺在那里~
-</code></pre>
-<h3 id="yarn配置">YARN配置</h3>
-<p>还是etc/hadoop这个目录:<br>
-cp mapred-site.xml.template mapred-site.xml</p>
-<pre><code>vi mapred-site.xml：
-    &lt;property&gt;
-      &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
-      &lt;value&gt;yarn&lt;/value&gt;
-    &lt;/property&gt;
-    
-vi yarn-site.xml:
-    &lt;property&gt;
-      &lt;name&gt;yarn.nodemanager.services&lt;/name&gt;
-      &lt;value&gt;mapreduce_shuffle&lt;/value&gt;
-    &lt;/property&gt;     
-</code></pre>
-<p>启动 YARN: （还是 sbin目录下）<br>
-./start-yarn.sh</p>
-<pre><code># 同样，若有密码，输入机器的密码即可
-</code></pre>
-<p>从Hadoop WebUI 中查看YARN：<br>
-http://192.168.0.108:8088/</p>
-<h1 id="安装mysql">安装MySQL</h1>
-<p>下面要用MySQL, 所以单独提一下MySQL 的 安装与配置:<br>
-其实MySQL是不需要单独说的, (但我装的时候出现了和以往的不同经历), 所以还是说一下吧:<br>
-apt-get install mysql-server-5.7<br>
-安装容易, 不同版本的MySQL配置有些鸡肋 (我用的是 Ubuntu19):<br>
-vi /etc/mysql/mysql.conf.d/mysqld.cnf:<br>
-bind-address     0.0.0.0               # 找到修改一下即可<br>
-修改密码+远程连接权限 (默认无密码):<br>
-mysql                # 啥参数也不用加, 直接就能进去<br>
-use mysql<br>
-update mysql.user set authentication_string=password(&quot;123&quot;) where user=&quot;root&quot;;<br>
-update user set plugin=&quot;mysql_native_password&quot;;<br>
-flush privileges;</p>
-<pre><code>select host from user;
-update user set host ='%' where user ='root';
-flush privileges;
-</code></pre>
-<p>重启服务:<br>
-systemctl restart mysql<br>
-服务端连接测试:<br>
-mysql -uroot -p<br>
-# 密码 123<br>
-远程连接测试 (Navicat):<br>
-成功</p>
-<h1 id="安装hive">安装Hive</h1>
-<p>下载: https://archive.apache.org/dist/hive/hive-2.3.6/apache-hive-2.3.6-bin.tar.gz</p>
-<p>解压：<br>
-tar -zxvf apache-hive-2.3.6-bin.tar.gz<br>
-配置Hive：<br>
-vi ~/.bashrc<br>
-export HIVE_HOME=/home/lin/hive/apache-hive-2.3.6-bin<br>
-export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>H</mi><mi>I</mi><mi>V</mi><msub><mi>E</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{HIVE_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.08125em;">H</span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault" style="margin-right:0.22222em;">V</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">E</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.05764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
-激活配置：<br>
-source ~/.bashrc<br>
-Hive其他相关配置(同理进入hive解压目录的 conf目录中):<br>
-cp hive-env.sh.template hive-env.sh<br>
-vi hive-env.sh:<br>
-HADOOP_HOME=/home/lin/hadoop/hadoop-2.7.7<br>
-Hive-MySQL相关配置(同是在 conf目录下):<br>
-vi hive-site.xml:  (特别注意后两个 <property> 里面的内容, 自己修改一下用户名和密码)<br>
-<configuration><br>
-<property><br>
-<name>javax.jdo.option.ConnectionURL</name><br>
-<value>jdbc:mysql://localhost:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false</value><br>
-</property><br>
-<property><br>
-<name>javax.jdo.option.ConnectionDriverName</name><br>
-<value>com.mysql.jdbc.Driver</value><br>
-</property><br>
-<property><br>
-<name>javax.jdo.option.ConnectionUserName</name><br>
-<value>root</value><br>
-</property><br>
-<property><br>
-<name>javax.jdo.option.ConnectionPassword</name><br>
-<value>123</value><br>
-</property><br>
-</configuration></p>
-<p>下载 jdbc-mysql驱动,并放入Hive中,操作如下  (因为我们上面hive-site.xml 用的是mysql):</p>
-<ol>
-<li>
-<p>首先下载: http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.48/mysql-connector-java-5.1.48.jar</p>
-</li>
-<li>
-<p>将此jar文件放入 hive的lib目录中(和 conf同级):</p>
-</li>
-<li>
-<p>将此jar文件再copy一份放入 spark的 jar目录下（为了后续jupyter直连MySQL(不通过Hive)使用）<br>
-初始化(先确保之前的HDFS和MySQL已经启动):<br>
-schematool -dbType mysql -initSchema</p>
-<h1 id="注意事项1-这个用命令初始化的-步骤是-hive-2-才需要做的">注意事项1: 这个用命令初始化的 步骤是 Hive 2.+ 才需要做的</h1>
-<h1 id="注意事项2-初始化一次即可-多次初始化会使得mysql有重复的键-报错">注意事项2: 初始化一次即可, 多次初始化,会使得MySQL有重复的键. 报错.</h1>
-</li>
-</ol>
-<p>开启 metastore 服务：<br>
-nohup hive --service metastore &amp;<br>
-检测是否初始化(去MySQL表中查看):<br>
-use hive<br>
-show tables;<br>
-# 若有数据,则说明初始化成功<br>
-启动hive:<br>
-hive<br>
-建库, 建表测试 (注意,千万不要用 user这种关键字当作表名等):<br>
-HIVE中输入:<br>
-create database mydatabase;<br>
-use mydatabase;<br>
-create table person (name string);</p>
-<pre><code>MySQL中查看Hive表的相关信息: 
-    select * from TBLS;                 # 查看所有表结构信息
-    select * from COLUMNS_V2;           # 查看所有列的信息
-</code></pre>
-<p>向Hive导入文件:<br>
-vi hive_data.txt: (写入如下两行)<br>
-tom catch jerry<br>
-every one can learn AI</p>
-<pre><code>load data local inpath '/home/lin/data/hive_data.txt' into table person;
-</code></pre>
-<p>查询:<br>
-select * from person;<br>
-PySpark客户端配置连接代码:<br>
-import findspark<br>
-findspark.init()</p>
-<pre><code>from pyspark.sql import SparkSession    
-
-spark = SparkSession.builder\
-    .appName(&quot;Spark Hive Example&quot;)\
-    .master(&quot;local[*]&quot;)\
-    .config(&quot;hive.metastore.uris&quot;, &quot;thrift://localhost:9083&quot;)\
-    .enableHiveSupport()\
-    .getOrCreate()
-    
-spark.sql(&quot;use mydatabase&quot;).show()
-spark.sql('show tables').show()
-</code></pre>
-<h1 id="安装spark">安装Spark</h1>
-<p>下载：<a href="https://www.apache.org/dyn/closer.lua/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz">spark-2.4.4-bin-hadoop2.7.tgz</a>：<br>
-粗糙传送门：<a href="https://spark.apache.org/downloads.html">https://spark.apache.org/downloads.html</a><br>
-详细传送门：<a href="http://ftp.riken.jp/net/apache/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz"><strong>http://ftp.riken.jp/net/apache/spark/spark-2.4.4/spark-2.4.4-bin-hadoop2.7.tgz</strong></a></p>
-<p>解压：<br>
-tar -zxvf 下载好的spark-bin-hadoop<br>
-配置spark：<br>
-vi ~/.bashrc<br>
-export SPARK_HOME=home/lin/spark/spark-2.4.4-bin-hadoop2.7<br>
-export PATH=<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi>S</mi><mi>P</mi><mi>A</mi><mi>R</mi><msub><mi>K</mi><mi>H</mi></msub><mi>O</mi><mi>M</mi><mi>E</mi></mrow><mi mathvariant="normal">/</mi><mi>b</mi><mi>i</mi><mi>n</mi><mo>:</mo></mrow><annotation encoding="application/x-tex">{SPARK_HOME}/bin:</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.05764em;">S</span><span class="mord mathdefault" style="margin-right:0.13889em;">P</span><span class="mord mathdefault">A</span><span class="mord mathdefault" style="margin-right:0.00773em;">R</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.07153em;">K</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.08125em;">H</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord mathdefault" style="margin-right:0.02778em;">O</span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span><span class="mord mathdefault" style="margin-right:0.05764em;">E</span></span><span class="mord">/</span><span class="mord mathdefault">b</span><span class="mord mathdefault">i</span><span class="mord mathdefault">n</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">:</span></span></span></span>PATH<br>
-激活配置：<br>
-source ~/.bashrc</p>
-<h1 id="最后一步python环境可能出错">最后一步（Python环境可能出错）</h1>
-<p>pyspark脚本默认调用的是 &quot;python&quot; 这个名， 而ubuntu默认只有&quot;python&quot; 和 &quot;python3&quot;。<br>
-所以我们需要做如下软连接，来使得可以输入python， 直接寻找python3.7命令（不要用alias）<br>
-ln -s /usr/bin/python3.7 /usr/bin/python</p>
-<h1 id="测试">测试</h1>
-<p>服务端直接输入命令：<br>
-pyspark<br>
-或远程浏览器输入:<br>
-http://192.xx.xx.xx:4040/jobs</p>
-<h1 id="远程使用jupyter连接">远程使用Jupyter连接</h1>
-<p>安装 Jupyter Notebook:</p>
-<pre><code>pip3 install jupyter   
-# 若新环境，需要安pip:  apt-get install python3-pip
-</code></pre>
-<p>pip 安装 findspark 和 pyspark</p>
-<pre><code>pip install pyspark
-pip install findspark                          （Linux服务端）
-</code></pre>
-<p>启动 Jupyter Notebook 服务（--ip指定 0.0.0.0），(--allow-root若不加上可能会报错)</p>
-<pre><code>jupyter notebook --allow-root --ip 0.0.0.0     （Linux服务端）
-</code></pre>
-<hr>
-<p>下面说的是Jupyter Notebook 客户端（Windows10）<br>
-下面两行findspark代码必须放在每个py脚本的第一行</p>
-<pre><code>import findspark
-findspark.init()
-
-PYSPARK_PYTHON = &quot;/usr/bin/python&quot;
-os.environ[&quot;PYSPARK_PYTHON&quot;] = PYSPARK_PYTHON
-os.environ[&quot;PYSPARK_DRIVER_PYTHON&quot;] = PYSPARK_PYTHON
-</code></pre>
-<p>然后才可正常写其他代码<br>
-from pyspark import SparkConf, SparkContext</p>
-<pre><code>sc = SparkContext(
-    master='local[*]',   # 下面会讲这个参数
-    appName='myPyspark', # 随便起名
-) 
-# 这句话，就把 spark启动起来了，然后才可以通过浏览器访问了。 4040
-# 如果你 python魔法玩的6，那么提到上下文，你应该会自动想到 with语句 （__enter__,__exit__）
-# 不写参数，本地运行，这样也是可以的，  sc = SparkContext() 
-
-raw_data = [1,2,3]
-rdd_data = sc.parallelize(raw_data)  # python列表类型 转 spark的RDD
-print(rdd_data)
-raw_data = rdd_data.collect()        # spark的RDD 转回到 python列表类型
-print(raw_data)
-
-sc.stop()    # 关闭spark, 同理，浏览器也就访问不到了。
-</code></pre>
-<p>解释 SparkContext 的 master参数：</p>
-<ol>
-<li>&quot;local&quot; : 表示只用一个线程，本地运行。</li>
-<li>&quot;local[*]&quot; : 表示用(cpu的个数)个线程，本地运行。</li>
-<li>&quot;local[n]&quot; : 表示用n个线程，本地运行。</li>
-<li>&quot;spark://ip:host&quot; : 连其他集群<br>
-回顾环境问题 并 解释 &quot;本地&quot; 的概念：</li>
-<li>在 Linux 中 安装了 Spark全套环境。</li>
-<li>在 Linux 中 安装了 Jupyter， 并启动了 Jupyter Notebook 服务。</li>
-<li>在 Win10 中 远程连接 Linux中的 &quot;Jupyter Notebook&quot;服务 写业务代码（相当于客户端连接）<br>
-所以， 之前所说的 &quot;本地&quot;, 这个词归根结底是相对于 Linux来说的，我们写代码一直操作的是Linux。</li>
-</ol>
-<h1 id="通常使用spark-submit">通常使用spark-submit</h1>
-<p>首先：我们自己编写一个包含各种 pyspark-API 的 xx.py 脚本<br>
-如果：你用了我上面推荐的 Jupyter Notebook，你会发现文件是.ipynb格式，可以轻松转.py<br>
-<img src="/img/bVbzB5s" alt="image.png" loading="lazy"><br>
-最后提交py脚本：<br>
-spark-submit --master local[*] --name myspark /xx/xx/myspark.py</p>
-<pre><code># 你会发现 --master 和 --name  就是上面我们代码中配置的选项，对号入座写入即可。
-# /xx/xx/myspark.py 就是 py脚本的绝对路径。 喂给spark，让他去执行。即可。
-</code></pre>
-<h1 id="standalone部署spark">Standalone部署Spark</h1>
-<p>介绍：<br>
-Standalone部署需要同时启动：<br>
-master端<br>
-slave 端<br>
-按着下面配置，最后一条  ./start-all.sh 即可同时启动。<br>
-查看 JAVA_HOME环境变量。<br>
-echo $JAVA_HOME</p>
-<pre><code># 记住结果，复制出来
-</code></pre>
-<p>进入conf目录，做一些配置（conf和spark中的bin目录同级）：<br>
-cp spark-env.sh.template spark-env.sh<br>
-vi spark-env.sh：（里面写）<br>
-JAVA_HOME=上面的结果</p>
-<pre><code>cp slaves.template slaves
-vi slaves: （localhost改成本机机器名）
-    lin
-</code></pre>
-<p>上面配置完毕后，进入sbin目录（和上面的conf在一个目录中）<br>
-./start-all.sh          # 启动</p>
-<pre><code># 若提示权限错误，继续往下看（支线）
-sudo passwd root              # 激活ubuntu的root用户，并设置密码
-vi /etc/ssh/sshd_config：
-    PermitRootLogin yes       # 任意位置添加这个（此选项之前可能是存在的注释后再添加）
-service ssh restart
-</code></pre>
-<p>启动没报错，会给你弹出一条绝对路径的日志文件 xxx<br>
-cat xxx         # 即可看见启动状态 ，各种日志信息</p>
-<pre><code>其中有几条信息:
-    Successfully started service 'WorkerUI' on port 8082  （浏览器访问 8082端口）
-    Successfully registered with master spark://lin:7077  （代码上下文访问）
-其中，有些信息可能未打印出来： 建议浏览器中：( 8080-8082 )端口都可以尝试一下。        
-</code></pre>
-<p>输入命令，查看启动状态：<br>
-jps             # 若同时有 worker 和 master 说明启动成功<br>
-测试：<br>
-pyspark --master spark://lin:7077</p>
-<pre><code># WebUI 的 Worker端，就可看见有 一个Job被添加了进来
-</code></pre>
-<h1 id="yarn部署spark">YARN部署Spark</h1>
-<p>配置：<br>
-echo $HADOOP_HOME<br>
-# 我的是 /home/lin/hadoop/hadoop-2.7.7</p>
-<pre><code>进入spark解压包的路径的 conf 目录中:
-vi spark-env.sh:   ( etc/hadoop前面就是刚才 echo出来的，  etc/hadoop大家都是一样的)
-    HADOOP_CONF_DIR=/home/lin/hadoop/hadoop-2.7.7/etc/hadoop
-</code></pre>
-<p>启动spark：<br>
-spark-submit --master yarn --name myspark  script/myspark.py<br>
-# 注意 --master 的值改成了 yarn ， 其他不变。</p>
-<pre><code>或者你可以：
-     pyspark --master yarn     
-看到启动成功，说明配置成功
-</code></pre>
-<h1 id="spark历史服务配置">Spark历史服务配置</h1>
-<p>痛点：有时我们的spark上下文 stop后，WebUI就不可访问了。<br>
-若有未完成，或者历史信息, 也就看不到了。<br>
-这时我们配置 history 服务就可在 context stop后，仍可查看 未完成job。</p>
-<p>预新建一个HDFS目录myhistory (根路径下),下面用得到：<br>
-hadoop fs -mkdir /myhistory<br>
-首先，进入 spark解压包的 conf目录下：<br>
-cp spark-defaults.conf.template spark-defaults.conf</p>
-<pre><code>vi spark-defaults.conf: (解开如下注释, lin本机名称, 放在HDFS的根路径下的myhistory)
-    spark.eventLog.enabled           true
-    spark.eventLog.dir               hdfs://lin:8020/myhistory
-    
-vi spark-env.sh:  (我们之前 把template 复制过一次，所以这次直接编辑即可)
-    SPARK_HISTORY_OPTS=&quot;-Dspark.history.fs.logDirectory=hdfs://lin:8020/myhistory&quot;
-</code></pre>
-<p>启动（进入 spark解压包的 sbin目录下）：<br>
-./start-history-server.sh</p>
-<pre><code># cat 输入的信息（日志文件）。 即可查看是否启动成功
-# WebUI默认是 ：http://192.168.0.108:18080/
-</code></pre>
-<p>测试：<br>
-浏览器中访问History WebUI： http://192.168.0.108:18080/<br>
-发现啥也没有： 这是正常的，因为我们还没运行 spark context主程序脚本。<br>
----------------------------------------------------------------------<br>
-运行spark-context主程序脚本：<br>
-spark-submit script/myspark.py<br>
-# 这个脚本是随便写的，没什么意义。 不过里面有个我们常用的一个注意事项！！！<br>
-# 我的这个脚本的 context 用完，被我 stop了<br>
-# 所以我们访问不到它的运行状态的 Spark Context 的 WebUI</p>
-<pre><code>    # 但是我们刚才辛辛苦苦配置Spark history 服务，并启动了它。
-    # 所以 context的信息，被写入了我们刚才配置的 Spark history 中
-    # 所以 我们再次访问 Spark history WebUI 即可看到有内容被写入进来。
----------------------------------------------------------------------
-再次访问History WebUI： http://192.168.0.108:18080/
-你就会发现，里面有内容了(spark history服务已经为我们干活了)~~~~   
-</code></pre>
-<h1 id="免密码登录">免密码登录</h1>
-<p>环境Ubuntu(CentOS应该也可，很少用)<br>
-免密码登录设置：<br>
-cd ~<br>
-ssh-keygen -t rsa -P &quot;&quot;<br>
-cat .ssh/id_rsa.pub &gt;&gt; .ssh/authorized_keys<br>
-chmod 600 .ssh/authorized_keys<br>
-注意几种情况：<br>
-你如果是root用户，那么你需要切换到 /root/ 执行上面的命令<br>
-如果是普通用户， 那么你需要切换到 /home/xxx/ 执行上面的命令</p>
-<pre><code>这个要特别注意一下，有时候用 sudo -s ,路径是没有自动切换的。
-需要我们自己手动切换一下 &quot;家&quot; 路径
-</code></pre>
-<h1 id="自定义脚本启动服务">自定义脚本启动服务</h1>
-<p>下面内容仅供个人方便， shell不熟，用py脚本了, 你随意。<br>
-vi start.py: (此脚本用于启动上面配置的 HDFS,YARN,SparkHistory 和 Jupyter Notebook)<br>
-import os<br>
-import subprocess as sub</p>
-<pre><code>###### 启动  HDFS + YARN ###############
-hadoop_path = os.environ['HADOOP_HOME']
-hadoop_sbin = os.path.join(hadoop_path, 'sbin')
-
-os.chdir(hadoop_sbin)
-sub.run('./start-dfs.sh')
-sub.run('./start-yarn.sh')
-
-###### 启动 SparkHistory ##############
-spark_path = os.environ['SPARK_HOME']
-spark_sbin = os.path.join(spark_path, 'sbin')
-os.chdir(spark_sbin)
-sub.run('./start-history-server.sh')
-
-###### 启动  Jupyter Notebook ###############
-# home_path = os.environ['HOME']
-home_path = '/home/lin'
-
-os.chdir(home_path)
-sub.run('jupyter notebook --allow-root --ip 0.0.0.0'.split())
-</code></pre>
-<p>之后每次重启，就不用进入每个目录去启动了。直接一条命令：<br>
-sudo python start.py<br>
-nohup hive --service metastore &amp;<br>
-查看本脚本启动相关的WebUI：<br>
-HDFS:            http://192.168.0.108:50070/<br>
-YARN:            http://192.168.0.108:8088/<br>
-SparkHistory:    http://192.168.0.108:18080/<br>
-另附其他 WebUI：<br>
-spark:           http://192.168.0.108:4040/<br>
-standalone启动指定的端口(如果你使用的 standalone方式，而不是local,可能用到如下端口):<br>
-pyspark --master spark://lin:7077</p>
 ]]></content>
     </entry>
 </feed>
