@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; 超级鹰打码（Python）+报错回扣 | Cython_lin</title>
+<title>PR =&gt; Windows Terminal | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,14 +15,21 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="细微如下改动
+    <meta name="description" content="快捷键
+搜索功能
+ctrl + shift + p
 
-兼容Python3
-1元包调试试用（8001） 4-6位 英文+数字验证码
-打码与预期结果不符，调用报错提示，将图片ID传回，可将失误次数返回
-代码对照表如下
-https://www.chaojiying.com/price..." />
-    <meta name="keywords" content="Python" />
+搜索文本
+ctrl + shift + f
+
+編輯配置文件
+ctrl + '       (回車旁邊的符號 ')
+
+橫向拆分窗口（下面action中，自定義配置）
+ctrl + +號
+
+..." />
+    <meta name="keywords" content="PR" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -92,21 +99,21 @@ https://www.chaojiying.com/price..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">4 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-01-18"><i class="fa fa-calendar"></i><span class="lately">1 天前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/"> </span>
+              <a href="https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/"> </span>
               </a>
-              <span id="/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
               </div>
-              <h1 class="title ularge white bold">PY =&gt; 超级鹰打码（Python）+报错回扣</h1>
+              <h1 class="title ularge white bold">PR =&gt; Windows Terminal</h1>
             </div>
           </div>
         </div>  
@@ -116,68 +123,132 @@ https://www.chaojiying.com/price..." />
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="细微如下改动">细微如下改动</h1>
-<ol>
-<li>兼容Python3</li>
-<li>1元包调试试用（8001） 4-6位 英文+数字验证码</li>
-<li>打码与预期结果不符，调用报错提示，将图片ID传回，可将失误次数返回</li>
-<li>代码对照表如下<br>
-https://www.chaojiying.com/price.html</li>
-</ol>
-<h1 id="脚本代码如下">脚本代码如下</h1>
-<pre><code>import requests
-from hashlib import md5
-
-class Chaojiying_Client(object):
-
-    def __init__(self, username, password, soft_id):
-        self.username = username
-        password =  password.encode('utf8')
-        self.password = md5(password).hexdigest()
-        self.soft_id = soft_id
-        self.base_params = {
-            'user': self.username,
-            'pass2': self.password,
-            'softid': self.soft_id,
-     }
-        self.headers = {
-            'Connection': 'Keep-Alive',
-            'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
-        }
-
-    def PostPic(self, im, codetype):
-        &quot;&quot;&quot;
-        im: 图片字节
-     codetype: 题目类型 参考 http://www.chaojiying.com/price.html
-     &quot;&quot;&quot;
-		params = {
-         'codetype': codetype,
-        }
-        params.update(self.base_params)
-        files = {'userfile': ('ccc.jpg', im)}
-   	 r = requests.post('http://upload.chaojiying.net/Upload/Processing.php', data=params, files=files, headers=self.headers)
-    	return r.json()
-
-	def ReportError(self, im_id):
-        &quot;&quot;&quot;
-     im_id:报错题目的图片ID
-     &quot;&quot;&quot;
-        params = {
-         'id': im_id,
-     }
-     params.update(self.base_params)
-     r = requests.post('http://upload.chaojiying.net/Upload/ReportError.php', data=params, headers=self.headers)
-     return r.json()
-
-
-if __name__ == '__main__':
- chaojiying = Chaojiying_Client('你的用户名', '你的密码', '软件ID')	 # 进入主页-&gt;软件ID -&gt; 生成一个软件ID（上面小字）
-	im = open('a.jpg', 'rb').read()												
-	result = chaojiying.PostPic(im, 8001)											
-	print(result)
-	if result['pic_str'] != 'n1wtu':
-        print(chaojiying.ReportError(result['pic_id']))
+                  <h1 id="快捷键">快捷键</h1>
+<p>搜索功能</p>
+<pre><code>ctrl + shift + p
 </code></pre>
+<p>搜索文本</p>
+<pre><code>ctrl + shift + f
+</code></pre>
+<p>編輯配置文件</p>
+<pre><code>ctrl + '       (回車旁邊的符號 ')
+</code></pre>
+<p>橫向拆分窗口（下面action中，自定義配置）</p>
+<pre><code>ctrl + +號
+</code></pre>
+<p>垂直拆分窗口（下面actrion中，自定義配置）</p>
+<pre><code>ctrl + -號
+</code></pre>
+<p>關閉拆分的窗口（下面action中，自定義配置）</p>
+<pre><code>ctrl + w
+</code></pre>
+<p>配置文件（ctrl + ' 后，全部内容整體替換即可）</p>
+<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
+    // For documentation on these settings, see: https://aka.ms/terminal-documentation
+
+    {
+        // 官方设置指南?
+        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
+
+        // 一些globals设置
+        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
+        &quot;initialRows&quot;: 25,
+        &quot;initialCols&quot;: 100,
+
+        &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+
+        &quot;profiles&quot;: {
+
+            &quot;defaults&quot;: {
+                // Put settings here that you want to apply to all profiles
+                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
+                &quot;useAcrylic&quot;: true,
+                &quot;acrylicOpacity&quot;: 0.55,
+                &quot;cursorShape&quot;: &quot;vintage&quot;,
+                &quot;cursorHeight&quot;: 60,
+                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
+                &quot;fontFace&quot;: &quot;YaHei Consolas Hybrid&quot;,
+                &quot;fontSize&quot;: 18
+            },
+
+            &quot;list&quot;: [{
+                    // Make changes here to the powershell.exe profile
+                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+                    &quot;name&quot;: &quot;Windows PowerShell&quot;,
+                    &quot;commandline&quot;: &quot;powershell.exe&quot;,
+                    &quot;hidden&quot;: false
+                },
+                {
+                    // Make changes here to the cmd.exe profile
+                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
+                    &quot;name&quot;: &quot;cmd&quot;,
+                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
+                    &quot;hidden&quot;: false
+                },
+                {
+                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Azure Cloud Shell&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
+                }
+            ]
+        },
+
+        // Add custom color schemes to this array
+        &quot;schemes&quot;: [
+    {
+    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
+    &quot;black&quot;: &quot;#000000&quot;,
+    &quot;red&quot;: &quot;#ff7092&quot;,
+    &quot;green&quot;: &quot;#00fbac&quot;,
+    &quot;yellow&quot;: &quot;#fffa6a&quot;,
+    &quot;blue&quot;: &quot;#00bfff&quot;,
+    &quot;purple&quot;: &quot;#df95ff&quot;,
+    &quot;cyan&quot;: &quot;#86cbfe&quot;,
+    &quot;white&quot;: &quot;#ffffff&quot;,
+    &quot;brightBlack&quot;: &quot;#000000&quot;,
+    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
+    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
+    &quot;brightYellow&quot;: &quot;#fff787&quot;,
+    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
+    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
+    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
+    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
+    &quot;background&quot;: &quot;#332a57&quot;,
+    &quot;foreground&quot;: &quot;#e5e5e5&quot;
+    }
+    ],
+
+        // Add any keybinding overrides to this array.
+        // To unbind a default keybinding, set the command to &quot;unbound&quot;
+        &quot;keybindings&quot;: [],
+        &quot;actions&quot;:
+        [
+            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
+            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
+            // To learn more about selection, visit https://aka.ms/terminal-selection
+            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
+            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
+
+            // Press Ctrl+Shift+F to open the search box
+            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
+            // settings
+            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
+            // Press Alt+Shift+D to open a new pane.
+            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
+            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
+            // To learn more about panes, visit https://aka.ms/terminal-panes
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
+            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
+        ]
+    }
+</code></pre>
+<h1 id="三方桌面程序">三方桌面程序</h1>
+<p>Winstep Xtreme 18.0+ (含 workshelf + NextStart)</p>
+<h1 id="三方-file-explorer">三方 File Explorer</h1>
+<p>RX 文件管理器</p>
 
                 </div>
                 <div class="clear"></div>
@@ -188,11 +259,11 @@ if __name__ == '__main__':
             <section class="related section">
               
               <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/c137hZpK4.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-anaconda-jupyter-xiang-guan-pei-zhi/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/pr-greater-uandp/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Anaconda-Jupyter相关配置</h4>
+                  <time datetime="2021-01-19">2021-01-19</time>
+                  <h4 class="title white no-margin">PR =&gt; U&amp;P</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
@@ -202,11 +273,11 @@ if __name__ == '__main__':
               
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/wAXYBHxvH.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-import_module-he-__import__-qu-bie/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/gridea.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/py-greater-yin-sheng-he-cheng/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; import_module 和 __import__ 区别</h4>
+                  <time datetime="2020-10-12">2020-10-12</time>
+                  <h4 class="title white no-margin">PY =&gt; 音声合成</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">

@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; 超级鹰打码（Python）+报错回扣 | Cython_lin</title>
+<title>PR =&gt; U&amp;P | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,14 +15,29 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="细微如下改动
+    <meta name="description" content="Google
+96@
 
-兼容Python3
-1元包调试试用（8001） 4-6位 英文+数字验证码
-打码与预期结果不符，调用报错提示，将图片ID传回，可将失误次数返回
-代码对照表如下
-https://www.chaojiying.com/price..." />
-    <meta name="keywords" content="Python" />
+Github
+Cy
+ha-
+http://cythonlin.github.io/
+
+Vultr
+Cy
+
+Kaggle
+cy
+
+MicroSoft
+96@ / si
+
+Nvidia
+96@
+
+Anaconda
+ha_..." />
+    <meta name="keywords" content="PR" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -92,21 +107,21 @@ https://www.chaojiying.com/price..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">4 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-01-19"><i class="fa fa-calendar"></i><span class="lately">3 小时前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/"> </span>
+              <a href="https://cythonlin.github.io/post/pr-greater-uandp/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-uandp/"> </span>
               </a>
-              <span id="/py-greater-chao-ji-ying-da-ma-pythonbao-cuo-hui-kou/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/pr-greater-uandp/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
               </div>
-              <h1 class="title ularge white bold">PY =&gt; 超级鹰打码（Python）+报错回扣</h1>
+              <h1 class="title ularge white bold">PR =&gt; U&amp;P</h1>
             </div>
           </div>
         </div>  
@@ -116,67 +131,53 @@ https://www.chaojiying.com/price..." />
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="细微如下改动">细微如下改动</h1>
-<ol>
-<li>兼容Python3</li>
-<li>1元包调试试用（8001） 4-6位 英文+数字验证码</li>
-<li>打码与预期结果不符，调用报错提示，将图片ID传回，可将失误次数返回</li>
-<li>代码对照表如下<br>
-https://www.chaojiying.com/price.html</li>
-</ol>
-<h1 id="脚本代码如下">脚本代码如下</h1>
-<pre><code>import requests
-from hashlib import md5
-
-class Chaojiying_Client(object):
-
-    def __init__(self, username, password, soft_id):
-        self.username = username
-        password =  password.encode('utf8')
-        self.password = md5(password).hexdigest()
-        self.soft_id = soft_id
-        self.base_params = {
-            'user': self.username,
-            'pass2': self.password,
-            'softid': self.soft_id,
-     }
-        self.headers = {
-            'Connection': 'Keep-Alive',
-            'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0)',
-        }
-
-    def PostPic(self, im, codetype):
-        &quot;&quot;&quot;
-        im: 图片字节
-     codetype: 题目类型 参考 http://www.chaojiying.com/price.html
-     &quot;&quot;&quot;
-		params = {
-         'codetype': codetype,
-        }
-        params.update(self.base_params)
-        files = {'userfile': ('ccc.jpg', im)}
-   	 r = requests.post('http://upload.chaojiying.net/Upload/Processing.php', data=params, files=files, headers=self.headers)
-    	return r.json()
-
-	def ReportError(self, im_id):
-        &quot;&quot;&quot;
-     im_id:报错题目的图片ID
-     &quot;&quot;&quot;
-        params = {
-         'id': im_id,
-     }
-     params.update(self.base_params)
-     r = requests.post('http://upload.chaojiying.net/Upload/ReportError.php', data=params, headers=self.headers)
-     return r.json()
-
-
-if __name__ == '__main__':
- chaojiying = Chaojiying_Client('你的用户名', '你的密码', '软件ID')	 # 进入主页-&gt;软件ID -&gt; 生成一个软件ID（上面小字）
-	im = open('a.jpg', 'rb').read()												
-	result = chaojiying.PostPic(im, 8001)											
-	print(result)
-	if result['pic_str'] != 'n1wtu':
-        print(chaojiying.ReportError(result['pic_id']))
+                  <h1 id="google">Google</h1>
+<pre><code>96@
+</code></pre>
+<h1 id="github">Github</h1>
+<pre><code>Cy
+ha-
+http://cythonlin.github.io/
+</code></pre>
+<h1 id="vultr">Vultr</h1>
+<pre><code>Cy
+</code></pre>
+<h1 id="kaggle">Kaggle</h1>
+<pre><code>cy
+</code></pre>
+<h1 id="microsoft">MicroSoft</h1>
+<pre><code>96@ / si
+</code></pre>
+<h1 id="nvidia">Nvidia</h1>
+<pre><code>96@
+</code></pre>
+<h1 id="anaconda">Anaconda</h1>
+<pre><code>ha_
+</code></pre>
+<h1 id="七牛">七牛</h1>
+<pre><code>96@
+</code></pre>
+<h1 id="ynote">YNote</h1>
+<pre><code>96@
+</code></pre>
+<h1 id="coding-pages">Coding Pages</h1>
+<pre><code>96@ / Jxxxxxxxxxxxxxx.       （末尾多个英文标点 句号）
+https://cythonlin.coding.net
+</code></pre>
+<h1 id="postman">Postman</h1>
+<pre><code>96@
+</code></pre>
+<h1 id="bd">BD</h1>
+<pre><code>18/13
+</code></pre>
+<h1 id="docker">Docker</h1>
+<pre><code>ha
+</code></pre>
+<h1 id="极算">极算</h1>
+<pre><code>18
+</code></pre>
+<h1 id="neo4j">Neo4j</h1>
+<pre><code>neo4j / zxc
 </code></pre>
 
                 </div>
@@ -187,26 +188,13 @@ if __name__ == '__main__':
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/c137hZpK4.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-anaconda-jupyter-xiang-guan-pei-zhi/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Anaconda-Jupyter相关配置</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/wAXYBHxvH.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-import_module-he-__import__-qu-bie/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; import_module 和 __import__ 区别</h4>
+                  <time datetime="2021-01-18">2021-01-18</time>
+                  <h4 class="title white no-margin">PR =&gt; Windows Terminal</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
