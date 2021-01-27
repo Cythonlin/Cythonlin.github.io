@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-01-19T12:19:41.863Z</updated>
+    <updated>2021-01-27T13:10:10.553Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -192,6 +192,71 @@ https://cythonlin.coding.net
             { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
         ]
     }
+</code></pre>
+<h1 id="wsl2附着在选项卡">WSL2(附着在选项卡)</h1>
+<ol>
+<li>
+<p>启用WSL(用PowerShell替代手动启用),（可稍后重启，继续下面）</p>
+<pre><code> dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+</code></pre>
+</li>
+<li>
+<p>启用虚拟机功能（这部结束后，需要重启）</p>
+<pre><code> dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+</code></pre>
+</li>
+<li>
+<p>下载 X64 WSL2 更新包，并双击安装<br>
+<a href="https://docs.microsoft.com/zh-cn/windows/wsl/install-win10#step-4---download-the-linux-kernel-update-package">WSL2更新包地址</a></p>
+</li>
+<li>
+<p>将WSL2设置为默认版本</p>
+<pre><code> wsl --set-default-version 2
+</code></pre>
+</li>
+<li>
+<p>MIcrosoft Store 安装 Ubuntu20 LTS</p>
+</li>
+<li>
+<p>可以在 Windows Terminal 选项卡打开，也可直接打开Ubuntu</p>
+</li>
+<li>
+<p>Win Terminal 输入 wsl 即可进入 Ubuntu,</p>
+</li>
+<li>
+<p>换源</p>
+<pre><code>cp -a /etc/apt/sources.list /etc/apt/sources.list.bak
+
+ sudo sed -i &quot;s@http://.*archive.ubuntu.com@http://mirrors.huaweicloud.com@g&quot; /etc/apt/sources.list
+ sudo sed -i &quot;s@http://.*security.ubuntu.com@http://mirrors.huaweicloud.com@g&quot; /etc/apt/sources.list
+ 
+ sudo apt-get update
+</code></pre>
+</li>
+</ol>
+<h2 id="查看wsl版本信息与运行状态">查看WSL版本信息与运行状态</h2>
+<pre><code>wsl -l -v
+</code></pre>
+<h1 id="安装scoop并非sqoop">安装Scoop(并非Sqoop...)</h1>
+<h3 id="作用">作用</h3>
+<pre><code>主要用在 单个纯 Windows Terminal  去安装 Linux工具使用。
+但我发现 Win Terminal 的一些基础命令 还是没Linux好用（比如 ls无选项看不到隐藏文件）
+
+所以我最后选择了 Win Terminal + WSL2 并用
+所以Scoop这项就可以不用了
+</code></pre>
+<h3 id="流程">流程</h3>
+<p>因为用Powershell命令，会访问到raw.githubusercontent.com，所以先修改DNS</p>
+<pre><code>C:\Windows\System32\drivers\etc
+    199.232.68.133 raw.githubusercontent.com
+ipconfig /flushdns
+</code></pre>
+<p>用Powershell命令正式安装Scoop:</p>
+<pre><code>Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+iwr -useb get.scoop.sh | iex
+</code></pre>
+<p>静待Scoop安装完成， 用Scoop安装 Unix工具：</p>
+<pre><code>scoop install sudo
 </code></pre>
 <h1 id="三方桌面程序">三方桌面程序</h1>
 <p>Winstep Xtreme 18.0+ (含 workshelf + NextStart)</p>
