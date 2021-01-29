@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI =&gt; 安装neo4j (Linux) | Cython_lin</title>
+<title>PR =&gt; MusicBee &amp; Winamp &amp; VST | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,10 +15,15 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="依赖java,先装java
-官网：https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-找到： jdk-8u231-linu..." />
-    <meta name="keywords" content="KG" />
+    <meta name="description" content="MusicBee
+MusicBee 皮肤
+Dark -&gt; Bee78
+
+MusicBee
+MusicBee安装VST插槽
+注：MusicBee不能直接安装VST插件， 需要官网安装一个VST插槽。用此插槽才可以安装其他VST插件
+VS..." />
+    <meta name="keywords" content="PR" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -88,21 +93,21 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">4 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-01-29"><i class="fa fa-calendar"></i><span class="lately">2 小时前</span></time>
               
-              <a href="https://cythonlin.github.io/post/ai-greater-an-zhuang-neo4j-linux/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ai-greater-an-zhuang-neo4j-linux/"> </span>
+              <a href="https://cythonlin.github.io/post/pr-greater-musicbee-and-winamp-and-vst/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-musicbee-and-winamp-and-vst/"> </span>
               </a>
-              <span id="/ai-greater-an-zhuang-neo4j-linux/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/pr-greater-musicbee-and-winamp-and-vst/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/FLS_eF6Eg/" class="ctag ctag-0 ctag-FLS_eF6Eg" aria-label="">KG</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
               </div>
-              <h1 class="title ularge white bold">AI =&gt; 安装neo4j (Linux)</h1>
+              <h1 class="title ularge white bold">PR =&gt; MusicBee &amp; Winamp &amp; VST</h1>
             </div>
           </div>
         </div>  
@@ -112,55 +117,55 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="依赖java先装java">依赖java,先装java</h1>
-<p>官网：<a href="https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html</a><br>
-找到： jdk-8u231-linux-x64.tar.gz  下载（可能会比较慢，还需要注册）</p>
-<p>个人网盘分享：https://pan.baidu.com/s/1EMFM_Y_HT3bHFwncKj2orw&amp;shfl=shareset<br>
-提取码: w24a</p>
-<p>通过XFTP传送到服务器。<br>
-任意目录（自己记住即可）：<br>
-tar -zxvf jdk-8u231-linux-x64.tar.gz<br>
-# 解压出来一个目录，记住找个名字，和当前路径，下面用<br>
-# 我这里是 jdk1.8.0_181<br>
-相关配置:<br>
-vi ~/.bashrc</p>
-<pre><code>export JAVA_HOME=/root/kg/neo4j/java/jdk1.8.0_181/
-export JRE_HOME=${JAVA_HOME}/jre 
-export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib 
-export PATH=${JAVA_HOME}/bin:$PATH 
+                  <h1 id="musicbee">MusicBee</h1>
+<h3 id="musicbee-皮肤">MusicBee 皮肤</h3>
+<pre><code>Dark -&gt; Bee78
+</code></pre>
+<h3 id="musicbee-2">MusicBee</h3>
+<h1 id="musicbee安装vst插槽">MusicBee安装VST插槽</h1>
+<p>注：MusicBee不能直接安装VST插件， 需要官网安装一个VST插槽。用此插槽才可以安装其他VST插件<br>
+<a href="https://getmusicbee.com/addons/plugins/16/vst-effects-support/">VST插槽下载地址</a></p>
+<h3 id="安装插槽">安装插槽</h3>
+<pre><code>Preference -&gt; Plugins -&gt; Add Plugins -&gt; 插槽下载的位置
+</code></pre>
+<h1 id="使用vst插槽安装vst插件">使用VST插槽安装VST插件</h1>
+<h2 id="正常dll文件安装方式">正常DLL文件安装方式</h2>
+<p><a href="https://freevstplugins.net/?s=NT+Pitch">VST插件下载地址</a><br>
+注：MusicBee对VST插件支持很不友好，看了一大堆选了几个适合我这种初级选手能用的：</p>
+<pre><code>3D_Panner_2.0
+wL_niceNwide
+Ceres (1)
+cs12-156
+</code></pre>
+<p>下载后直接解压，将解压文件夹直接放到 music的plugins目录下即可（需重启MusicBee）</p>
+<h2 id="痛苦安装方式只用通过这种方式才能安装到pitch-shift类插件">痛苦安装方式（只用通过这种方式才能安装到Pitch Shift类插件）</h2>
+<p>这里提到一个超级老牌player -&gt;  Winamp...   ，现在应该没人用了。 或者都用Foobar2000了。<br>
+Winamp 我看论坛都是 2000年左右的评论。。。可知它的插件也特别旧了。  但是它的插件特别多。<br>
+可惜大多数放在 MusicBee上不好用或者崩溃。但没办法，还得用。</p>
+<h3 id="为什么这里要提到winamp">为什么这里要提到Winamp</h3>
+<p>因为MusicBee有个选项（从Winamp导入插件）<br>
+而 Winamp的插件大多数都是 EXE格式的， 需要识别 Winamp的安装路径，并且安装到Winamp路径下。<br>
+（其实EXE安装完也就是 DLL文件， 只不过它只能是这种方式。）<br>
+所以 Winamp 只是个过渡的工具人。。。</p>
+<h3 id="winamp插件地址">Winamp插件地址</h3>
+<p><a href="https://winampheritage.com/plugins/DSP-Effect-5">Winamp插件</a><br>
+拾到可用的插件 take it easy 可以改变 Pitch<br>
+但是试过一段时间很遗憾，会让 MusicBee 宕掉。</p>
+<h1 id="最后一根救命稻草-pitchshifterv101">最后一根救命稻草 pitchShifter.V1.01</h1>
+<p><a href="https://github.com/kawaCat/pitchShifter-Vst/releases">pitchShifter地址</a><br>
+这个就用不到 Winmap了， 直接移动到 MusicBee 的 Plugins中即可</p>
+<h1 id="总结">总结</h1>
+<p>找的很辛苦，普通的VST插件很好找， PITCH shift 这种的真的难找。<br>
+即使找到了，MusicBee有些也各种不支持，不兼容，宕掉。</p>
+<h2 id="最终插件合集">最终插件合集：</h2>
+<pre><code>3D_Panner_2.0
+wL_niceNwide
+Ceres (1)
+cs12-156
 
-保存退出
+pitchShifter       （灵魂）
 </code></pre>
-<p>激活配置：<br>
-source ~/.bashrc<br>
-至此，java安装完成！</p>
-<h1 id="安装neo4j">安装Neo4j:</h1>
-<p>下载连接：<a href="https://neo4j.com/download-center/">https://neo4j.com/download-center/</a><br>
-选个Linux版本的（需要上网）（记得下社区版的）<br>
-同样传到Linux解压即可。</p>
-<p>个人网盘分享：https://pan.baidu.com/s/1FnbZW0n2-w8yCZEXG3J6zw&amp;shfl=shareset<br>
-提取码: 451c</p>
-<p>因为我是云端运行。所以需要改下配置，支持远程访问。<br>
-进入解压后的目录，我这里是 neo4j-community-3.5.11<br>
-cd neo4j-community-3.5.11<br>
-cd conf<br>
-vi neo4j.conf</p>
-<pre><code>添加如下配置（或者你能找到这行，直接解除注释也行）：
-    dbms.connectors.default_listen_address=0.0.0.0
-</code></pre>
-<p>至此，neo4j安装完成。<br>
-启动neo4j:<br>
-cd neo4j-community-3.5.11<br>
-cd bin<br>
-./neo4j console<br>
-看启动信息的url:port， 复制出来直接访问即可。<br>
-xxxxxxxx:7474    # 若是阿里云，需要放通防火墙7474 和 7687<br>
-成功进去后，会提示你输入默认用户名 和 密码：<br>
-默认用户名为 ：neo4j<br>
-默认密码也为 ：neo4j</p>
-<p>密码忘记了？？<br>
-进入 xx/data/dbms<br>
-删除 auth 文件，重启服务</p>
+<p>为何我如此执着音乐的变调，因为对于我来说，每一个Key都是一首新音乐！</p>
 
                 </div>
                 <div class="clear"></div>
@@ -170,26 +175,13 @@ xxxxxxxx:7474    # 若是阿里云，需要放通防火墙7474 和 7687<br>
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/gridea.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/ai-greater-ner-zhi-bio-zhuan-bioes/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">AI =&gt; NER之BIO转BIOES</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/n16me-6oV.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/ai-greater-cnn-zhi-kernel_sizestridespaddingsame/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/pr-greater-uandp/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">AI =&gt; CNN之kernel_size/strides/padding/same</h4>
+                  <time datetime="2021-01-19">2021-01-19</time>
+                  <h4 class="title white no-margin">PR =&gt; U&amp;P</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
