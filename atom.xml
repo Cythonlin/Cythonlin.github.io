@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-    <id>http://localhost:4000</id>
+    <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-05T14:04:59.551Z</updated>
+    <updated>2021-02-05T14:06:24.426Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="http://localhost:4000"/>
-    <link rel="self" href="http://localhost:4000/atom.xml"/>
-    <logo>http://localhost:4000/images/avatar.png</logo>
-    <icon>http://localhost:4000/favicon.ico</icon>
+    <link rel="alternate" href="https://cythonlin.github.io"/>
+    <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
+    <logo>https://cythonlin.github.io/images/avatar.png</logo>
+    <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Cython_lin</rights>
     <entry>
         <title type="html"><![CDATA[PR => Alias & Linux瑞士军刀]]></title>
-        <id>http://localhost:4000/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/</id>
-        <link href="http://localhost:4000/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/">
+        <id>https://cythonlin.github.io/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/</id>
+        <link href="https://cythonlin.github.io/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/">
         </link>
         <updated>2021-02-04T16:08:51.000Z</updated>
         <content type="html"><![CDATA[<h1 id="介绍">介绍</h1>
@@ -73,8 +73,8 @@ Windows Terminal 就是用 PS “挂羊头卖狗肉” 罢了。。。</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[PR => MusicBee & VST]]></title>
-        <id>http://localhost:4000/post/pr-greater-musicbee-and-winamp-and-vst/</id>
-        <link href="http://localhost:4000/post/pr-greater-musicbee-and-winamp-and-vst/">
+        <id>https://cythonlin.github.io/post/pr-greater-musicbee-and-winamp-and-vst/</id>
+        <link href="https://cythonlin.github.io/post/pr-greater-musicbee-and-winamp-and-vst/">
         </link>
         <updated>2021-01-29T04:58:49.000Z</updated>
         <content type="html"><![CDATA[<h1 id="musicbee">MusicBee</h1>
@@ -130,8 +130,8 @@ pitchShifter       （灵魂）
     </entry>
     <entry>
         <title type="html"><![CDATA[PR => U&P]]></title>
-        <id>http://localhost:4000/post/pr-greater-uandp/</id>
-        <link href="http://localhost:4000/post/pr-greater-uandp/">
+        <id>https://cythonlin.github.io/post/pr-greater-uandp/</id>
+        <link href="https://cythonlin.github.io/post/pr-greater-uandp/">
         </link>
         <updated>2021-01-19T08:45:11.000Z</updated>
         <content type="html"><![CDATA[<h1 id="google">Google</h1>
@@ -186,8 +186,8 @@ https://cythonlin.coding.net
     </entry>
     <entry>
         <title type="html"><![CDATA[PR => Windows Terminal]]></title>
-        <id>http://localhost:4000/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/</id>
-        <link href="http://localhost:4000/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">
+        <id>https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/</id>
+        <link href="https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">
         </link>
         <updated>2021-01-18T09:41:15.000Z</updated>
         <content type="html"><![CDATA[<h1 id="快捷键">快捷键</h1>
@@ -394,8 +394,8 @@ iwr -useb get.scoop.sh | iex
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => 音声合成]]></title>
-        <id>http://localhost:4000/post/py-greater-yin-sheng-he-cheng/</id>
-        <link href="http://localhost:4000/post/py-greater-yin-sheng-he-cheng/">
+        <id>https://cythonlin.github.io/post/py-greater-yin-sheng-he-cheng/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-yin-sheng-he-cheng/">
         </link>
         <updated>2020-10-12T12:20:17.000Z</updated>
         <content type="html"><![CDATA[<h1 id="背景">背景</h1>
@@ -431,8 +431,8 @@ vocals.wav
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => K8S（未完待续）]]></title>
-        <id>http://localhost:4000/post/py-greater-k8s/</id>
-        <link href="http://localhost:4000/post/py-greater-k8s/">
+        <id>https://cythonlin.github.io/post/py-greater-k8s/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-k8s/">
         </link>
         <updated>2020-10-06T22:18:23.000Z</updated>
         <content type="html"><![CDATA[<h1 id="安装">安装</h1>
@@ -468,8 +468,8 @@ systemctl enable kubelet &amp;&amp; systemctl start kubelet</code></pre>
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => Github-Cli]]></title>
-        <id>http://localhost:4000/post/py-greater-github-cli-quan-tao/</id>
-        <link href="http://localhost:4000/post/py-greater-github-cli-quan-tao/">
+        <id>https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/">
         </link>
         <updated>2020-10-03T01:53:58.000Z</updated>
         <content type="html"><![CDATA[<h1 id="下载">下载</h1>
@@ -626,8 +626,8 @@ git add . &amp;&amp; git commit -m &quot;my_test&quot;
     </entry>
     <entry>
         <title type="html"><![CDATA[GO => 交换元素的四种方式]]></title>
-        <id>http://localhost:4000/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
-        <link href="http://localhost:4000/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
+        <id>https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
+        <link href="https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
         </link>
         <updated>2020-09-29T04:22:34.000Z</updated>
         <content type="html"><![CDATA[<h1 id="python-and-go">Python and Go</h1>
@@ -660,8 +660,8 @@ fmt.Println(b)
     </entry>
     <entry>
         <title type="html"><![CDATA[RS => 推荐系统（三）离线召回与排序 ]]></title>
-        <id>http://localhost:4000/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/</id>
-        <link href="http://localhost:4000/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/">
+        <id>https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-tui-jian-xi-tong-san-chi-xian-zhao-hui-yu-pai-xu/">
         </link>
         <updated>2020-09-29T04:21:44.000Z</updated>
         <content type="html"><![CDATA[<h1 id="召回设计">召回设计</h1>
@@ -1201,8 +1201,8 @@ embedding</p>
     </entry>
     <entry>
         <title type="html"><![CDATA[PY => HBase]]></title>
-        <id>http://localhost:4000/post/py-greater-hbase/</id>
-        <link href="http://localhost:4000/post/py-greater-hbase/">
+        <id>https://cythonlin.github.io/post/py-greater-hbase/</id>
+        <link href="https://cythonlin.github.io/post/py-greater-hbase/">
         </link>
         <updated>2020-09-29T04:21:09.000Z</updated>
         <content type="html"><![CDATA[<h1 id="报错">报错</h1>
