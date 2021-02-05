@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-05T04:08:57.414Z</updated>
+    <updated>2021-02-05T05:24:15.199Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -43,10 +43,19 @@ Windows Terminal 就是用 PS “挂羊头卖狗肉” 罢了。。。</p>
 <pre><code>C:\Users\lin\Documents\WindowsPowerShell
 </code></pre>
 <p>新的空文件，写入如下代码：</p>
-<pre><code>Get-Alias | ForEach-Object { Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; } 
+<pre><code>Get-Alias | ForEach-Object { 
+    if ($_.Name -ne &quot;cd&quot;)
+    {
+        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
+    }
+} 
 </code></pre>
 <p>此行命令意思就是清除所有PS 命令的别名。<br>
-至此，重新代开 Terminal。</p>
+（这个语句我学习加了一个条件 和 截获异常的语句）<br>
+如果不排除 cd 这个命令， 我们后续安装的模块是 没有cd这个安装包的。<br>
+因为 cd 是 LinuxBash 内建命令。 Windows无法安装， 即使我们安装了Bash, 也没有 cd。<br>
+所以，cd我们只能用ps自带的cd, 这是没办法的事情，  其余的命令别名就可以全删了。</p>
+<p>至此，重新代开 Terminal。</p>
 <h3 id="遇到的问题">遇到的问题</h3>
 <p>那就是每次打开新的Terminal 都会加载 上面Windows PowerShell profile这个配置文件里面的命令。可能是有缓存之类的信息，所以会发生文件不存在（就是类似空文件异常）<br>
 于是，查PowerShell的异常处理语句如上代码后追加 -ErrorAction &quot;SilentlyContinue 即可。</p>
