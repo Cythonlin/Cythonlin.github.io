@@ -2,13 +2,60 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-06T02:57:02.505Z</updated>
+    <updated>2021-02-06T16:15:46.893Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[PR => Terminal 应用]]></title>
+        <id>https://cythonlin.github.io/post/pr-greater-terminal-ying-yong/</id>
+        <link href="https://cythonlin.github.io/post/pr-greater-terminal-ying-yong/">
+        </link>
+        <updated>2021-02-06T15:32:32.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="readme">README</h1>
+<p>以后若发现 Windows应用程序或功能 可用Terminal命令代替且便捷实现，则记载于此。</p>
+<h1 id="everything-命令行-es">Everything 命令行 - ES</h1>
+<p>下载地址： <a href="https://www.voidtools.com/zh-cn/downloads/#cli">ES点此下载</a></p>
+<h2 id="意图">意图</h2>
+<p>虽然 Everything图形界面工具已经很出色了。但我依然忘不掉 Linux 的 locate 命令<br>
+故有意将 Everything的命令行工具 es 替代 locate</p>
+<h2 id="使用方式">使用方式</h2>
+<ol>
+<li>下载zip</li>
+<li>解压</li>
+<li>将 es.exe 改名为 locate.exe (Linux的locate命令使用习惯，若无此习惯，则跳过此步)</li>
+<li>将此解压路径加入到环境变量</li>
+<li>locate xxx</li>
+</ol>
+<h2 id="es-常用语法参数">ES 常用语法参数</h2>
+<p>我看了看 <a href="https://www.voidtools.com/zh-cn/support/everything/command_line_interface/">ES文档</a>，抽取了一些个人认为好用的参数。</p>
+<pre><code>-r：正则
+-s：以全路径排序（每级路径都会排序， 举个例子就和多级分组排序原理差不多）
+-size：文件大小
+-dm：修改日期
+-highlight：关键词高亮
+</code></pre>
+<p>解释的很清楚了，这里拿正则举一个例子， 因为es匹配原则是包含原则。<br>
+只要含有，就会列举出来，很宽柔。这里我们写一个严格匹配的正则：</p>
+<pre><code>locate -r ^test.py$
+</code></pre>
+<p>保存配置到文件（ es.exe 同目录下 es.ini）中，一劳永逸： -save-settings</p>
+<pre><code>locate -size -dm -sizecolor 0x0d -dmcolor 0x0b -s  -highlight -save-settings
+</code></pre>
+<p>清除配置：-clear-settings</p>
+<pre><code>locate -clear-settings 
+</code></pre>
+<h2 id="个人认为-es-命令行的一些优势">个人认为 ES 命令行的一些优势</h2>
+<ol>
+<li>everything的图形界面一些高级功能都在工具栏，我是几乎不用。感觉麻烦。不如命令来的简洁。</li>
+<li>正如前几篇文章所讲，把PS打造成 Sim-Linux， 所以我可以使用 grep 等命令。</li>
+<li>这样我就可以使用 ES搜索命令 + grep 等做 多关键词 精细查找（everything图形高级功能应该也有）</li>
+</ol>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[PR => Alias & Linux瑞士军刀]]></title>
         <id>https://cythonlin.github.io/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/</id>
@@ -1223,37 +1270,6 @@ embedding</p>
 2、读取用户点击行为表，与用户画像和文章画像，构造训练样本<br>
 3、LR模型进行训练<br>
 4、LR模型预测、结果评估</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PY => HBase]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-hbase/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-hbase/">
-        </link>
-        <updated>2020-09-29T04:21:09.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="报错">报错</h1>
-<p>若list 或其他命令 有如下错误：<br>
-ERROR: org.apache.hadoop.hbase.PleaseHoldException: Master is initializing<br>
-则使用如下命令：<br>
-cd $HBASE_HOME/bin<br>
-./hbase zkcli<br>
-ls /<br>
-rmr /hbase<br>
-ls /<br>
-退出 zookeeper cli， 删除hdfs中的 /hbase<br>
-hdfs dfs -rm -r /hbase<br>
-然后重启hbase:<br>
-cd $HBASE_HOME/bin<br>
-./stop-hbase.sh<br>
-./start-hbase.sh<br>
-若stop hbase的时候出现 ..... 停止不掉， 则：<br>
-cd $HBASE_HOME/bin<br>
-./hbase-daemons.sh stop regionserver</p>
-<pre><code># ./start-hbase.sh
-# kill -9 pid来终止hbase的进程
-</code></pre>
-<h1 id="hbase命令">HBase命令</h1>
-<p>https://blog.csdn.net/vbirdbest/article/details/88236575</p>
 ]]></content>
     </entry>
 </feed>

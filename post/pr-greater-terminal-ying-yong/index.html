@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; 自编魔法鬼句 | Cython_lin</title>
+<title>PR =&gt; Terminal 应用 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,9 +15,13 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="鬼句1：
-我 = type('A',(), {'__eq__': lambda _,__: 'True' if  _ is not __ else 'False', '__ne__': lambda _,__: 'True' if  _ i..." />
-    <meta name="keywords" content="Python" />
+    <meta name="description" content="README
+以后若发现 Windows应用程序或功能 可用Terminal命令代替且便捷实现，则记载于此。
+Everything 命令行 - ES
+下载地址： ES点此下载
+意图
+虽然 Everything图形界面工具已经很出色了。但我依..." />
+    <meta name="keywords" content="" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -87,21 +91,19 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">4 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-06"><i class="fa fa-calendar"></i><span class="lately">43 分钟前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-zi-bian-mo-fa-gui-ju/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-zi-bian-mo-fa-gui-ju/"> </span>
+              <a href="https://cythonlin.github.io/post/pr-greater-terminal-ying-yong/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-terminal-ying-yong/"> </span>
               </a>
-              <span id="/py-greater-zi-bian-mo-fa-gui-ju/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/pr-greater-terminal-ying-yong/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
-                    
               </div>
-              <h1 class="title ularge white bold">PY =&gt; 自编魔法鬼句</h1>
+              <h1 class="title ularge white bold">PR =&gt; Terminal 应用</h1>
             </div>
           </div>
         </div>  
@@ -111,22 +113,45 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <p>鬼句1：</p>
-<pre><code>我 = type('A',(), {'__eq__': lambda _,__: 'True' if  _ is not __ else 'False', '__ne__': lambda _,__: 'True' if  _ is __ else 'False'})()
-你 = type('你')
-
-print(我 == 我)
-print(我 != 我)
-print(我 == 你)
-print(我 != 你)
+                  <h1 id="readme">README</h1>
+<p>以后若发现 Windows应用程序或功能 可用Terminal命令代替且便捷实现，则记载于此。</p>
+<h1 id="everything-命令行-es">Everything 命令行 - ES</h1>
+<p>下载地址： <a href="https://www.voidtools.com/zh-cn/downloads/#cli">ES点此下载</a></p>
+<h2 id="意图">意图</h2>
+<p>虽然 Everything图形界面工具已经很出色了。但我依然忘不掉 Linux 的 locate 命令<br>
+故有意将 Everything的命令行工具 es 替代 locate</p>
+<h2 id="使用方式">使用方式</h2>
+<ol>
+<li>下载zip</li>
+<li>解压</li>
+<li>将 es.exe 改名为 locate.exe (Linux的locate命令使用习惯，若无此习惯，则跳过此步)</li>
+<li>将此解压路径加入到环境变量</li>
+<li>locate xxx</li>
+</ol>
+<h2 id="es-常用语法参数">ES 常用语法参数</h2>
+<p>我看了看 <a href="https://www.voidtools.com/zh-cn/support/everything/command_line_interface/">ES文档</a>，抽取了一些个人认为好用的参数。</p>
+<pre><code>-r：正则
+-s：以全路径排序（每级路径都会排序， 举个例子就和多级分组排序原理差不多）
+-size：文件大小
+-dm：修改日期
+-highlight：关键词高亮
 </code></pre>
-<p>鬼句2：数列</p>
-<pre><code>import math
-
-数列 = type('数列', (), {'__getitem__': lambda self,_: list(range(_[0], _[4]+1, _[1]-_[0])) if _[1]-_[0]==_[2]-_[1] else (lambda a1,e:  [a1 * e**(_) for _ in range(0,int(math.log(_[4]/a1, e))+1)])(_[0],_[1]/_[0])})()
-
-print(数列[1,3,9,...,729])
-print(数列[1,3,5,...,21])</code></pre>
+<p>解释的很清楚了，这里拿正则举一个例子， 因为es匹配原则是包含原则。<br>
+只要含有，就会列举出来，很宽柔。这里我们写一个严格匹配的正则：</p>
+<pre><code>locate -r ^test.py$
+</code></pre>
+<p>保存配置到文件（ es.exe 同目录下 es.ini）中，一劳永逸： -save-settings</p>
+<pre><code>locate -size -dm -sizecolor 0x0d -dmcolor 0x0b -s  -highlight -save-settings
+</code></pre>
+<p>清除配置：-clear-settings</p>
+<pre><code>locate -clear-settings 
+</code></pre>
+<h2 id="个人认为-es-命令行的一些优势">个人认为 ES 命令行的一些优势</h2>
+<ol>
+<li>everything的图形界面一些高级功能都在工具栏，我是几乎不用。感觉麻烦。不如命令来的简洁。</li>
+<li>正如前几篇文章所讲，把PS打造成 Sim-Linux， 所以我可以使用 grep 等命令。</li>
+<li>这样我就可以使用 ES搜索命令 + grep 等做 多关键词 精细查找（everything图形高级功能应该也有）</li>
+</ol>
 
                 </div>
                 <div class="clear"></div>
@@ -136,26 +161,13 @@ print(数列[1,3,5,...,21])</code></pre>
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/wAXYBHxvH.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-celery-shi-yong-ji-lu/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Celery使用记录</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/c137hZpK4.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-centos-tou-lan-an-zhuang-python374/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; CentOS偷懒安装Python3.7.4</h4>
+                  <time datetime="2021-02-05">2021-02-05</time>
+                  <h4 class="title white no-margin">PR =&gt; Alias &amp; Linux瑞士军刀</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
