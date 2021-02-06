@@ -84,7 +84,7 @@ ctrl + +號
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1612541219606" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1612580212278" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -99,7 +99,7 @@ ctrl + +號
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-01-18"><i class="fa fa-calendar"></i><span class="lately">18 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-01-18"><i class="fa fa-calendar"></i><span class="lately">19 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/"> </span>
@@ -155,7 +155,10 @@ ctrl + +號
         &quot;initialRows&quot;: 25,
         &quot;initialCols&quot;: 100,
 
+        // 设置默认终端
         &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
+
 
         &quot;profiles&quot;: {
 
@@ -176,6 +179,7 @@ ctrl + +號
                     &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
                     &quot;name&quot;: &quot;Windows PowerShell&quot;,
                     &quot;commandline&quot;: &quot;powershell.exe&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
                     &quot;hidden&quot;: false
                 },
                 {
@@ -183,14 +187,36 @@ ctrl + +號
                     &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
                     &quot;name&quot;: &quot;cmd&quot;,
                     &quot;commandline&quot;: &quot;cmd.exe&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
                     &quot;hidden&quot;: false
+
                 },
                 {
                     &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
                     &quot;hidden&quot;: false,
                     &quot;name&quot;: &quot;Azure Cloud Shell&quot;,
                     &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
-                }
+                },
+                {
+                    &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Ubuntu-20.04&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;
+                },
+                // {
+    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+    //                 &quot;hidden&quot;: false,
+    //                 &quot;name&quot;: &quot;ssh&quot;,
+    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
+    //             },
+                {
+                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Conda&quot;,
+                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
             ]
         },
 
