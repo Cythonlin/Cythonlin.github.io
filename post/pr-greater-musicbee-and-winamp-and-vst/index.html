@@ -19,10 +19,11 @@
 MusicBee 皮肤
 Dark -&gt; Bee78
 
-MusicBee
-MusicBee安装VST插槽
-注：MusicBee不能直接安装VST插件， 需要官网安装一个VST插槽。用此插槽才可以安装其他VST插件
-VS..." />
+MusicBee 音质配置
+首先要设置一下扬声器属性
+右键播放下面的 “扬声器” 属性
+-&gt; 高级 (把下面2个选项都 打上 √)
+    -&gt; 允许..." />
     <meta name="keywords" content="PR" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -78,7 +79,7 @@ VS..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1612628140108" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1612675833475" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -93,7 +94,7 @@ VS..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-01-29"><i class="fa fa-calendar"></i><span class="lately">8 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-01-29"><i class="fa fa-calendar"></i><span class="lately">9 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/pr-greater-musicbee-and-winamp-and-vst/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-musicbee-and-winamp-and-vst/"> </span>
@@ -121,7 +122,24 @@ VS..." />
 <h3 id="musicbee-皮肤">MusicBee 皮肤</h3>
 <pre><code>Dark -&gt; Bee78
 </code></pre>
-<h3 id="musicbee-2">MusicBee</h3>
+<h3 id="musicbee-音质配置">MusicBee 音质配置</h3>
+<p>首先要设置一下扬声器属性</p>
+<pre><code>右键播放下面的 “扬声器” 属性
+-&gt; 高级 (把下面2个选项都 打上 √)
+    -&gt; 允许应用程序独占控制该设备 
+    -&gt; 给与独占模式应用程序优先
+</code></pre>
+<p>然后配置MusicBee</p>
+<pre><code>首选项
+    -&gt; 播放器
+        -&gt; 输出
+            -&gt; 选择 WSAAPI (Shared)     ！！！！！！！这个至关重要，必须是 Shared
+            -&gt; 使用32位输出+立体声混音至5.1+重新采样到 192K（这几个作用不太明显）
+</code></pre>
+<p>然后调控音量（比较重要）：</p>
+<pre><code>MusicBee 的 内部音量 调到最低（但是不要调没）。
+Windows扬声器音量调高。
+</code></pre>
 <h1 id="musicbee安装vst插槽">MusicBee安装VST插槽</h1>
 <p>注：MusicBee不能直接安装VST插件， 需要官网安装一个VST插槽。用此插槽才可以安装其他VST插件<br>
 <a href="https://getmusicbee.com/addons/plugins/16/vst-effects-support/">VST插槽下载地址</a></p>
