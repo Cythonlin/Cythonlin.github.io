@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-12T17:31:27.289Z</updated>
+    <updated>2021-02-13T12:56:11.762Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -196,7 +196,25 @@ Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ 
 Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
 Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
 Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-Write-Color -Text  &quot;                                                                                  &quot; </code></pre>
+Write-Color -Text  &quot;                                                                                  &quot; 
+
+
+function new_clear{
+    Clear-Host
+    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+    Write-Color -Text  &quot;                                                                                  &quot; 
+}
+
+Set-Alias clear new_clear
+Set-Alias cls clear</code></pre>
 ]]></content>
     </entry>
     <entry>
