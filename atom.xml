@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-13T12:56:11.762Z</updated>
+    <updated>2021-02-15T14:31:27.872Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -47,8 +47,8 @@ sublime 文件
 <h2 id="查看自带配置文件位置">查看自带配置文件位置</h2>
 <pre><code>locate jandedobbeleer.omp.json
 </code></pre>
-<h2 id="把原配置文件copy一份给home目录名为linjson">把原配置文件copy一份给home目录，名为lin.json</h2>
-<pre><code>cp C:\Users\lin\scoop\apps\oh-my-posh\3.85.2\themes\jandedobbeleer.omp.json C:\Users\lin\lin.json
+<h2 id="把原配置文件copy一份给home目录名为linompjson">把原配置文件copy一份给home目录，名为lin.omp.json</h2>
+<pre><code>cp C:\Users\lin\scoop\apps\oh-my-posh\3.85.2\themes\jandedobbeleer.omp.json C:\Users\lin\lin.omp.json
 </code></pre>
 <h2 id="使用自己的配置文件并把它写入到ps配置文件中">使用自己的配置文件，并把它写入到ps配置文件中</h2>
 <pre><code>Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
@@ -610,6 +610,54 @@ https://cythonlin.coding.net
         ]
     }
 </code></pre>
+<h1 id="安装scoop并非sqoop">安装Scoop(并非Sqoop...)</h1>
+<h3 id="作用">作用</h3>
+<pre><code>主要用在 单个纯 Windows Terminal  去安装 Linux工具使用。
+但我发现 Win Terminal 的一些基础命令 还是没Linux好用（比如 ls无选项看不到隐藏文件）
+
+所以我最后选择了 Win Terminal + WSL2 并用
+所以Scoop这项就可以不用了
+</code></pre>
+<h3 id="流程">流程</h3>
+<p>因为用Powershell命令，会访问到raw.githubusercontent.com，所以先修改DNS</p>
+<pre><code>C:\Windows\System32\drivers\etc
+    199.232.68.133 raw.githubusercontent.com
+ipconfig /flushdns
+</code></pre>
+<p>用Powershell命令正式安装Scoop:</p>
+<pre><code>Set-ExecutionPolicy RemoteSigned -scope CurrentUser
+iwr -useb get.scoop.sh | iex
+</code></pre>
+<p>静待Scoop安装完成， 用Scoop安装 Unix工具：</p>
+<pre><code>scoop install sudo
+</code></pre>
+<p>加速 Scoop的下载</p>
+<pre><code>scoop install aria2
+</code></pre>
+<p>Scoop 使用 Git 更新它自身，所以安一个Git 是需要的。</p>
+<pre><code>scoop install git
+</code></pre>
+<p>卸载语法</p>
+<pre><code>scoop uninstall  xxxx
+</code></pre>
+<h1 id="三方桌面程序">三方桌面程序</h1>
+<p>Winstep Xtreme 17.0+ (含 workshelf + NextStart)</p>
+<h3 id="卸载nextstart">卸载NextStart</h3>
+<ol>
+<li>
+<p>everything搜删 nextstart</p>
+</li>
+<li>
+<p>注册表<br>
+HKEY_CURRENT_USER-&gt;<br>
+SOFTWARE-&gt;<br>
+WinSTEP2000-&gt;</p>
+<p>把这里面的 Nextstart 和 Shared 整体删除<br>
+并且把 workshelf里面的  METARCode 项的值 删掉</p>
+</li>
+</ol>
+<h1 id="三方-file-explorer">三方 File Explorer</h1>
+<p>RX 文件管理器</p>
 <h1 id="wsl2附着在选项卡">WSL2(附着在选项卡)</h1>
 <ol>
 <li>
@@ -652,42 +700,7 @@ https://cythonlin.coding.net
 </li>
 </ol>
 <h2 id="查看wsl版本信息与运行状态">查看WSL版本信息与运行状态</h2>
-<pre><code>wsl -l -v
-</code></pre>
-<h1 id="安装scoop并非sqoop">安装Scoop(并非Sqoop...)</h1>
-<h3 id="作用">作用</h3>
-<pre><code>主要用在 单个纯 Windows Terminal  去安装 Linux工具使用。
-但我发现 Win Terminal 的一些基础命令 还是没Linux好用（比如 ls无选项看不到隐藏文件）
-
-所以我最后选择了 Win Terminal + WSL2 并用
-所以Scoop这项就可以不用了
-</code></pre>
-<h3 id="流程">流程</h3>
-<p>因为用Powershell命令，会访问到raw.githubusercontent.com，所以先修改DNS</p>
-<pre><code>C:\Windows\System32\drivers\etc
-    199.232.68.133 raw.githubusercontent.com
-ipconfig /flushdns
-</code></pre>
-<p>用Powershell命令正式安装Scoop:</p>
-<pre><code>Set-ExecutionPolicy RemoteSigned -scope CurrentUser
-iwr -useb get.scoop.sh | iex
-</code></pre>
-<p>静待Scoop安装完成， 用Scoop安装 Unix工具：</p>
-<pre><code>scoop install sudo
-</code></pre>
-<p>加速 Scoop的下载</p>
-<pre><code>scoop install aria2
-</code></pre>
-<p>Scoop 使用 Git 更新它自身，所以安一个Git 是需要的。</p>
-<pre><code>scoop install git
-</code></pre>
-<p>卸载语法</p>
-<pre><code>scoop uninstall  xxxx
-</code></pre>
-<h1 id="三方桌面程序">三方桌面程序</h1>
-<p>Winstep Xtreme 18.0+ (含 workshelf + NextStart)</p>
-<h1 id="三方-file-explorer">三方 File Explorer</h1>
-<p>RX 文件管理器</p>
+<pre><code>wsl -l -v</code></pre>
 ]]></content>
     </entry>
     <entry>
