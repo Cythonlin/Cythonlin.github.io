@@ -81,7 +81,7 @@ conda activate ..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1613399481398" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1613418887182" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -178,20 +178,45 @@ conda config --set show_channel_urls yes
 <li>保存退出，重新打开 Jupyter。</li>
 </ol>
 <h1 id="修改jupyter主题样式">修改Jupyter主题样式</h1>
-<p>安装<br>
-pip install jupyterthemes     （Anaconda-prompt 的pip）<br>
-列出所有样式名称<br>
-jt -l<br>
-修改样式<br>
-jt -t monokai<br>
-如果感觉都不好看，可恢复(使用完记得重启jupyter)：<br>
-jt -r<br>
-别人推荐的样式（主题+字体+界面宽度一气呵成）：<br>
-jt -t chesterish -f fira -fs 13 -nf ptsans -nfs 11 -N -kl -cursw 5 -cursc r -cellw 95% -T<br>
-官方样式说明：<br>
-https://github.com/dunovank/jupyter-themes<br>
-或者这篇教程：<br>
-https://towardsdatascience.com/bringing-the-best-out-of-jupyter-notebooks-for-data-science-f0871519ca29</p>
+<p>安装</p>
+<pre><code>pip install jupyterthemes     （Anaconda-prompt 的pip）
+</code></pre>
+<p>列出所有样式名称</p>
+<pre><code>jt -l
+</code></pre>
+<p>修改样式</p>
+<pre><code>jt -t monokai
+</code></pre>
+<p>如果感觉都不好看，可恢复(使用完记得重启jupyter)：</p>
+<pre><code>jt -r 
+</code></pre>
+<p>别人推荐的样式（主题+字体+界面宽度一气呵成）：</p>
+<pre><code>jt -t chesterish -f fira -fs 13 -nf ptsans -nfs 11 -N -kl -cursw 5 -cursc r -cellw 95% -T
+</code></pre>
+<p>官方样式说明：</p>
+<pre><code>https://github.com/dunovank/jupyter-themes
+</code></pre>
+<p>或者这篇教程：</p>
+<pre><code>https://towardsdatascience.com/bringing-the-best-out-of-jupyter-notebooks-for-data-science-f0871519ca29
+</code></pre>
+<h1 id="ipykernel">ipykernel</h1>
+<p>多个虚拟环境共用一个主体jupyter<br>
+创建新的ipynb时也可以选择用哪个虚拟环境的jupyter kernel</p>
+<h3 id="安装-ipykernel">安装 ipykernel</h3>
+<pre><code>pip install  ipykernel
+</code></pre>
+<h3 id="将虚拟环境添加到jupyter中">将虚拟环境添加到jupyter中</h3>
+<pre><code>python -m ipykernel install  --name=torch
+</code></pre>
+<p>结果会生成一个文件:</p>
+<pre><code> /home/user/.local/share/jupyter/kernels/myenv/kernel.json
+</code></pre>
+<h3 id="在总jupyter列出所有虚拟环境">在总jupyter列出所有虚拟环境</h3>
+<pre><code>jupyter kernelspec list
+</code></pre>
+<h3 id="从jupyter中移除某虚拟环境">从jupyter中移除某虚拟环境</h3>
+<pre><code>jupyter kernelspec uninstall torch
+</code></pre>
 <h1 id="jupyter全屏编辑">Jupyter全屏编辑</h1>
 <p>这个我之前查过，修改配置文件的都不好用<br>
 （上面改主题的时候可以该宽度，但貌似必须修改主题，才能修改界面宽度，否则不可以）</p>
