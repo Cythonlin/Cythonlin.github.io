@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-16T03:42:37.547Z</updated>
+    <updated>2021-02-16T04:03:22.032Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -611,14 +611,14 @@ https://cythonlin.coding.net
     }
 </code></pre>
 <h1 id="安装scoop并非sqoop">安装Scoop(并非Sqoop...)</h1>
-<h3 id="作用">作用</h3>
+<h2 id="作用">作用</h2>
 <pre><code>主要用在 单个纯 Windows Terminal  去安装 Linux工具使用。
 但我发现 Win Terminal 的一些基础命令 还是没Linux好用（比如 ls无选项看不到隐藏文件）
 
 所以我最后选择了 Win Terminal + WSL2 并用
 所以Scoop这项就可以不用了
 </code></pre>
-<h3 id="流程">流程</h3>
+<h2 id="流程">流程</h2>
 <p>因为用Powershell命令，会访问到raw.githubusercontent.com，所以先修改DNS</p>
 <pre><code>C:\Windows\System32\drivers\etc
     199.232.68.133 raw.githubusercontent.com
@@ -628,6 +628,7 @@ ipconfig /flushdns
 <pre><code>Set-ExecutionPolicy RemoteSigned -scope CurrentUser
 Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 </code></pre>
+<h2 id="更新可能会出现的bug">更新可能会出现的BUG</h2>
 <p>安装应该是没问题的，不过以后使用的过程中可能会遇到更新的BUG。</p>
 <pre><code>cd C:/Users/lin/scoop/apps/
 </code></pre>
@@ -637,10 +638,19 @@ Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.
 <p>然后重新安装 scoop(注意，删除的这个scoop是scoop内部的文件夹)</p>
 <pre><code>Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
 </code></pre>
-<p>静待Scoop安装完成， 用Scoop安装 Unix工具：</p>
-<pre><code>scoop install sudo
+<h2 id="给scoop添加软件库bucket">给scoop添加软件库(bucket)</h2>
+<p>列出可用的软件库(这种软件库会把一些带有GUI的软件放在里面)：</p>
+<pre><code>scoop bucket known
 </code></pre>
-<p>加速 Scoop的下载</p>
+<p>添加软件库(这个是官方的)</p>
+<pre><code>scoop bucket add extras
+</code></pre>
+<p>安装 deluge(下载torrent用的)</p>
+<pre><code>scoop install deluge
+</code></pre>
+<h2 id="添加自定义软件库">添加自定义软件库</h2>
+<p><a href="https://github.com/lukesampson/scoop/wiki/Buckets#creating-your-own-bucket">-&gt;官方教程</a></p>
+<h2 id="加速-scoop的下载">加速 Scoop的下载</h2>
 <pre><code>scoop install aria2
 </code></pre>
 <p>Scoop 使用 Git 更新它自身，所以安一个Git 是需要的。</p>
