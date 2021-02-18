@@ -2,13 +2,248 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-16T04:03:22.032Z</updated>
+    <updated>2021-02-18T05:03:18.911Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Cython_lin</rights>
+    <entry>
+        <title type="html"><![CDATA[PR => Powershell 7]]></title>
+        <id>https://cythonlin.github.io/post/pr-greater-powershell-7/</id>
+        <link href="https://cythonlin.github.io/post/pr-greater-powershell-7/">
+        </link>
+        <updated>2021-02-18T04:43:21.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="ps7-主要新增功能">PS7 主要新增功能</h1>
+<pre><code>&amp; 后台
+&amp;&amp; || 管道
+</code></pre>
+<h1 id="找到ps5配置文件">找到PS5配置文件</h1>
+<pre><code># 列出PS5配置文件
+locate PowerShell_profile.ps1
+
+# 打开配置文件
+sublime C:\Users\lin\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+</code></pre>
+<h2 id="修改ps5配置为如下内容">修改PS5配置为如下内容</h2>
+<p>主要就是 iex 和 irm 两条别名命令添加回来，下面要用到</p>
+<pre><code>Get-Alias | ForEach-Object { 
+    if ($_.Name -ne &quot;cd&quot; -and $_.Name -ne &quot;start&quot; -and $_.Name -ne &quot;iex&quot; -and $_.Name -ne &quot;irm&quot;)
+    {
+        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
+    }
+} 
+
+Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
+
+Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+Write-Color -Text  &quot;                                                                                  &quot; 
+
+
+function new_clear{
+    Clear-Host
+    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+    Write-Color -Text  &quot;                                                                                  &quot; 
+}
+
+Set-Alias clear new_clear
+Set-Alias cls clear
+</code></pre>
+<h1 id="下载ps7安装包">下载PS7安装包</h1>
+<pre><code>iex &quot;&amp; { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI&quot;
+</code></pre>
+<h1 id="新建ps7配置文件">新建PS7配置文件</h1>
+<p>注：管理员身份运行</p>
+<pre><code>cd &quot;C:/Program Files/PowerShell/7&quot;
+notepad profile.ps1
+</code></pre>
+<p>把上面PS5一模一样的内容复制进来</p>
+<pre><code>略
+</code></pre>
+<p>保存，退出</p>
+<h1 id="使用ps7命令行重新安装颜色字体">使用PS7命令行重新安装颜色字体</h1>
+<pre><code>Install-Module -Name PSWriteColor -Scope CurrentUser
+</code></pre>
+<h1 id="重新修改terminal-配置文件">重新修改Terminal 配置文件</h1>
+<pre><code># 列出配置文件
+locate settings.json | grep -i windowsterminal
+
+# 打开配置文件
+sublime C:\Users\lin\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
+</code></pre>
+<h2 id="将settingsjson重新粘入如下内容">将settings.json重新粘入如下内容</h2>
+<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
+    // For documentation on these settings, see: https://aka.ms/terminal-documentation
+
+    {
+        // 官方设置指南?
+        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
+
+        // 一些globals设置
+        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
+        // &quot;initialRows&quot;: 25,
+        // &quot;initialCols&quot;: 100,
+        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
+
+        // 设置默认终端
+        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
+        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+
+        &quot;profiles&quot;: {
+
+            &quot;defaults&quot;: {
+                // Put settings here that you want to apply to all profiles
+                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
+                &quot;useAcrylic&quot;: true,
+                &quot;acrylicOpacity&quot;: 0.55,
+                &quot;cursorShape&quot;: &quot;vintage&quot;,
+                &quot;cursorHeight&quot;: 60,
+                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
+                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
+                &quot;fontSize&quot;: 18
+            },
+
+            &quot;list&quot;: [{
+                    // Make changes here to the powershell.exe profile
+                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+                    &quot;name&quot;: &quot;PS5&quot;,
+                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+                },
+                // {	
+    //                 // Make changes here to the powershell.exe profile
+    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
+    //                 &quot;name&quot;: &quot;PWSH&quot;,
+    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
+    //                 &quot;hidden&quot;: false
+    //             },
+                {
+                    // Make changes here to the cmd.exe profile
+                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
+                    &quot;name&quot;: &quot;cmd&quot;,
+                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+
+                },
+                {
+                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Azure Cloud Shell&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
+                },
+                // {
+                //     &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
+                //     &quot;hidden&quot;: false,
+                //     &quot;name&quot;: &quot;Ubuntu-20.04&quot;,
+                //     &quot;startingDirectory&quot;: &quot;d:&quot;,
+                //     &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;
+                // },
+                // {
+    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+    //                 &quot;hidden&quot;: false,
+    //                 &quot;name&quot;: &quot;ssh&quot;,
+    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
+    //             },
+                {
+                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Conda&quot;,
+                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
+                {
+                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;PS7&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+                }
+
+            ]
+        },
+
+        // Add custom color schemes to this array
+        &quot;schemes&quot;: [
+    {
+    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
+    &quot;black&quot;: &quot;#000000&quot;,
+    &quot;red&quot;: &quot;#ff7092&quot;,
+    &quot;green&quot;: &quot;#00fbac&quot;,
+    &quot;yellow&quot;: &quot;#fffa6a&quot;,
+    &quot;blue&quot;: &quot;#00bfff&quot;,
+    &quot;purple&quot;: &quot;#df95ff&quot;,
+    &quot;cyan&quot;: &quot;#86cbfe&quot;,
+    &quot;white&quot;: &quot;#ffffff&quot;,
+    &quot;brightBlack&quot;: &quot;#000000&quot;,
+    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
+    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
+    &quot;brightYellow&quot;: &quot;#fff787&quot;,
+    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
+    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
+    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
+    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
+    &quot;background&quot;: &quot;#332a57&quot;,
+    &quot;foreground&quot;: &quot;#e5e5e5&quot;
+    }
+    ],
+
+        // Add any keybinding overrides to this array.
+        // To unbind a default keybinding, set the command to &quot;unbound&quot;
+        &quot;keybindings&quot;: [],
+        &quot;actions&quot;:
+        [
+            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
+            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
+            // To learn more about selection, visit https://aka.ms/terminal-selection
+            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
+            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
+
+            // Press Ctrl+Shift+F to open the search box
+            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
+            // settings
+            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
+            // Press Alt+Shift+D to open a new pane.
+            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
+            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
+            // To learn more about panes, visit https://aka.ms/terminal-panes
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
+            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
+        ]
+    }
+</code></pre>
+<h2 id="本次-settingsjson主要对-terminal做了如下修改">本次 settings.json主要对 Terminal做了如下修改</h2>
+<ol>
+<li>窗口开启为全屏 -&gt; launchMode</li>
+<li>加入PS7</li>
+<li>默认终端设为PS7 -&gt; defaultProfile</li>
+<li>Powershell5 改名为 PS5</li>
+</ol>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[PR => Oh-my-Posh3+Banner]]></title>
         <id>https://cythonlin.github.io/post/pr-greater-oh-my-posh3/</id>
@@ -951,40 +1186,6 @@ git add . &amp;&amp; git commit -m &quot;my_test&quot;
 </code></pre>
 <p>查看 PR 详细信息</p>
 <pre><code>gh pr status
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[GO => 交换元素的四种方式]]></title>
-        <id>https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
-        <link href="https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
-        </link>
-        <updated>2020-09-29T04:22:34.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="python-and-go">Python and Go</h1>
-<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
-a := 1<br>
-b := 3</p>
-<h3 id="方式0">方式0</h3>
-<pre><code>c := 0
-c = a
-a = b
-b = c
-</code></pre>
-<h3 id="方式1">方式1</h3>
-<pre><code>a,b = b,a
-</code></pre>
-<h3 id="方式2">方式2</h3>
-<pre><code>a = a + b
-b = a - b
-a = a - b
-</code></pre>
-<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
-<pre><code>a = a ^ b
-b = a ^ b
-a = a ^ b
-
-fmt.Println(a)
-fmt.Println(b)
 </code></pre>
 ]]></content>
     </entry>

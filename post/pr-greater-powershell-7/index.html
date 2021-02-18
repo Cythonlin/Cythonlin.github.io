@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; Github-Cli | Cython_lin</title>
+<title>PR =&gt; Powershell 7 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,14 +15,17 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="下载
-选个OS版本（我用的Win）：https://github.com/cli/cli/releases  
-列出配置
-git config --list
+    <meta name="description" content="PS7 主要新增功能
+&amp; 后台
+&amp;&amp; || 管道
 
-由于我github2个号切换，导致，push的时候有403错误混淆，
-所以删除了..." />
-    <meta name="keywords" content="IDE" />
+找到PS5配置文件
+# 列出PS5配置文件
+locate PowerShell_profile.ps1
+
+# 打开配置文件
+sublime C:\Users\lin..." />
+    <meta name="keywords" content="PR" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -92,21 +95,21 @@ git config --list
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-10-03"><i class="fa fa-calendar"></i><span class="lately">4 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">20 分钟前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-github-cli-quan-tao/"> </span>
+              <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-powershell-7/"> </span>
               </a>
-              <span id="/py-greater-github-cli-quan-tao/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/pr-greater-powershell-7/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
               </div>
-              <h1 class="title ularge white bold">PY =&gt; Github-Cli</h1>
+              <h1 class="title ularge white bold">PR =&gt; Powershell 7</h1>
             </div>
           </div>
         </div>  
@@ -116,156 +119,233 @@ git config --list
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="下载">下载</h1>
-<p>选个OS版本（我用的Win）：<a href="https://github.com/cli/cli/releases">https://github.com/cli/cli/releases  </a></p>
-<h1 id="列出配置">列出配置</h1>
-<pre><code>git config --list
+                  <h1 id="ps7-主要新增功能">PS7 主要新增功能</h1>
+<pre><code>&amp; 后台
+&amp;&amp; || 管道
 </code></pre>
-<p>由于我github2个号切换，导致，push的时候有403错误混淆，<br>
-所以删除了家目录的 .gitconfig(应该是这个有些记不清了)</p>
-<h1 id="设置代理">设置代理</h1>
-<p>为了加速clone，这里先设置，若没有PROXY, 那此步可略过</p>
-<pre><code>git config --global http.proxy &quot;socks5://127.0.0.1:7890&quot;
-git config --global https.proxy &quot;socks5://127.0.0.1:7890&quot;
-</code></pre>
-<p>清除代理也很简单</p>
-<pre><code>git config --global --unset http.proxy
-git config --global --unset https.proxy
-</code></pre>
-<h1 id="设置ssh-key">设置SSH Key</h1>
-<h3 id="说明">说明</h3>
-<pre><code>如果你不习惯用SSH，而是习惯用HTTP的方式，那这步可省
-</code></pre>
-<h3 id="生成密钥命令">生成密钥命令</h3>
-<pre><code>ssh-keygen
-</code></pre>
-<p>进入用户家目录，把id_rsa.pub公钥复制出来<br>
-粘贴到-&gt; <a href="https://github.com/settings/ssh/">https://github.com/settings/ssh/new</a></p>
-<h1 id="登录">登录</h1>
-<pre><code>gh auth login
-</code></pre>
-<p>提前声明，遇到选项，都是用上下箭头选择<br>
-第1个选项： 选择Github.com（也就是个人用户）<br>
-第2个选项：选择 Login with a web browser<br>
-Command中会给一串代码，复制代码-&gt;CMD回车-&gt;自动跳转到Web-&gt;粘贴代码-&gt;确认-&gt;确认授权</p>
-<pre><code>这里也可以选择使用 Token 代替 web browser。但是这种方式需要生成一个Token
-生成URL如下：
-:  -&gt;   https://github.com/settings/tokens
+<h1 id="找到ps5配置文件">找到PS5配置文件</h1>
+<pre><code># 列出PS5配置文件
+locate PowerShell_profile.ps1
 
-点击 Generate bew token ，新建一个新 token：
-    注意： 需要把 repo的所有权限勾上
-               外加一个admin:org下面的  read:org  选项
-    温馨提示：  read:org  必须勾上，不然创建失败。
+# 打开配置文件
+sublime C:\Users\lin\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
 </code></pre>
-<p>第3个选项：选择SSH（HTTPS也可以）</p>
-<h3 id="查看登录状态">查看登录状态</h3>
-<pre><code>gh auth status
+<h2 id="修改ps5配置为如下内容">修改PS5配置为如下内容</h2>
+<p>主要就是 iex 和 irm 两条别名命令添加回来，下面要用到</p>
+<pre><code>Get-Alias | ForEach-Object { 
+    if ($_.Name -ne &quot;cd&quot; -and $_.Name -ne &quot;start&quot; -and $_.Name -ne &quot;iex&quot; -and $_.Name -ne &quot;irm&quot;)
+    {
+        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
+    }
+} 
+
+Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
+
+Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+Write-Color -Text  &quot;                                                                                  &quot; 
+
+
+function new_clear{
+    Clear-Host
+    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+    Write-Color -Text  &quot;                                                                                  &quot; 
+}
+
+Set-Alias clear new_clear
+Set-Alias cls clear
 </code></pre>
-<h3 id="退出登录">退出登录</h3>
-<pre><code>gh auth logout
+<h1 id="下载ps7安装包">下载PS7安装包</h1>
+<pre><code>iex &quot;&amp; { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI&quot;
 </code></pre>
-<h1 id="仓库">仓库</h1>
-<h3 id="创建仓库">创建仓库</h3>
-<pre><code>gh repo create my-gh
-    -&gt; Public
-    -&gt; xxx  in your current directory（Y/N） y   (回车默认就是yes，下同)
-    -&gt; Create a local project directory for xxx （Y/N）y
+<h1 id="新建ps7配置文件">新建PS7配置文件</h1>
+<p>注：管理员身份运行</p>
+<pre><code>cd &quot;C:/Program Files/PowerShell/7&quot;
+notepad profile.ps1
 </code></pre>
-<h3 id="查看远程权限">查看远程权限</h3>
-<pre><code>git remote -v
-    origin  https://github.com/Cythonlin/my-gh.git (fetch)
-    origin  https://github.com/Cythonlin/my-gh.git (push)
+<p>把上面PS5一模一样的内容复制进来</p>
+<pre><code>略
 </code></pre>
-<h3 id="克隆">克隆</h3>
-<pre><code>gh repo clone gin-gonic/gin
-cd gin
-git remote -v
-    origin  https://github.com/gin-gonic/gin.git (fetch)
-    origin  https://github.com/gin-gonic/gin.git (push)
-    # 我们可以发现，这分支并不是我们的自己的
-    # 所以我们可以 fork 下来
+<p>保存，退出</p>
+<h1 id="使用ps7命令行重新安装颜色字体">使用PS7命令行重新安装颜色字体</h1>
+<pre><code>Install-Module -Name PSWriteColor -Scope CurrentUser
 </code></pre>
-<h3 id="fork">fork</h3>
-<p>fork 指的是，把克隆到自己的仓库，作为上游（upstream）项目，然后自己就可自由同步它</p>
-<pre><code>cd gin  # 上面已经进此路径，这步可省
-gh repo fork
-    -&gt; Would you like to add a remote for the fork? (Y/n) 回车yes
+<h1 id="重新修改terminal-配置文件">重新修改Terminal 配置文件</h1>
+<pre><code># 列出配置文件
+locate settings.json | grep -i windowsterminal
+
+# 打开配置文件
+sublime C:\Users\lin\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
 </code></pre>
-<p>上面是先clone,然后进入路径，再fork<br>
-如果事先未clone， 也可以用gh repo fork + 用户名/仓库名， 直接 fork+clone一步到位</p>
-<pre><code># 这就不需要像上面先 cd进入clone的目录下再fork了，这种方式直接fork即可
-gh repo fork pytorch/pytorch
+<h2 id="将settingsjson重新粘入如下内容">将settings.json重新粘入如下内容</h2>
+<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
+    // For documentation on these settings, see: https://aka.ms/terminal-documentation
+
+    {
+        // 官方设置指南?
+        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
+
+        // 一些globals设置
+        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
+        // &quot;initialRows&quot;: 25,
+        // &quot;initialCols&quot;: 100,
+        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
+
+        // 设置默认终端
+        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
+        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+
+        &quot;profiles&quot;: {
+
+            &quot;defaults&quot;: {
+                // Put settings here that you want to apply to all profiles
+                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
+                &quot;useAcrylic&quot;: true,
+                &quot;acrylicOpacity&quot;: 0.55,
+                &quot;cursorShape&quot;: &quot;vintage&quot;,
+                &quot;cursorHeight&quot;: 60,
+                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
+                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
+                &quot;fontSize&quot;: 18
+            },
+
+            &quot;list&quot;: [{
+                    // Make changes here to the powershell.exe profile
+                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+                    &quot;name&quot;: &quot;PS5&quot;,
+                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+                },
+                // {	
+    //                 // Make changes here to the powershell.exe profile
+    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
+    //                 &quot;name&quot;: &quot;PWSH&quot;,
+    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
+    //                 &quot;hidden&quot;: false
+    //             },
+                {
+                    // Make changes here to the cmd.exe profile
+                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
+                    &quot;name&quot;: &quot;cmd&quot;,
+                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+
+                },
+                {
+                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Azure Cloud Shell&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
+                },
+                // {
+                //     &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
+                //     &quot;hidden&quot;: false,
+                //     &quot;name&quot;: &quot;Ubuntu-20.04&quot;,
+                //     &quot;startingDirectory&quot;: &quot;d:&quot;,
+                //     &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;
+                // },
+                // {
+    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+    //                 &quot;hidden&quot;: false,
+    //                 &quot;name&quot;: &quot;ssh&quot;,
+    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
+    //             },
+                {
+                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;Conda&quot;,
+                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
+                {
+                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;PS7&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+                }
+
+            ]
+        },
+
+        // Add custom color schemes to this array
+        &quot;schemes&quot;: [
+    {
+    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
+    &quot;black&quot;: &quot;#000000&quot;,
+    &quot;red&quot;: &quot;#ff7092&quot;,
+    &quot;green&quot;: &quot;#00fbac&quot;,
+    &quot;yellow&quot;: &quot;#fffa6a&quot;,
+    &quot;blue&quot;: &quot;#00bfff&quot;,
+    &quot;purple&quot;: &quot;#df95ff&quot;,
+    &quot;cyan&quot;: &quot;#86cbfe&quot;,
+    &quot;white&quot;: &quot;#ffffff&quot;,
+    &quot;brightBlack&quot;: &quot;#000000&quot;,
+    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
+    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
+    &quot;brightYellow&quot;: &quot;#fff787&quot;,
+    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
+    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
+    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
+    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
+    &quot;background&quot;: &quot;#332a57&quot;,
+    &quot;foreground&quot;: &quot;#e5e5e5&quot;
+    }
+    ],
+
+        // Add any keybinding overrides to this array.
+        // To unbind a default keybinding, set the command to &quot;unbound&quot;
+        &quot;keybindings&quot;: [],
+        &quot;actions&quot;:
+        [
+            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
+            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
+            // To learn more about selection, visit https://aka.ms/terminal-selection
+            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
+            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
+
+            // Press Ctrl+Shift+F to open the search box
+            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
+            // settings
+            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
+            // Press Alt+Shift+D to open a new pane.
+            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
+            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
+            // To learn more about panes, visit https://aka.ms/terminal-panes
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
+            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
+        ]
+    }
 </code></pre>
-<h1 id="gist">Gist</h1>
-<p>gist是github分享数据内容的平台 -&gt; <a href="https://gist.github.com/">https://gist.github.com/</a><br>
-上面的地址可以分享公有/私有的文件，创建上传后，Github会跳转生成一个链接，来给我们使用</p>
-<h3 id="github-cli实现gist">github-cli实现Gist</h3>
-<p>默认是私有的，命令如下：</p>
-<pre><code>gh gist create 1.txt
-</code></pre>
-<p>公有命令如下：</p>
-<pre><code>gh gist create 1.txt --public
-</code></pre>
-<p>二者都会生成个URL，即可访问。<br>
-也可以一个gist中存2个文件：</p>
-<pre><code>gh gist create 1.txt 2.txt
-</code></pre>
-<h3 id="修改-gist共享的文件参数为生成url的尾部路径参数">修改 Gist共享的文件，参数为生成url的尾部路径参数</h3>
-<pre><code>gh gist edit 5ff497631f0cc1e0a4463079a6a9eeff
-</code></pre>
-<h3 id="列出-上传过的gist文件-public代表公有文件-secret私有-不加参数代表所有">列出 上传过的Gist文件, --public代表公有文件，--secret私有, 不加参数代表所有</h3>
-<pre><code>gh gist list
-gh gist list --secret  
-gh gist list --public
-</code></pre>
-<h1 id="pr-pull-request">PR (Pull Request）</h1>
-<h2 id="pr概念">PR概念</h2>
-<p>&quot;我fork了你们的代码，现在我发送一个请求，请你们回收我的代码&quot;😂</p>
-<h2 id="pr流程">PR流程</h2>
+<h2 id="本次-settingsjson主要对-terminal做了如下修改">本次 settings.json主要对 Terminal做了如下修改</h2>
 <ol>
-<li>fork别人仓库（先fork在clone， 前面已经提到 gh 可以直接fork一步到位了）</li>
-<li>切换分支（也可以在 master 下），add,commit,push 修改代码。</li>
-<li>在你fork后的仓库主页点击右上角的 Compare &amp; pull request 提交合并申请</li>
-<li>等待别人合并你的请求</li>
+<li>窗口开启为全屏 -&gt; launchMode</li>
+<li>加入PS7</li>
+<li>默认终端设为PS7 -&gt; defaultProfile</li>
+<li>Powershell5 改名为 PS5</li>
 </ol>
-<h2 id="实验流程">实验流程</h2>
-<h3 id="一-用当前的号去-fork另一个号另外那个也是自己的号方便做实验的仓库">一、用当前的号，去 fork另一个号（另外那个也是自己的号方便做实验）的仓库。</h3>
-<pre><code>gh repo fork hacker-lin/bio2bioes
-cd bio2bioes
-</code></pre>
-<h3 id="二-创建切换分支addcommitpushadd">二、 创建+切换分支+add+commit+push+add</h3>
-<pre><code>git checkout -b dev
-echo 111 &gt; 1.txt
-git add . &amp;&amp; git commit -m &quot;my_test&quot; 
-到这里即可，先不要push（下面PR创建的过程，会自动帮我们push，这里push我试了会出错）
-</code></pre>
-<h3 id="三-用github-cli命令-代替-点击compare-pull-request-按钮提交合并申请">三、用GitHUB-Cli命令 代替 点击Compare &amp; pull request 按钮提交合并申请</h3>
-<p>创建PR</p>
-<pre><code>gh pr create
-     -&gt; Where should we push the 'dev' branch # 选第一个
-     -&gt; Title  # 随便写个  some update
-     -&gt; Body # 直接 回车 跳过就行。
-     -&gt; What's next? # 选 Submit  提交即可 
-</code></pre>
-<p>列出提交的PR</p>
-<pre><code>gh pr list 
-# 执行后，你会发现 PR信息， # 后面的数字记住下面Closed和diff用得到
-</code></pre>
-<p>Merge PR</p>
-<pre><code>gh pr merge
-    -&gt; What merge method would you like to use # Create a merge commit即可
-</code></pre>
-<p>Closed PR</p>
-<pre><code>gh pr close 3
-# 这个3 就是上面 gh pr list 的结果
-</code></pre>
-<p>比较 PR 信息</p>
-<pre><code>gh pr diff 3
-# 最下面是最新的
-</code></pre>
-<p>查看 PR 详细信息</p>
-<pre><code>gh pr status
-</code></pre>
 
                 </div>
                 <div class="clear"></div>
@@ -275,26 +355,13 @@ git add . &amp;&amp; git commit -m &quot;my_test&quot;
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/1L4lr0i2f.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-k8s/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-10-07">2020-10-07</time>
-                  <h4 class="title white no-margin">PY =&gt; K8S（未完待续）</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/XH05Gb5J6.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/pr-greater-oh-my-posh3/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">GO =&gt; 交换元素的四种方式</h4>
+                  <time datetime="2021-02-12">2021-02-12</time>
+                  <h4 class="title white no-margin">PR =&gt; Oh-my-Posh3+Banner</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
