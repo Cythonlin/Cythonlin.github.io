@@ -80,7 +80,7 @@ sublime C:\Users\lin..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1613624592273" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1613636648612" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -95,7 +95,7 @@ sublime C:\Users\lin..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">20 分钟前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">4 小时前</span></time>
               
               <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-powershell-7/"> </span>
@@ -346,6 +346,75 @@ sublime C:\Users\lin\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8b
 <li>默认终端设为PS7 -&gt; defaultProfile</li>
 <li>Powershell5 改名为 PS5</li>
 </ol>
+<h1 id="加了一些后台便捷功能整体profileps1文件如下">加了一些后台便捷功能，整体profile.ps1文件如下：</h1>
+<p>注：这里加了 gsudo的配置，因此需要，先安装 gsudo</p>
+<pre><code>Get-Alias | ForEach-Object { 
+    if ($_.Name -ne &quot;cd&quot; `
+    -and $_.Name -ne &quot;start&quot; `
+    -and $_.Name -ne &quot;iex&quot; `
+    -and $_.Name -ne &quot;irm&quot; `
+    -and $_.Name -ne &quot;select&quot; `
+    ) `
+    {
+        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
+    }
+} 
+
+Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
+
+Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+Write-Color -Text  &quot;                                                                                  &quot; 
+
+
+function new_clear{
+    Clear-Host
+    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
+    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
+    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
+    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
+    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
+    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
+    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
+    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
+    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
+    Write-Color -Text  &quot;                                                                                  &quot; 
+}
+
+function rjobs{
+    get-job | remove-job -force
+}
+
+function stops{
+    get-job | stop-job
+}
+
+function stop{
+    stop-job @args
+}
+
+function fg{
+    wait-job @args
+}
+
+Set-Alias jobs job
+
+
+function rjob{
+    remove-job @args 
+}
+
+Set-Alias clear new_clear
+Set-Alias cls clear
+Set-Alias sudo gsudo
+</code></pre>
 
                 </div>
                 <div class="clear"></div>
