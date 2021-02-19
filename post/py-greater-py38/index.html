@@ -22,9 +22,10 @@
 2种格式的区别就是，一个带括号，一个不用带括号
 (a:=1)
 a:=1
+
 其实这两种格式结果是一样的，只是有些情况括号可以省略不写而已。
 括号可省的情况
-#一..." />
+#..." />
     <meta name="keywords" content="Python" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -80,7 +81,7 @@ a:=1
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1613636648612" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1613705767782" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -123,10 +124,11 @@ a:=1
 <p>本篇文章介绍Python3.8的一些较为好用的新特性</p>
 <h1 id="赋值表达式">赋值表达式</h1>
 <h3 id="语法格式">语法格式：</h3>
-<p>2种格式的区别就是，一个带括号，一个不用带括号<br>
-(a:=1)<br>
-a:=1<br>
-其实这两种格式结果是一样的，只是有些情况括号可以省略不写而已。</p>
+<p>2种格式的区别就是，一个带括号，一个不用带括号</p>
+<pre><code>(a:=1)
+a:=1
+</code></pre>
+<p>其实这两种格式结果是一样的，只是有些情况括号可以省略不写而已。</p>
 <h3 id="括号可省的情况">括号可省的情况</h3>
 <h3 id="一-序列类型中-括号可省">#一、序列类型中 括号可省</h3>
 <pre><code>[a:=1, 2]
@@ -149,23 +151,27 @@ print(b)
 <pre><code>f'{(p:=1)}'
 print(p)
 </code></pre>
-<p>假如新变量q是未定义的，不加括号就会出现如下情况（所以这样用就没意义了， f-string括号必须加）<br>
-f'{q:=1}'<br>
-print(p)<br>
-# NameError: name 's' is not defined</p>
+<p>假如新变量q是未定义的，不加括号就会出现如下情况（所以这样用就没意义了， f-string括号必须加）</p>
+<pre><code>f'{q:=1}'
+print(p)
+# NameError: name 's' is not defined
+</code></pre>
 <h4 id="三-以后碰见再说了也没啥了">三、以后碰见再说了，也没啥了</h4>
 <h1 id="f-string新增功能">f-string新增功能</h1>
-<p>3.8之前这么用:<br>
-f'{loss}, {acc}'<br>
-#&gt;&gt; '0.0141, 0.98912'<br>
-3.8之后这么用:<br>
-f'{loss=}, {acc=}'<br>
-#&gt;&gt; 'loss=0.0141, acc=0.98912'</p>
-<p>还有个功能(自己看结果对比的效果把):<br>
-name = 'zhang'<br>
-f'{name}'      # 'zhang'<br>
-f'{name=}'     # &quot;name='zhang'&quot;      # 新增功能1<br>
-f'{name=!s}'    # 'name=zhang'       # 新增功能2</p>
+<p>3.8之前这么用:</p>
+<pre><code>f'{loss}, {acc}'
+#&gt;&gt; '0.0141, 0.98912'
+</code></pre>
+<p>3.8之后这么用:</p>
+<pre><code>f'{loss=}, {acc=}'
+#&gt;&gt; 'loss=0.0141, acc=0.98912'
+</code></pre>
+<p>还有个功能(自己看结果对比的效果把):</p>
+<pre><code>name = 'zhang'
+f'{name}'      # 'zhang'
+f'{name=}'     # &quot;name='zhang'&quot;      # 新增功能1
+f'{name=!s}'    # 'name=zhang'       # 新增功能2
+</code></pre>
 <h1 id="欧氏距离">欧氏距离</h1>
 <pre><code>import math
 math.dist([1,2,3,4],[5,6,7,8])
@@ -240,19 +246,23 @@ f'{e:%u}' # '3'     表示星期3  （星期日是7）
 f'{e:%W}' # '35'    表示一年中的第 35周, 个位数前面补0,至2位(注意是大写的W)
 </code></pre>
 <h3 id="方式7-精度占位符号后面不要有空格这个较难理解">方式7: 精度占位符号(:后面不要有空格)(这个较难理解)</h3>
-<p>情况一、:.n 代表只保留前n位 (并且四舍五入)(总体位数不算小数点所在的位数)<br>
-f&quot;{1234.5678:.6}&quot;     # .6  表示保留6位 (不算小数点, 整数+小数=6位)<br>
-#&gt;&gt; '1234.57'<br>
-情况二、:m 代表只在&quot;最前面&quot;扩充&quot;至&quot;m位(注意这个&quot;至&quot;字)<br>
-f&quot;{1234.5678:15}&quot;         # 扩充至15位(小数点也算位数) 默认用空白字符代替<br>
-#&gt;&gt; '      1234.5678'<br>
-情况三、:m前面带0， 补充空字符串 改为 &quot;补0&quot;<br>
-f&quot;{1234.5678:015}&quot;    # 0代表扩充的多余位数补0 (小数点也算位数)15代表最前面扩充至15位<br>
-#&gt;&gt; '0000001234.5678'<br>
-综合情况、:m.n 结合(只能是 m.n 这种顺序的格式)<br>
-f&quot;{1234.5678:015.6}&quot;    # 15就是上面说的m, 0就是m前面补的0, 6就是上面说的n<br>
-#&gt;&gt; '000000001234.57'</p>
-<pre><code># 重点解读上面这个综合语句(按照下面的顺序才能正确解析):
+<p>情况一、:.n 代表只保留前n位 (并且四舍五入)(总体位数不算小数点所在的位数)</p>
+<pre><code>f&quot;{1234.5678:.6}&quot;     # .6  表示保留6位 (不算小数点, 整数+小数=6位)
+#&gt;&gt; '1234.57'
+</code></pre>
+<p>情况二、:m 代表只在&quot;最前面&quot;扩充&quot;至&quot;m位(注意这个&quot;至&quot;字)</p>
+<pre><code>f&quot;{1234.5678:15}&quot;         # 扩充至15位(小数点也算位数) 默认用空白字符代替
+#&gt;&gt; '      1234.5678'     
+</code></pre>
+<p>情况三、:m前面带0， 补充空字符串 改为 &quot;补0&quot;</p>
+<pre><code>f&quot;{1234.5678:015}&quot;    # 0代表扩充的多余位数补0 (小数点也算位数)15代表最前面扩充至15位
+#&gt;&gt; '0000001234.5678'
+</code></pre>
+<p>综合情况、:m.n 结合(只能是 m.n 这种顺序的格式)</p>
+<pre><code>f&quot;{1234.5678:015.6}&quot;    # 15就是上面说的m, 0就是m前面补的0, 6就是上面说的n
+#&gt;&gt; '000000001234.57'  
+
+# 重点解读上面这个综合语句(按照下面的顺序才能正确解析):
 1. 先看.后面的 n,  n是6,  则 整体(整数+小数)(不包括小数点)保留6位 ===&gt; '1234.57'
 2. 然后才看 m,  m是15,   则在最前面扩充&quot;至&quot;15位置(包括小数点的位数) ===&gt; '        1234.57'
 3. 最后把第2步的空白字符补0    =====&gt;  '000000001234.57'
@@ -268,16 +278,17 @@ eg2: m.nf的情况
     						 # 然后从前面扩张整体位数 &quot;至&quot;15位, 空缺的补0即可
 	'00001234.567800'        
 </code></pre>
-<p>情况五: 百分位(作为训练acc, 也算比较常用)<br>
-&quot;&quot;&quot;<br>
-分析核心思想:<br>
-1. 先将原数扩大100倍(也就是小数点向后移2位),<br>
-2. 然后关注 .n  , 保留小数点后的n位(四舍五入)<br>
-3. 最后加个百分号%, 即可)<br>
-&quot;&quot;&quot;<br>
-f&quot;{1234.5678:.1%}&quot;<br>
-#&gt;&gt; '123456.8%'</p>
-<pre><code>f&quot;{1234.5678:.6%}&quot;
+<p>情况五: 百分位(作为训练acc, 也算比较常用)</p>
+<pre><code>&quot;&quot;&quot;
+	分析核心思想: 
+		1. 先将原数扩大100倍(也就是小数点向后移2位), 
+		2. 然后关注 .n  , 保留小数点后的n位(四舍五入)
+		3. 最后加个百分号%, 即可)
+&quot;&quot;&quot;
+f&quot;{1234.5678:.1%}&quot;
+#&gt;&gt; '123456.8%'
+
+f&quot;{1234.5678:.6%}&quot;
 #&gt;&gt; '123456.780000%'
 
 # 如果想带m,也可以,和上面集中情况,以及解析顺序一摸一样,m不太常用, 我这里就不列了</code></pre>
