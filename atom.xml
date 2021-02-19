@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-19T03:36:12.955Z</updated>
+    <updated>2021-02-19T04:06:44.879Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -1064,43 +1064,6 @@ vocals.wav
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[PY => K8S（未完待续）]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-k8s/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-k8s/">
-        </link>
-        <updated>2020-10-06T22:18:23.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="安装">安装</h1>
-<p>官档： <a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/">https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/</a><br>
-官档中的镜像时Google的，需要换成阿里源。</p>
-<h3 id="ubuntu">Ubuntu</h3>
-<pre><code>apt-get update &amp;&amp; apt-get install -y apt-transport-https
-
-curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
-
-cat &lt;&lt;EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
-deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
-EOF
-
-apt-get update
-apt-get install -y kubelet kubeadm kubectl
-</code></pre>
-<h3 id="centos">CentOS</h3>
-<pre><code>cat &lt;&lt;EOF &gt; /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
-
-setenforce 0
-yum install -y kubelet kubeadm kubectl
-systemctl enable kubelet &amp;&amp; systemctl start kubelet</code></pre>
-]]></content>
-    </entry>
-    <entry>
         <title type="html"><![CDATA[PY => Github-Cli]]></title>
         <id>https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/</id>
         <link href="https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/">
@@ -1255,6 +1218,40 @@ git add . &amp;&amp; git commit -m &quot;my_test&quot;
 </code></pre>
 <p>查看 PR 详细信息</p>
 <pre><code>gh pr status
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[GO => 交换元素的四种方式]]></title>
+        <id>https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/</id>
+        <link href="https://cythonlin.github.io/post/go-greater-jiao-huan-yuan-su-de-si-chong-fang-shi/">
+        </link>
+        <updated>2020-09-29T04:22:34.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="python-and-go">Python and Go</h1>
+<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
+a := 1<br>
+b := 3</p>
+<h3 id="方式0">方式0</h3>
+<pre><code>c := 0
+c = a
+a = b
+b = c
+</code></pre>
+<h3 id="方式1">方式1</h3>
+<pre><code>a,b = b,a
+</code></pre>
+<h3 id="方式2">方式2</h3>
+<pre><code>a = a + b
+b = a - b
+a = a - b
+</code></pre>
+<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
+<pre><code>a = a ^ b
+b = a ^ b
+a = a ^ b
+
+fmt.Println(a)
+fmt.Println(b)
 </code></pre>
 ]]></content>
     </entry>
