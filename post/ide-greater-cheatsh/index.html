@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI =&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二） | Cython_lin</title>
+<title>IDE =&gt; Cheat.sh | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,11 +15,12 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="训练集-测试集-验证集切割
-###方法1：（借用三方sklearn库）
-因为sklearn的train_test_split只能切2份，所以我们需要切2次：
-from sklearn.model_selection import train..." />
-    <meta name="keywords" content="AI" />
+    <meta name="description" content="回忆
+由于Scoop对cheat.sh支持不友好，我就又把WSL2加了进来
+=&gt; WSL2+ZSH
+同时也更新了最新的一次 WT的配置文件，如下：
+    // To view the default settings, hold &..." />
+    <meta name="keywords" content="PR,IDE" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -89,21 +90,23 @@ from sklearn.model_selection import train..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-22"><i class="fa fa-calendar"></i><span class="lately">8 小时前</span></time>
               
-              <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/"> </span>
+              <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ide-greater-cheatsh/"> </span>
               </a>
-              <span id="/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/ide-greater-cheatsh/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="ctag ctag-0 ctag-n16me-6oV" aria-label="">AI</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                    
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
                     
               </div>
-              <h1 class="title ularge white bold">AI =&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二）</h1>
+              <h1 class="title ularge white bold">IDE =&gt; Cheat.sh</h1>
             </div>
           </div>
         </div>  
@@ -113,262 +116,202 @@ from sklearn.model_selection import train..." />
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="训练集-测试集-验证集切割">训练集-测试集-验证集切割</h1>
-<p>###方法1：（借用三方sklearn库）<br>
-因为sklearn的train_test_split只能切2份，所以我们需要切2次：<br>
-from sklearn.model_selection import train_test_split</p>
-<pre><code>x_train, x_test, y_train, y_test = train_test_split(
-    x, y,                # x,y是原始数据
-    test_size=0.2        # test_size默认是0.25
-)  # 返回的是 剩余训练集+测试集
+                  <h1 id="回忆">回忆</h1>
+<p>由于Scoop对cheat.sh支持不友好，我就又把WSL2加了进来<br>
+<a href="https://www.cklin.top/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">=&gt; WSL2+ZSH</a><br>
+同时也更新了最新的一次 WT的配置文件，如下：</p>
+<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
+    // For documentation on these settings, see: https://aka.ms/terminal-documentation
 
-x_train, x_valid, y_train, y_valid = train_test_split(
-    x_train, y_train,    # 把上面剩余的 x_train, y_train继续拿来切
-    test_size=0.2        # test_size默认是0.25
-)  # 返回的是 二次剩余训练集+验证集
+    {
+        // 官方设置指南?
+        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
+
+        // 一些globals设置
+        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
+        // &quot;initialRows&quot;: 25,
+        // &quot;initialCols&quot;: 100,
+        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
+
+        // 设置默认终端
+        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
+        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+
+        &quot;profiles&quot;: {
+
+            &quot;defaults&quot;: {
+                // Put settings here that you want to apply to all profiles
+                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
+                &quot;useAcrylic&quot;: true,
+                &quot;acrylicOpacity&quot;: 0.55,
+                &quot;cursorShape&quot;: &quot;vintage&quot;,
+                &quot;cursorHeight&quot;: 60,
+                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
+                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
+                &quot;fontSize&quot;: 18
+            },
+
+            &quot;list&quot;: [
+                {
+                    &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;UBT&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;,
+        &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
+                {
+                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;CON&quot;,
+                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
+                {
+                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;PS7&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+                },
+                {
+                    // Make changes here to the cmd.exe profile
+                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
+                    &quot;name&quot;: &quot;cmd&quot;,
+                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+                },
+    {
+                    // Make changes here to the powershell.exe profile
+                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+                    &quot;name&quot;: &quot;PS5&quot;,
+                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+                },
+                // {	
+    //                 // Make changes here to the powershell.exe profile
+    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
+    //                 &quot;name&quot;: &quot;PWSH&quot;,
+    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
+    //                 &quot;hidden&quot;: false
+    //             },
+
+                {
+                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;AWS&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
+                }
+                // {
+    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+    //                 &quot;hidden&quot;: false,
+    //                 &quot;name&quot;: &quot;ssh&quot;,
+    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
+    //             }
+
+            ]
+        },
+
+        // Add custom color schemes to this array
+        &quot;schemes&quot;: [
+    {
+    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
+    &quot;black&quot;: &quot;#000000&quot;,
+    &quot;red&quot;: &quot;#ff7092&quot;,
+    &quot;green&quot;: &quot;#00fbac&quot;,
+    &quot;yellow&quot;: &quot;#fffa6a&quot;,
+    &quot;blue&quot;: &quot;#00bfff&quot;,
+    &quot;purple&quot;: &quot;#df95ff&quot;,
+    &quot;cyan&quot;: &quot;#86cbfe&quot;,
+    &quot;white&quot;: &quot;#ffffff&quot;,
+    &quot;brightBlack&quot;: &quot;#000000&quot;,
+    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
+    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
+    &quot;brightYellow&quot;: &quot;#fff787&quot;,
+    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
+    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
+    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
+    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
+    &quot;background&quot;: &quot;#332a57&quot;,
+    &quot;foreground&quot;: &quot;#e5e5e5&quot;
+    }
+    ],
+
+        // Add any keybinding overrides to this array.
+        // To unbind a default keybinding, set the command to &quot;unbound&quot;
+        &quot;keybindings&quot;: [],
+        &quot;actions&quot;:
+        [
+            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
+            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
+            // To learn more about selection, visit https://aka.ms/terminal-selection
+            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
+            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
+
+            // Press Ctrl+Shift+F to open the search box
+            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
+            // settings
+            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
+            // Press Alt+Shift+D to open a new pane.
+            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
+            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
+            // To learn more about panes, visit https://aka.ms/terminal-panes
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
+            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
+        ]
+    }
 </code></pre>
-<p>切分好的数据，一般需要做 batch_size， shuffle等， 可以使用 tf.keras模型的 fit() 一步传递！<br>
-eg:<br>
-model.compile(<br>
-loss=keras.losses.mean_squared_error,<br>
-optimizer=keras.optimizers.SGD(),<br>
-metrics=['acc']    # 注意这个metrics参数，下面一会就提到<br>
-)</p>
-<pre><code>history = model.fit(
-    x_train, 
-    y_train, 
-    validation_data=(x_valid, y_valid),     # 验证集在这里用了！！！
-    epochs=100, 
-    batch_size = 32      #  batch_size 不传也行，因为默认就是32
-    shuffle=True,        #  shuffle    不传也行，因为默认就是True
-    # callbacks=callbacks, #
-)
-度量指标 = model.evaluate(x_test, y_test)    # 返回的是指标（可能包括loss,acc）
-# 这里说一下，为什么我说可能包括。
-# 因为这个返回结果取决于 你的  model.compile() 传递的参数
-    # 如果你传了  metrics=['acc']， 那么这个度量指标的返回结果就是 (loss, acc)
-    # 如果你没传 metrics ，         那么这个度量指标的返回结果就是一个 loss
-
-y_predict = model.predict(x_test)            # 返回的是预测结果
+<h1 id="cheatsh">Cheat.sh</h1>
+<p><a href="https://github.com/chubin/cheat.sh">-&gt; cheat.sh</a></p>
+<h1 id="for-curl可以用下面terminal代替">For Curl(可以用下面Terminal代替)</h1>
+<p>类似如下语法：</p>
+<pre><code>curl cht.sh/python/string+time
 </code></pre>
-<p>###方法2：（tf.split）<br>
-自己封装的代码：功能包括： 3切分，乱序数据集，分批操作 一体化！！！ （可能有瑕疵）<br>
-已上传至Github :  https://github.com/hacker-lin/train_test_valid_split<br>
-定义部分：<br>
-class HandlerData:<br>
-def <strong>init</strong>(self, x, y):<br>
-&quot;&quot;&quot;我封装的类，数据通过实例化传进来保存&quot;&quot;&quot;<br>
-self.x = x<br>
-self.y = y</p>
-<pre><code>    def shuffle_and_batch(self, x, y, batch_size=None):
-        &quot;&quot;&quot;默认定死乱序操作，batch_size可选参数， 其实乱序参数也应该设置可选的。懒了&quot;&quot;&quot;
-        data = tf.data.Dataset.from_tensor_slices((x, y))    # 封装 dataset数据集格式
-
-        data_ = data.shuffle(        # 乱序
-            buffer_size=x.shape[0],  # 官方文档说明 shuffle的buffer_size 必须大于或等于样本数量
-        )
-        if batch_size:
-            data_ = data_.batch(batch_size)
-        return data_
-
-    def train_test_valid_split(self, 
-        test_size=0.2,                 # 测试集的切割比例
-        valid_size=0.2,                # 验证集的切割比例
-        batch_size=32,                 # batch_size 默认我设为了32
-        is_batch_and_shuffle=True      # 这个是需不需要乱序和分批，默认设为使用乱序和分批
-    ):
-    
-        sample_num = self.x.shape[0]    # 获取样本总个数
-        train_sample = int(sample_num * (1 - test_size - valid_size))  # 训练集的份数
-        test_sample = int(sample_num * test_size)                      # 测试集测份数
-        valid_train = int(sample_num * valid_size)                     # 验证集的份数
-        # 这三个为什么我用int包裹起来了，因为我调试过程中发现，有浮点数计算精度缺失现象。
-        # 所以必须转整形
-        
-        # tf.split()  此语法上一篇我讲过，分n份，每份可不同数量
-        x_train, x_test, x_valid = tf.split(  
-            self.x,
-            num_or_size_splits=[train_sample, test_sample, valid_train],
-            axis=0
-        )
-        y_train, y_test, y_valid = tf.split(
-            self.y,
-            [train_sample, test_sample, valid_train],
-            axis=0
-        )
-        # 因为份数是我切割x,y之前计算出来的公共变量。所以不用担心 x,y不匹配的问题。
-            
-        if is_batch_and_shuffle:   # 是否使用乱序和分批，默认是使用的，所以走这条
-            return (
-                self.shuffle_and_batch(x_train, y_train, batch_size=batch_size),
-                self.shuffle_and_batch(x_test, y_test, batch_size=batch_size),
-                self.shuffle_and_batch(x_valid, y_valid, batch_size=batch_size),
-            )
-        else:    # 如果你只想要切割后的原生数据，那么你把is_batch_and_shuffle传False就走这条路了
-            return (
-                (x_train, y_train),
-                (x_test, y_test),
-                (x_valid, y_valid)
-            )
+<h2 id="工具化">工具化</h2>
+<p>windows下载到本地使用:</p>
+<pre><code>scoop install cht
 </code></pre>
-<p>调用案例：<br>
-x = tf.ones([1000, 5000])<br>
-y = tf.ones([1000, 1])</p>
-<pre><code>data_obj = HandlerData(x,y)   # x是原生的样本数据，x是原生的label数据
-
-# 方式1：使用乱序，使用分批，就是一个参数都不用传，全是默认值
-train, test, valid = data_obj.train_test_valid_split(
-    # test_size=0.2, 
-    # valid_size=0.2, 
-    # batch_size=32, 
-    # is_batch_and_shuffle=True
-) # 这些参数你都可以不传，这都是设置的默认值。
-
-print(train)
-print(test)
-print(valid)
-
-# 结果
-&gt;&gt;&gt; &lt;BatchDataset shapes: ((None, 5000), (None, 1)), types: (tf.float32, tf.float32)&gt;
-&gt;&gt;&gt; &lt;BatchDataset shapes: ((None, 5000), (None, 1)), types: (tf.float32, tf.float32)&gt;
-&gt;&gt;&gt; &lt;BatchDataset shapes: ((None, 5000), (None, 1)), types: (tf.float32, tf.float32)&gt;
-
-# 虽然你看见了样本数为None，但是没关系，因为你还没使用，遍历一下就明白了    
-for x_train,y_train in train:
-    print(x_train.shape,y_train.shape)
-
-# 结果  600 // 32 == 18 （你可以查一下正好18个）
-# 结果  600 % 32 == 24 （你可以看一下最后一个就是24）
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(32, 5000) (32, 1)
-(24, 5000) (24, 1)   # 32个一批，最后一个就是余数 24个了。
-
-
-# 方式2：不使用乱序，使用分批，只要原生数据，
-(x_train, y_train), (x_test, y_test), (x_valid, y_valid) = data_obj.train_test_valid_split(
-    # test_size=0.2,
-    # valid_size=0.2,
-    # batch_size=32,
-    is_batch_and_shuffle=False    # 这个改为False即可，其他参数可选
-)
-
-print(x_train.shape, y_train.shape)
-print(x_test.shape, y_test.shape)
-print(x_valid.shape, y_valid.shape)
-
-# 结果
-&gt;&gt;&gt; (600, 5000) (600, 1)
-&gt;&gt;&gt; (200, 5000) (200, 1)
-&gt;&gt;&gt; (200, 5000) (200, 1)
+<p>但是这种方式不太行，因为是scoop下载的是 cht.exe 而非 cht.sh<br>
+即使下到了cht.sh。 BusyBox是 dash，而非 bash，不支持执行.sh脚本<br>
+即使用了真的bash（git bash, gow 这些工具，也缺依赖）并且不是在powershell运行。<br>
+所以我还是放弃了工具化的方式， 还是用 curl了</p>
+<h1 id="for-pycharm">For Pycharm</h1>
+<h2 id="plugins">Plugins</h2>
+<pre><code>cheat.sh code snippets
 </code></pre>
-<h3 id="方式3训验分割">方式3（训验分割）</h3>
-<pre><code>history = model.fit(
-    .....
-    validation_split=0.2      # 训练集分出0.2给验证集
-)
+<h2 id="方式1使用面板">方式1：使用面板</h2>
+<p>调出面板快捷键 alt + p</p>
+<pre><code>alt + p
 </code></pre>
-<h1 id="数据处理-dataset">数据处理 （dataset）</h1>
-<p>这个模块的作用就是，将我们的数据，或者 TF张量，封装成数据集。<br>
-这个数据集具有成品API，比如：可以帮助我们，分批，乱序，制作迭代，等一些列操作。</p>
-<h3 id="基本理解">基本理解</h3>
-<pre><code>dataset = tf.data.Dataset.from_tensor_slices(np.arange(16).reshape(4,4))
-按理来说（先不取），数据形状应该是这样的。  （一个大列表里面，有4个小列表）
-[
-    [0, 1, 2 ,3 ],
-    [4, 5, 6 ,7 ],
-    [8, 9, 10,11],
-    [12,13,14,15],
-]
+<p>在面板中输入语句测试：</p>
+<pre><code>string time
 
-for data in dataset:   # 封装的数据集需要遍历（或者 iter() 改变为迭代器类型），才能返回值
-    print(data)        # 每遍历一条就是里面的小列表。 eg:第一条形状： [0, 1, 2 ,3 ]
-                       # 但是别忘了。我们这是Tensorflow，因此每层数据集都被封装为Tensor。
-                       # 因此，我们每遍历出一条数据，都是一条Tensor
-输出：
-&gt;&gt;    tf.Tensor([0 1 2 3], shape=(4,), dtype=int32)
-      tf.Tensor([4 5 6 7], shape=(4,), dtype=int32)
-      tf.Tensor([ 8  9 10 11], shape=(4,), dtype=int32)
-      tf.Tensor([12 13 14 15], shape=(4,), dtype=int32)
+和
 
-前面说了，这个数据的格式就是（一个大列表里面，有4个小列表）
-对应来看， （一个大Tensor里面， 有4个小Tensor）。 记住这个理念
+time string 
 </code></pre>
-<h3 id="数据来源参数类型">数据来源参数类型</h3>
-<p>参数传元组：<br>
-question = [[1, 0], [1, 1]]<br>
-answer = ['encode', 'decoder']<br>
-dataset = tf.data.Dataset.from_tensor_slices( (question, answer) ) # 用元组包起来了<br>
-for data in dataset:<br>
-print(data[0],'=&gt;' ,data[1])<br>
-输出:<br>
-&gt;&gt; tf.Tensor([1 0], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'encode', shape=(), dtype=string)<br>
-tf.Tensor([1 1], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'decoder', shape=(), dtype=string)</p>
-<pre><code>你可以看出它自动把我们传递的 question 和 answer 两个大列表。  &quot;相当于做了zip()操作&quot;。
-
-# 我的实验经历：训练 Encoder-Decoder模型的，&quot;问答对数据&quot;，做编码后，就可以这样用元组传。
+<p>两个单词顺序是不同的，但是却有不同的语句块</p>
+<h2 id="方式2直接在写代码">方式2：直接在写代码</h2>
+<p>代码中直接写：</p>
+<pre><code>string time
 </code></pre>
-<p>参数传字典：<br>
-data_dict = {<br>
-'encoder': [1, 0],<br>
-'decoder': [1, 1]<br>
-}</p>
-<pre><code>dataset = tf.data.Dataset.from_tensor_slices(data_dict)
-for data in dataset:    # 其实每一个元素就是一个字典
-    print(data)
-
-# 其实就是把你的 value部分，转成了Tensor类型。 总体结构没变
+<p>选中此代码</p>
+<pre><code>string time
 </code></pre>
-<h3 id="链式调用">链式调用</h3>
-<p>Dataset API 大多数操作几乎都是链式调用（就像python字符串的 replace方法）<br>
-用上面的数据作为案例数据， 介绍几种API：</p>
-<h4 id="batch-分批">batch (分批)</h4>
-<pre><code>for data in dataset.batch(2):    # 若设置 drop_remainder=True，则最后余下一批会被丢弃
-    print(data) 
-输出： 
-&gt;&gt;    tf.Tensor([[0 1 2 3] [4 5 6 7]], shape=(2, 4), dtype=int32)
-      tf.Tensor([[ 8  9 10 11] [12 13 14 15]], shape=(2, 4), dtype=int32)
-                     
-上面说过，默认就是 遍历出的每个子项，就是一个Tensor，  如上数据，遍历出 4个Tensor
-而调用 batch(2) 后， 把2个子项分成一批， 然后再包装成为Tensor。
-so, 4/2 = 2批 ， 包装成2个Tensor
+<p>按组合键复制生成的代码块</p>
+<pre><code>alt + c
 </code></pre>
-<h4 id="repeat重复使用数据epoch理念-重复训练n轮次">repeat（重复使用数据：epoch理念， 重复训练n轮次）</h4>
-<pre><code>注意（传的就是总重复数，算自身）： 
-    1. 如果repeat() 不传参数，那就是无限重复。。。
-    2. 如果传参数 = 0,  那么代表不取数据
-    3. 如果传参数 = 1,  那么代表一共就一份数据
-    4. 如果传参数 = 2,  那么代表一共就2份数据（把自己算上，一共2份，就这么个重复的意思）
-    
-for data in dataset.repeat(2).batch(3):   # 重复2次。 3个一组  （这就是链式调用）
-    print(data)
-
-结果
-&gt;&gt;  tf.Tensor([[ 0  1  2  3] [ 4  5  6  7] [ 8  9 10 11]], shape=(3, 4), dtype=int32)  
-    tf.Tensor([[12 13 14 15] [ 0  1  2  3] [ 4  5  6  7]], shape=(3, 4), dtype=int32)
-    tf.Tensor([[ 8  9 10 11] [12 13 14 15]], shape=(2, 4), dtype=int32)  
-    
-    原数据是4个子项，  重复2次 ：  4*2=8 
-    然后链式调用分3批： 8/3=2 ..... 2    （整批3个一组， 最后一批余数一组）
-    # 还要注意一下， 它们重复是顺序重复拼接。 分批时，可以首尾相连的 
-    （eg:就像小时候吃的一连串棒棒糖， 拽不好，会把上一个的糖皮连着拽下来）
+<p>然后全部松手再复制生成的代码块(直接一个单s键即可)</p>
+<pre><code>s
 </code></pre>
-<h1 id="未完待续">未完待续</h1>
+<h1 id="for-sublime">For Sublime</h1>
+<p>sublime这方面配置文档欠缺，缺快捷键</p>
 
                 </div>
                 <div class="clear"></div>
@@ -378,26 +321,13 @@ for data in dataset.repeat(2).batch(3):   # 重复2次。 3个一组  （这就�
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/n16me-6oV.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Tensorflow2.0模型保存与部署</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/n16me-6oV.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-zhang-liang-andji-ben-han-shu-yi/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">AI =&gt; Tensorflow2.0语法 - 张量&amp;基本函数(一)</h4>
+                  <time datetime="2021-02-18">2021-02-18</time>
+                  <h4 class="title white no-margin">PR =&gt; Powershell 7</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
