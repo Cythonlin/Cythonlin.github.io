@@ -75,7 +75,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1613997138136" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1614007220860" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -90,7 +90,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-22"><i class="fa fa-calendar"></i><span class="lately">9 小时前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-22"><i class="fa fa-calendar"></i><span class="lately">12 小时前</span></time>
               
               <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ide-greater-cheatsh/"> </span>
@@ -268,20 +268,60 @@
     }
 </code></pre>
 <h1 id="cheatsh">Cheat.sh</h1>
-<p><a href="https://github.com/chubin/cheat.sh">-&gt; cheat.sh</a></p>
-<h1 id="for-curl可以用下面terminal代替">For Curl(可以用下面Terminal代替)</h1>
+<p><a href="https://github.com/chubin/cheat.sh">-&gt; cheat.sh</a><br>
+以下说的都是Cheat.sh的几种用法👇</p>
+<h1 id="for-curl可以用下面wsl代替">For Curl(可以用下面WSL代替)</h1>
 <p>类似如下语法：</p>
 <pre><code>curl cht.sh/python/string+time
 </code></pre>
-<h1 id="client">Client</h1>
-<p>windows下载到本地使用:</p>
+<h1 id="for-client最好用">For Client（最好用）</h1>
+<p>说明一下，只有 Curl原生的方式是需要路径符号规则的， 如 /,+ 都是必须的，比较难用。<br>
+下面的所有方式就很方便了，往下看吧👇</p>
+<h2 id="wsl命令行只能用wsl来运行cheatsh">WSL（命令行只能用WSL来运行cheat.sh）</h2>
+<p>（cheat支持ZSH，恰好前面配置了ZSH，下面说如何支持ZSH）<br>
+先安装依赖：</p>
+<pre><code>sudo apt install rlwrap 
+
+# 下面这条语句是为 stealth Q 模式准备的（因为没图形界面，所以下面2条语句已废）
+sudo apt install xsel
+export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
+</code></pre>
+<p>下载 cht.sh，应修改为全局命令</p>
+<pre><code>curl https://cht.sh/:cht.sh | sudo tee /usr/local/bin/cht.sh
+sudo chmod +x /usr/local/bin/cht.sh
+</code></pre>
+<p>👍正常命令行模式</p>
+<pre><code>cht.sh python string time
+</code></pre>
+<p>👍--shell 模式</p>
+<pre><code>cht.sh --shell
+
+cd python       # cd 就代表选择哪类语言，或者技术领域
+string time     # 看见了吧，这次直接输入语句就搞定，不需要 写什么 cht.sh python了😊
+
+Note: 如果查到了， q键 是退出文本， 输入 exit 是退出 --shell模式
+</code></pre>
+<p>👍支持ZSH(不然按tab找不到 cht.sh，加了下面的配置就有了)</p>
+<pre><code># 第二条命令curl ... 一次可能网有问题，注意有没有con't的提示，如果出错，那就再执行一次
+
+mkdir ~/.zsh.d
+curl https://cheat.sh/:zsh &gt; ~/.zsh.d/_cht                       
+echo 'fpath=(~/.zsh.d/ $fpath)' &gt;&gt; ~/.zshrc
+
+# 然后重新登录/重新打开shell
+</code></pre>
+<p>👍Stealth mode （属于--shell 下面的一个参数， 进入--shell，用help命令可以查看所有参数）</p>
+<pre><code>研究了半天，很遗憾，Stealth mode模式，需要 server 的 GUI
+需要安装 VcXsrv， 那这个 Stealth mode 模式就算了
+</code></pre>
+<h2 id="powershell不可行">Powershell(不可行)</h2>
 <pre><code>scoop install cht
 </code></pre>
 <p>但是这种方式不太行，因为是scoop下载的是 cht.exe 而非 cht.sh<br>
 即使下到了cht.sh。 BusyBox是 dash，而非 bash，不支持执行.sh脚本<br>
 即使用了真的bash（git bash, gow 这些工具，也缺依赖）并且不是在powershell运行。<br>
-所以我还是放弃了工具化的方式， 还是用 curl了</p>
-<h1 id="for-pycharm">For Pycharm</h1>
+所以我还是放弃了工具化的方式， 还是用WSL了</p>
+<h1 id="for-pycharm也可以">For Pycharm（也可以）</h1>
 <h2 id="plugins">Plugins</h2>
 <pre><code>cheat.sh code snippets
 </code></pre>

@@ -84,7 +84,7 @@ ctrl + +號
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1613997138136" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1614007220860" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -411,15 +411,19 @@ WinSTEP2000-&gt;</p>
 <p>激活：</p>
 <pre><code>source ~/.zshrc
 </code></pre>
-<h2 id="给win已有的sublime和locate设置环境变量">给win已有的Sublime和locate设置环境变量</h2>
+<h2 id="给win已有的sublime设置环境变量">给win已有的Sublime设置环境变量</h2>
 <p>vi ~/.zshrc</p>
 <pre><code>export PATH=&quot;$PATH:/mnt/d/ide/Sublime/sublime.exe&quot;
-export PATH=&quot;$PATH:/mnt/e/download/Everything-1.4.1.986.x86/ES-1.1.0.18/locate.exe&quot;
 alias sublime=sublime.exe
-alias locate=locate.exe
 </code></pre>
 <p>激活ZSH配置文件：</p>
 <pre><code>source ~/.zshrc
+</code></pre>
+<p>本来想直接用 PS 的 locate，后来发现搜不到WSL里面的内容<br>
+没办法，只好用 mlocate了😉</p>
+<pre><code>sudo apt-get install mlocate
+
+updatedb        # 手动更新搜索数据库（退出Shell，下次登录之前也会自动更新）
 </code></pre>
 <h2 id="如何在powershell中打开-ubuntu">如何在Powershell中打开 Ubuntu</h2>
 <p>命令为：</p>
