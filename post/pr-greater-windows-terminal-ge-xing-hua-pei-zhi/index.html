@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PR =&gt; Terminal+WSL+ZSH | Cython_lin</title>
+<title>PR =&gt; Terminal+WSL+ZSH+Docker | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -84,7 +84,7 @@ ctrl + +號
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1613994613607" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1613996974435" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -113,7 +113,7 @@ ctrl + +號
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
               </div>
-              <h1 class="title ularge white bold">PR =&gt; Terminal+WSL+ZSH</h1>
+              <h1 class="title ularge white bold">PR =&gt; Terminal+WSL+ZSH+Docker</h1>
             </div>
           </div>
         </div>  
@@ -410,15 +410,42 @@ WinSTEP2000-&gt;</p>
 <pre><code>source ~/.zshrc
 </code></pre>
 <h2 id="给win已有的sublime和locate设置环境变量">给win已有的Sublime和locate设置环境变量</h2>
-<p>vi ~/.bashrc</p>
+<p>vi ~/.zshrc</p>
 <pre><code>export PATH=&quot;$PATH:/mnt/d/ide/Sublime/sublime.exe&quot;
-export PATH=&quot;$PATH:E:/download/Everything-1.4.1.986.x86/ES-1.1.0.18/locate.exe&quot;
+export PATH=&quot;$PATH:/mnt/e/download/Everything-1.4.1.986.x86/ES-1.1.0.18/locate.exe&quot;
 alias sublime=sublime.exe
 alias locate=locate.exe
 </code></pre>
-<p>重新登录，或</p>
-<pre><code>source ~/.bashrc
+<p>激活ZSH配置文件：</p>
+<pre><code>source ~/.zshrc
 </code></pre>
+<h2 id="如何在powershell中打开-ubuntu">如何在Powershell中打开 Ubuntu</h2>
+<p>命令为：</p>
+<pre><code>wsl 
+</code></pre>
+<p>NOTE：wsl和从 WT的右上角选择Ubuntu是一个效果<br>
+特别注意：不要用bash命令了，因为我们WSL已经把Bash换成了ZSH</p>
+<h1 id="docker">Docker</h1>
+<h2 id="方式1直接用wsl2的虚拟机安装docker">方式1：直接用WSL2的虚拟机安装Docker</h2>
+<pre><code>curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+</code></pre>
+<p>此过程中会出现 sleep 20， 并推荐你使用方式2，但是我偏不想使用方式2<br>
+所以，只需等20秒，便可成功通过方式1来安装<br>
+Note: 此期间不要按Ctrl +  C,  否则会退出方式1的安装</p>
+<h2 id="方式2docker-desktop-for-windows">方式2：Docker Desktop for windows</h2>
+<pre><code>https://www.docker.com/products/docker-desktop
+</code></pre>
+<h2 id="查看docker服务">查看Docker服务</h2>
+<pre><code>sudo service docker start
+sudo service docker status
+sudo service docker stop
+</code></pre>
+<h2 id="使用docker">使用Docker</h2>
+<pre><code>sudo docker run hello-world
+</code></pre>
+<h2 id="docker语法个人笔记">Docker语法个人笔记</h2>
+<p><a href="https://www.cklin.top/post/py-greater-docker-yu-fa-quan-mian-hui-yi/">=&gt; Docker语法</a></p>
 
                 </div>
                 <div class="clear"></div>
@@ -487,7 +514,7 @@ alias locate=locate.exe
                     <div class="info gradient-effect">
                       <time datetime="2021-02-22">2021-02-22</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">IDE =&gt; Cheat.sh</a>
+                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">PR =&gt; Cheat.sh</a>
                       </h4>
                     </div>
                     <div class="clear"></div>

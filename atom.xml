@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-22T11:50:18.146Z</updated>
+    <updated>2021-02-22T12:29:43.053Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -10,7 +10,7 @@
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Cython_lin</rights>
     <entry>
-        <title type="html"><![CDATA[IDE => Cheat.sh]]></title>
+        <title type="html"><![CDATA[PR => Cheat.sh]]></title>
         <id>https://cythonlin.github.io/post/ide-greater-cheatsh/</id>
         <link href="https://cythonlin.github.io/post/ide-greater-cheatsh/">
         </link>
@@ -172,7 +172,7 @@
 <p>类似如下语法：</p>
 <pre><code>curl cht.sh/python/string+time
 </code></pre>
-<h2 id="工具化">工具化</h2>
+<h1 id="client">Client</h1>
 <p>windows下载到本地使用:</p>
 <pre><code>scoop install cht
 </code></pre>
@@ -971,7 +971,7 @@ https://cythonlin.coding.net
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[PR => Terminal+WSL+ZSH]]></title>
+        <title type="html"><![CDATA[PR => Terminal+WSL+ZSH+Docker]]></title>
         <id>https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/</id>
         <link href="https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">
         </link>
@@ -1263,15 +1263,42 @@ WinSTEP2000-&gt;</p>
 <pre><code>source ~/.zshrc
 </code></pre>
 <h2 id="给win已有的sublime和locate设置环境变量">给win已有的Sublime和locate设置环境变量</h2>
-<p>vi ~/.bashrc</p>
+<p>vi ~/.zshrc</p>
 <pre><code>export PATH=&quot;$PATH:/mnt/d/ide/Sublime/sublime.exe&quot;
-export PATH=&quot;$PATH:E:/download/Everything-1.4.1.986.x86/ES-1.1.0.18/locate.exe&quot;
+export PATH=&quot;$PATH:/mnt/e/download/Everything-1.4.1.986.x86/ES-1.1.0.18/locate.exe&quot;
 alias sublime=sublime.exe
 alias locate=locate.exe
 </code></pre>
-<p>重新登录，或</p>
-<pre><code>source ~/.bashrc
+<p>激活ZSH配置文件：</p>
+<pre><code>source ~/.zshrc
 </code></pre>
+<h2 id="如何在powershell中打开-ubuntu">如何在Powershell中打开 Ubuntu</h2>
+<p>命令为：</p>
+<pre><code>wsl 
+</code></pre>
+<p>NOTE：wsl和从 WT的右上角选择Ubuntu是一个效果<br>
+特别注意：不要用bash命令了，因为我们WSL已经把Bash换成了ZSH</p>
+<h1 id="docker">Docker</h1>
+<h2 id="方式1直接用wsl2的虚拟机安装docker">方式1：直接用WSL2的虚拟机安装Docker</h2>
+<pre><code>curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+</code></pre>
+<p>此过程中会出现 sleep 20， 并推荐你使用方式2，但是我偏不想使用方式2<br>
+所以，只需等20秒，便可成功通过方式1来安装<br>
+Note: 此期间不要按Ctrl +  C,  否则会退出方式1的安装</p>
+<h2 id="方式2docker-desktop-for-windows">方式2：Docker Desktop for windows</h2>
+<pre><code>https://www.docker.com/products/docker-desktop
+</code></pre>
+<h2 id="查看docker服务">查看Docker服务</h2>
+<pre><code>sudo service docker start
+sudo service docker status
+sudo service docker stop
+</code></pre>
+<h2 id="使用docker">使用Docker</h2>
+<pre><code>sudo docker run hello-world
+</code></pre>
+<h2 id="docker语法个人笔记">Docker语法个人笔记</h2>
+<p><a href="https://www.cklin.top/post/py-greater-docker-yu-fa-quan-mian-hui-yi/">=&gt; Docker语法</a></p>
 ]]></content>
     </entry>
     <entry>
