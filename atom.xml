@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-22T15:20:25.988Z</updated>
+    <updated>2021-02-23T10:13:56.017Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -1290,8 +1290,28 @@ WinSTEP2000-&gt;</p>
 <pre><code>echo $SHELL
 </code></pre>
 <h2 id="oh-my-zsh">Oh-my-zsh</h2>
-<p>安装oh-my-zsh</p>
-<pre><code>sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)&quot;
+<p>为普通用户安装oh-my-zsh：</p>
+<pre><code>sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)&quot; &quot;&quot; --unattended
+
+vi .zshrc (注意：下面这句话必须要加入到头部，我加到了第一行， it works😉)
+    ZSH_DISABLE_COMPFIX=true
+source .zshrc
+</code></pre>
+<p>为root用户安装oh-my-zsh:</p>
+<pre><code># 说明， 我们把下面所有设置都写在lin用户的 .zshrc中
+# 然后我们下面会创建一个软连接由 root用户的zsh配置指向 lin用户的zsh配置文件
+# 这样做的目的就是 虽然 oh-my-zsh需要装2次，但是加软连接就可以把配置文件共享了
+
+sudo -s
+sudo passwd root
+
+sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)&quot; &quot;&quot; --unattended
+
+rm -rf /root/.oh-my-zsh
+rm -rf /root/.zshrc
+
+ln -s /home/lin/.oh-my-zsh   /root/.oh-my-zsh
+ln -s /home/lin/.zshrc     /root/.zshrc
 </code></pre>
 <p>设置主题：打开oh-my-zsh配置文件：</p>
 <pre><code>vi ~/.zshrc
@@ -1315,6 +1335,73 @@ alias sublime=sublime.exe
 <pre><code>sudo apt-get install mlocate
 
 updatedb        # 手动更新搜索数据库（退出Shell，下次登录之前也会自动更新）
+</code></pre>
+<h2 id="zsh插件">ZSH插件</h2>
+<p>👍zsh-syntax-highlighting语法高亮(执行错误自动变红)</p>
+<pre><code># 安装
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+# 配置：.zshrc中加入如下配置（设置完 然后 source 一下）
+# 向后面追加  plugins=()    空格或者换行分隔
+plugins = (
+    git 
+    zsh-syntax-highlighting
+)  
+</code></pre>
+<p>👍autojump目录快速跳转（按 j 键盘跳转，不用cd，支持多级跳转，模糊匹配）</p>
+<pre><code># 安装
+sudo apt-get install autojump
+# 配置，同上
+</code></pre>
+<p>autojump其实是维护一个目录数据库来达到跳转的目的，你也可以自己修改数据库</p>
+<pre><code># 在数据库中添加一个目录
+autojump -a [dir]
+
+# 提升当前目录的权重
+autojump -i [value]
+
+# 降低当前目录的权重
+autojump -d [value]
+
+# 显示数据库中的统计数据
+autojump -s
+
+# 清除数据库中的目录
+autojump --purge
+</code></pre>
+<p>举个例子，我用的WSL2，切换CDE盘让我感到难受，所以我可以升权<br>
+下面的3条命令，root用户和lin用户都要执行一次</p>
+<pre><code>cd /mnt/c &amp;&amp; autojump -a /mnt/c &amp;&amp; autojump -i 100
+cd /mnt/d &amp;&amp; autojump -a /mnt/d &amp;&amp; autojump -i 100
+cd /mnt/e &amp;&amp; autojump -a /mnt/e &amp;&amp; autojump -i 100
+</code></pre>
+<p>然后就可以通过，如下来切换盘符了：</p>
+<pre><code>j c
+j d
+j e
+</code></pre>
+<p>👍zsh-autosuggestion语法补全（按 -&gt;方向键补全）</p>
+<pre><code># 安装
+git clone git://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+
+# 配置同上，向 plugins=() 中追加  zsh-autosuggestions
+</code></pre>
+<h2 id="总结上述插件最终安装-和-zshrc配置">总结上述插件最终安装 和  .zshrc配置：</h2>
+<p>安装</p>
+<pre><code>sudo apt-get install autojump
+git clone git://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+</code></pre>
+<p>设置</p>
+<pre><code>plugins=(
+    git
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    autojump
+)    
+</code></pre>
+<h2 id="卸载-oh-my-zsh">卸载 oh-my-zsh</h2>
+<pre><code>uninstall_oh_my_zsh
 </code></pre>
 <h2 id="如何在powershell中打开-ubuntu">如何在Powershell中打开 Ubuntu</h2>
 <p>命令为：</p>
