@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-02-23T10:13:56.017Z</updated>
+    <updated>2021-02-24T15:33:54.878Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -1470,13 +1470,100 @@ vocals.wav
 ]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[PY => Github-Cli]]></title>
+        <title type="html"><![CDATA[PY => Github-Cli(1.6.2)]]></title>
         <id>https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/</id>
         <link href="https://cythonlin.github.io/post/py-greater-github-cli-quan-tao/">
         </link>
         <updated>2020-10-03T01:53:58.000Z</updated>
         <content type="html"><![CDATA[<h1 id="下载">下载</h1>
 <p>选个OS版本（我用的Win）：<a href="https://github.com/cli/cli/releases">https://github.com/cli/cli/releases  </a></p>
+<h2 id="wsl一步安装新增">WSL一步安装(新增)</h2>
+<pre><code>sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0 &amp;&amp; sudo apt-add-repository https://cli.github.com/packages &amp;&amp; sudo apt update &amp;&amp; sudo apt install gh
+</code></pre>
+<h1 id="初次安装git需">初次安装git需：</h1>
+<pre><code>git config --global user.name &quot;hacker-lin&quot;
+git config --global user.email &quot;Cython_lin@cklin.top&quot;
+</code></pre>
+<h1 id="设置ssh-key">设置SSH Key</h1>
+<h2 id="正常生成密钥命令">正常生成密钥命令</h2>
+<pre><code>ssh-keygen
+</code></pre>
+<p>进入用户家目录，把id_rsa.pub公钥复制出来</p>
+<pre><code>cat ~/.ssh/id_rsa.pub
+</code></pre>
+<p>粘贴到-&gt; <a href="https://github.com/settings/ssh/">公钥存储</a></p>
+<h3 id="cli查看密钥">cli查看密钥</h3>
+<pre><code>gh ssh-key list
+</code></pre>
+<p>使用上面这条命令时，需要👇更新添加一个token权限(并引导重新登录)：</p>
+<pre><code>gh auth refresh -s read:public_key
+</code></pre>
+<h3 id="cli添加密钥文件通常不需要这条命令用ssh-keygen即可">cli添加密钥文件(通常不需要这条命令，用ssh-keygen即可)</h3>
+<pre><code>gh ssh-key add 公钥文件路径
+</code></pre>
+<h1 id="更新-token">更新 token</h1>
+<pre><code>gh auth refresh -s read:public_key
+</code></pre>
+<h1 id="设置编辑器">设置编辑器</h1>
+<h2 id="通过gh设置">通过gh设置</h2>
+<pre><code>gh config set editor &quot;vim&quot;
+gh config set editor &quot;code --wait&quot;
+
+# 由于sublime.exe有路径BUG，所以还是用上面的vim好了，总比nano顺手
+# gh config set editor &quot;/mnt/d/ide/Sublime/sublime.exe&quot;
+</code></pre>
+<h2 id="通过git设置">通过git设置</h2>
+<pre><code>git config --global core.editor &quot;IDE文件的执行路径/xxxx.exe&quot;
+git config --global core.editor &quot;code --wait&quot;
+</code></pre>
+<h1 id="便捷小技巧预设zshrc">便捷小技巧预设.zshrc</h1>
+<pre><code>alias ga=&quot;git add&quot;
+
+alias gb=&quot;git branch&quot;
+
+# 删除已经被merge到master的branch (此别名是默认提供的）
+alias gbda='git branch --no-color --merged | command grep -vE &quot;^(\+|\*|\s*($(git_main_branch)|development|develop|devel|dev)\s*$)&quot; | command xargs -n 1 git branch -d'
+
+alias gc=&quot;git checkout&quot;
+alias gcb=&quot;git checkout -b&quot;
+alias gcm=&quot;git checkout $(git_main_branch)&quot;
+
+# 默认拉取master
+alias gl=&quot;git pull&quot;
+
+# -a参数表示（如果修改文件后，忘记git add， -a参数会在commit的时候会自动帮你add）
+alias gi='git init &amp;&amp; git add . &amp;&amp; git commit -am &quot;Init&quot;'
+
+
+# push：$(git_current_branch) 表示当前所在分支（master 或 其他分支）
+alias gp='git push --set-upstream origin $(git_current_branch)'
+
+# add+commit 
+alias gcam='ga . &amp;&amp; git commit -a -m'
+
+# remote
+alias grv='git remote -v'
+</code></pre>
+<h3 id="上面技巧组合使用">上面技巧组合使用</h3>
+<ol>
+<li>cd 本地代码目录 (进入的目录里面 就是要上传的代码)</li>
+<li>gi                         （生成 .git 并把本地代码添加到本地仓）</li>
+<li>gh repo create      (创建远程仓库，并把远程仓库信息 追加 到当前的 .git中)</li>
+<li>gp                         (推送到远程仓库)</li>
+</ol>
+<h1 id="给shell配置自动补全提示">给shell配置自动补全提示</h1>
+<h2 id="zsh">zsh</h2>
+<p>命令：</p>
+<pre><code>gh completion -s zsh &gt; /usr/local/share/zsh/site-functions/_gh
+</code></pre>
+<p>vi .~/.zshrc:</p>
+<pre><code>autoload -U compinit
+compinit -i
+</code></pre>
+<h2 id="bash">bash</h2>
+<p>vi ~/.bash_profile</p>
+<pre><code>eval &quot;$(gh completion -s bash)&quot;
+</code></pre>
 <h1 id="列出配置">列出配置</h1>
 <pre><code>git config --list
 </code></pre>
@@ -1487,42 +1574,80 @@ vocals.wav
 <pre><code>git config --global http.proxy &quot;socks5://127.0.0.1:7890&quot;
 git config --global https.proxy &quot;socks5://127.0.0.1:7890&quot;
 </code></pre>
+<p>查看当前代理：</p>
+<pre><code>git config --global --get http.proxy
+git config --global --get https.proxy
+</code></pre>
 <p>清除代理也很简单</p>
 <pre><code>git config --global --unset http.proxy
 git config --global --unset https.proxy
 </code></pre>
-<h1 id="设置ssh-key">设置SSH Key</h1>
-<h3 id="说明">说明</h3>
-<pre><code>如果你不习惯用SSH，而是习惯用HTTP的方式，那这步可省
-</code></pre>
-<h3 id="生成密钥命令">生成密钥命令</h3>
-<pre><code>ssh-keygen
-</code></pre>
-<p>进入用户家目录，把id_rsa.pub公钥复制出来<br>
-粘贴到-&gt; <a href="https://github.com/settings/ssh/">https://github.com/settings/ssh/new</a></p>
 <h1 id="登录">登录</h1>
 <pre><code>gh auth login
 </code></pre>
-<p>提前声明，遇到选项，都是用上下箭头选择<br>
-第1个选项： 选择Github.com（也就是个人用户）<br>
-第2个选项：选择 Login with a web browser<br>
-Command中会给一串代码，复制代码-&gt;CMD回车-&gt;自动跳转到Web-&gt;粘贴代码-&gt;确认-&gt;确认授权</p>
-<pre><code>这里也可以选择使用 Token 代替 web browser。但是这种方式需要生成一个Token
-生成URL如下：
-:  -&gt;   https://github.com/settings/tokens
-
-点击 Generate bew token ，新建一个新 token：
-    注意： 需要把 repo的所有权限勾上
-               外加一个admin:org下面的  read:org  选项
-    温馨提示：  read:org  必须勾上，不然创建失败。
+<p>提前声明，遇到选项，都是用上下箭头选择</p>
+<h2 id="1选择githubcom也就是个人用户">👍1.选择Github.com（也就是个人用户）</h2>
+<h2 id="2选择sshhttps也可以">👍2.选择SSH（HTTPS也可以）</h2>
+<h2 id="3token-or-web-browser-2选1">👍3.Token or Web Browser， 2选1</h2>
+<p>浏览器方式很简单了：</p>
+<pre><code>Command中会给一串代码，复制代码-&gt;CMD回车-&gt;自动跳转到Web-&gt;粘贴代码-&gt;确认-&gt;确认授权
 </code></pre>
-<p>第3个选项：选择SSH（HTTPS也可以）</p>
+<p>另外说下token方式: <a href="https://github.com/settings/tokens">=&gt; 生成Token</a></p>
+<pre><code>点击 Generate bew token ，新建一个新 token：
+    Note： 需要把 repo的所有权限勾上
+               外加一个admin:org下面的  read:org  选项
+    Note: read:org  必须勾上，不然创建失败。
+    Note: gist （create gist 也勾上， gist这项不是必须的，建议勾上）
+</code></pre>
+<p>👏查看token+用户名+协议(ssh/http):</p>
+<pre><code>cat ~/.config/gh/hosts.yml
+</code></pre>
 <h3 id="查看登录状态">查看登录状态</h3>
 <pre><code>gh auth status
 </code></pre>
 <h3 id="退出登录">退出登录</h3>
 <pre><code>gh auth logout
 </code></pre>
+<h1 id="issue">issue</h1>
+<h2 id="创建-issue">创建 issue</h2>
+<pre><code>gh issue create
+</code></pre>
+<p>写body的时候，由于我们上面通过gh已经设置好了默认编辑器，所以按e直接用vim<br>
+并且里面可以直接写markdown语法</p>
+<h2 id="查看-issue">查看 issue</h2>
+<p>查看未被关闭的issue (--repo 或者 -R)</p>
+<pre><code>gh issue list --repo cli/cli   
+</code></pre>
+<p>当已经clone cli/cli，并进入此cli仓库，则可以直接使用</p>
+<pre><code>gh issue list
+</code></pre>
+<p>😶查看 已关闭 的issue</p>
+<pre><code>gh pr list --state closed
+</code></pre>
+<p>查看3015编号的issue（view表示用markdown格式）</p>
+<pre><code>gh issue view --repo cli/cli 3015
+</code></pre>
+<p>用web打开 ( -- web 或者 -w):</p>
+<pre><code>gh issue view --repo cli/cli 3015 --web
+</code></pre>
+<p>也可以用 view 或 --web 应用到其他选项，例如repo</p>
+<pre><code>gh repo view cli/cli --web
+</code></pre>
+<h2 id="编辑-issue">编辑 issue</h2>
+<p>注意：执行后要按一下右方向键，才选中，不然改不动</p>
+<pre><code>gh issue edit 2
+</code></pre>
+<h2 id="关闭-issue-重新打开-issue">关闭 issue / 重新打开 issue</h2>
+<pre><code>gh issue cluse 2
+gh issue reopen 2
+</code></pre>
+<h2 id="评论-issue">评论 issue</h2>
+<pre><code>gh issue comment 2
+</code></pre>
+<h2 id="删除-issue">删除 issue</h2>
+<pre><code>gh issue delete 2
+</code></pre>
+<p>Note: 执行后会提示你验证一下，issue编号，输入一下编号即可，这个例子是2</p>
 <h1 id="仓库">仓库</h1>
 <h3 id="创建仓库">创建仓库</h3>
 <pre><code>gh repo create my-gh
@@ -1555,27 +1680,8 @@ gh repo fork
 <pre><code># 这就不需要像上面先 cd进入clone的目录下再fork了，这种方式直接fork即可
 gh repo fork pytorch/pytorch
 </code></pre>
-<h1 id="gist">Gist</h1>
-<p>gist是github分享数据内容的平台 -&gt; <a href="https://gist.github.com/">https://gist.github.com/</a><br>
-上面的地址可以分享公有/私有的文件，创建上传后，Github会跳转生成一个链接，来给我们使用</p>
-<h3 id="github-cli实现gist">github-cli实现Gist</h3>
-<p>默认是私有的，命令如下：</p>
-<pre><code>gh gist create 1.txt
-</code></pre>
-<p>公有命令如下：</p>
-<pre><code>gh gist create 1.txt --public
-</code></pre>
-<p>二者都会生成个URL，即可访问。<br>
-也可以一个gist中存2个文件：</p>
-<pre><code>gh gist create 1.txt 2.txt
-</code></pre>
-<h3 id="修改-gist共享的文件参数为生成url的尾部路径参数">修改 Gist共享的文件，参数为生成url的尾部路径参数</h3>
-<pre><code>gh gist edit 5ff497631f0cc1e0a4463079a6a9eeff
-</code></pre>
-<h3 id="列出-上传过的gist文件-public代表公有文件-secret私有-不加参数代表所有">列出 上传过的Gist文件, --public代表公有文件，--secret私有, 不加参数代表所有</h3>
-<pre><code>gh gist list
-gh gist list --secret  
-gh gist list --public
+<h3 id="查看仓库">查看仓库</h3>
+<pre><code>gh repo view
 </code></pre>
 <h1 id="pr-pull-request">PR (Pull Request）</h1>
 <h2 id="pr概念">PR概念</h2>
@@ -1583,48 +1689,146 @@ gh gist list --public
 <h2 id="pr流程">PR流程</h2>
 <ol>
 <li>fork别人仓库（先fork在clone， 前面已经提到 gh 可以直接fork一步到位了）</li>
-<li>切换分支（也可以在 master 下），add,commit,push 修改代码。</li>
+<li>切换分支（也可以在 master 下），add,commit  (gcam)修改代码。</li>
 <li>在你fork后的仓库主页点击右上角的 Compare &amp; pull request 提交合并申请</li>
 <li>等待别人合并你的请求</li>
 </ol>
-<h2 id="实验流程">实验流程</h2>
+<h2 id="用cli代替如上流程">用cli代替如上流程</h2>
 <h3 id="一-用当前的号去-fork另一个号另外那个也是自己的号方便做实验的仓库">一、用当前的号，去 fork另一个号（另外那个也是自己的号方便做实验）的仓库。</h3>
 <pre><code>gh repo fork hacker-lin/bio2bioes
 cd bio2bioes
 </code></pre>
-<h3 id="二-创建切换分支addcommitpushadd">二、 创建+切换分支+add+commit+push+add</h3>
-<pre><code>git checkout -b dev
+<h3 id="二-创建切换分支addcommit">二、 创建+切换分支+add+commit</h3>
+<pre><code>gcb dev
 echo 111 &gt; 1.txt
-git add . &amp;&amp; git commit -m &quot;my_test&quot; 
-到这里即可，先不要push（下面PR创建的过程，会自动帮我们push，这里push我试了会出错）
+gcam &quot;mytest&quot;
+# 到这里即可，不需要push， 因为我们是 request
 </code></pre>
 <h3 id="三-用github-cli命令-代替-点击compare-pull-request-按钮提交合并申请">三、用GitHUB-Cli命令 代替 点击Compare &amp; pull request 按钮提交合并申请</h3>
-<p>创建PR</p>
+<h3 id="创建pr">创建PR</h3>
 <pre><code>gh pr create
      -&gt; Where should we push the 'dev' branch # 选第一个
      -&gt; Title  # 随便写个  some update
      -&gt; Body # 直接 回车 跳过就行。
      -&gt; What's next? # 选 Submit  提交即可 
 </code></pre>
-<p>列出提交的PR</p>
-<pre><code>gh pr list 
-# 执行后，你会发现 PR信息， # 后面的数字记住下面Closed和diff用得到
-</code></pre>
 <p>Merge PR</p>
-<pre><code>gh pr merge
-    -&gt; What merge method would you like to use # Create a merge commit即可
+<h3 id="列出-pr-信息">列出 pr 信息</h3>
+<p>列出当前未关闭的PR信息：</p>
+<pre><code>gh pr list
 </code></pre>
-<p>Closed PR</p>
-<pre><code>gh pr close 3
-# 这个3 就是上面 gh pr list 的结果
+<p>😶列出已关闭的pr:</p>
+<pre><code>gh pr list --status closed
 </code></pre>
-<p>比较 PR 信息</p>
-<pre><code>gh pr diff 3
-# 最下面是最新的
+<p>查看具体某一ID的PR信息：</p>
+<pre><code>gh pr view &lt;id&gt;
 </code></pre>
-<p>查看 PR 详细信息</p>
+<h3 id="查看所有pr详细信息">查看所有PR详细信息</h3>
 <pre><code>gh pr status
 </code></pre>
+<h3 id="merge-pr">Merge PR</h3>
+<pre><code>gh pr merge
+    -&gt; What merge method would you like to use # Create a merge commit即可
+    # 如果提示 是否删除 local and github branch:
+        # 如果输入y， （合并+删除 本地分支）
+        # 如果输入n,   （合并+保留 本地分支）
+    # Note:  无论选 y/n ，只会对本地分支操作保留/删除。 
+</code></pre>
+<h3 id="closed-pr">Closed PR</h3>
+<pre><code>gh pr close 3
+</code></pre>
+<h3 id="reopen-pr">Reopen PR</h3>
+<pre><code>gh pr reopen
+</code></pre>
+<p>😑Note: 被merge的PR不能 reopen</p>
+<h3 id="比较某pr前后信息-">比较某PR前后信息(+-)</h3>
+<pre><code>gh pr diff &lt;ID&gt;
+</code></pre>
+<h3 id="转到某id的pr的分支">转到某ID的PR的分支</h3>
+<pre><code>gh pr checkout &lt;ID&gt;
+</code></pre>
+<h3 id="在pr下面评论同级评论">在PR下面评论（同级评论）</h3>
+<p>review 和 comment 平陵功能一样，不过 review多了2个额外功能<br>
+建议用 comment(因为issue也是 comment)</p>
+<pre><code>gh pr comment &lt;id&gt;
+gh pr review &lt;id&gt; 
+</code></pre>
+<h1 id="gist">gist</h1>
+<p><a href="https://gist.github.com">=&gt; 用户gist地址</a></p>
+<h2 id="创建-gist">创建 gist</h2>
+<p>😄默认私有存储</p>
+<pre><code>gh gist create test.py
+</code></pre>
+<p>😏公开存储</p>
+<pre><code>gh gist create lin.txt --public
+</code></pre>
+<p>🙂打包存储 (一个gist里面放2个文件，方便下载，默认以第一个文件名来命名此gist)</p>
+<pre><code>gh gist create lin.txt test.py
+</code></pre>
+<p>😌也可以标准输入字符串（而不是上传文件）（同样默认私有）<br>
+无名文件（默认名为 gistfile0.txt）</p>
+<pre><code>#  - 后面不跟任何参数（同样默认私有）
+gh gist create -
+
+# 公开
+gh gist create --public -
+
+# 可以配合cat使用 (这样就不用写 - 这个符号了)
+cat xxx.txt | gh gist create  
+</code></pre>
+<p>输入后，回车换个行，然后ctrl+d保存创建</p>
+<h2 id="列出-gist-内容查看">列出 gist + 内容查看</h2>
+<p>列出全部</p>
+<pre><code>gh gist list
+</code></pre>
+<p>列出私有</p>
+<pre><code>gh gist list --secret
+</code></pre>
+<p>列出公有</p>
+<pre><code>gh gist list --public
+</code></pre>
+<p>查看具体某一gist具体文件内容：</p>
+<pre><code>gh gist view 28e6f15f41b3644740aa6549abd318e2
+</code></pre>
+<h2 id="修改-gist-web一体修改">修改 gist （web一体修改）</h2>
+<pre><code>gh gist edit dab6dd9482e6c5b5b69a2422b30c2b7e
+</code></pre>
+<h2 id="下载-gist文件">下载 gist文件</h2>
+<pre><code>gh gist clone dab6dd9482e6c5b5b69a2422b30c2b7e
+</code></pre>
+<h2 id="删除-gist">删除 gist</h2>
+<pre><code>gh gist delete 28e6f15f41b3644740aa6549abd318e2
+</code></pre>
+<h1 id="release">release</h1>
+<h2 id="create-release">create release</h2>
+<pre><code>gh release create v1.3 test.txt -t &quot;xxapp1.3&quot; -n &quot;Fix xxxx for xxx #3019&quot;
+</code></pre>
+<p>v1.3：表示左侧竖条版本<br>
+test.txt：表示上传文件（给别人下载的）<br>
+-t：表示release标题<br>
+-n：表示标题下面的小说明信息</p>
+<h2 id="查看所有release版本信息粗略">查看所有release版本信息(粗略)</h2>
+<pre><code>gh release list
+</code></pre>
+<h2 id="查看具体版本信息">查看具体版本信息</h2>
+<p>默认不跟版本号，则看最新版本</p>
+<pre><code>gh release view
+</code></pre>
+<p>看具体某一版本</p>
+<pre><code>gh release view v1.1
+</code></pre>
+<h2 id="给某版本上传追加文件">给某版本上传追加文件</h2>
+<pre><code>gh release upload v1.1 lin.txt
+</code></pre>
+<h2 id="下载release文件">下载release文件</h2>
+<p>只写版本号，不加正则模式，则默认下载此版本下的全部文件</p>
+<pre><code>gh release download v1.1
+</code></pre>
+<p>加正则，下载所有 txt格式 文件</p>
+<pre><code>gh release download v1.1 -p &quot;*.txt&quot;
+</code></pre>
+<p>加正则，下载多种格式文件(txt)（就是叠加写法）</p>
+<pre><code>gh release download v1.1 -p &quot;*.txt&quot; -p &quot;*.7z&quot; </code></pre>
 ]]></content>
     </entry>
 </feed>
