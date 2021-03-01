@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; Pycharm连接Docker及代码自动上传与运行 | Cython_lin</title>
+<title>GO =&gt; 复习 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,15 +15,16 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="一、Pycharm创建Docker客户端
+    <meta name="description" content="ENV
+GOROOT: 默认go安装根目录即可
+D:\code\go
 
-二、修改Docker客户端配置
-在pycharm底部点这个打开配置
+GOPATH：工程目录（里面有bin, pkg, src）
+D:\code\go\work
+    # 我们只需用goland 去 open src目录即可
 
-填写Docker服务端，的IP地址及端口（tcp:// 不能少）
-
-上面这个配置完后，下面会出现 connected succ..." />
-    <meta name="keywords" content="Docker" />
+GOBI..." />
+    <meta name="keywords" content="" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -93,21 +94,19 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-25"><i class="fa fa-calendar"></i><span class="lately">4 天前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/"> </span>
+              <a href="https://cythonlin.github.io/post/go-greater-fu-xi/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/go-greater-fu-xi/"> </span>
               </a>
-              <span id="/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/go-greater-fu-xi/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-0 ctag-1L4lr0i2f" aria-label="">Docker</a>
-                    
               </div>
-              <h1 class="title ularge white bold">PY =&gt; Pycharm连接Docker及代码自动上传与运行</h1>
+              <h1 class="title ularge white bold">GO =&gt; 复习</h1>
             </div>
           </div>
         </div>  
@@ -117,69 +116,204 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="一-pycharm创建docker客户端">一、Pycharm创建Docker客户端</h1>
-<figure data-type="image" tabindex="1"><img src="/img/bVbwhXy" alt="clipboard.png" loading="lazy"></figure>
-<h1 id="二-修改docker客户端配置">二、修改Docker客户端配置</h1>
-<h4 id="在pycharm底部点这个打开配置">在pycharm底部点这个打开配置</h4>
-<figure data-type="image" tabindex="2"><img src="/img/bVbwhXP" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="填写docker服务端的ip地址及端口tcp-不能少">填写Docker服务端，的IP地址及端口（tcp:// 不能少）</h4>
-<figure data-type="image" tabindex="3"><img src="/img/bVbwh9e" alt="clipboard.png" loading="lazy"></figure>
-<pre><code>上面这个配置完后，下面会出现 connected successfully，说明配置成功。
-如果配置失败，有几种情况：
-    一、 你当前主机环境 无法 ping 通 Docker所在服务器（云服务器、防火墙、的端口没放通）
-    二、 Docker未做 IP配置
-        如何配置参考下面链接的解决方案即可配置成功。
-        https://segmentfault.com/q/1010000020042977
-        配置完成后，记得重启 Docker服务
+                  <h1 id="env">ENV</h1>
+<h3 id="goroot-默认go安装根目录即可">GOROOT: 默认go安装根目录即可</h3>
+<pre><code>D:\code\go
 </code></pre>
-<h1 id="三-pycharm-sftp向docker所在主机上传代码">三、Pycharm sftp向Docker所在主机上传代码</h1>
-<figure data-type="image" tabindex="4"><img src="/img/bVbwhZa" alt="clipboard.png" loading="lazy"></figure>
-<figure data-type="image" tabindex="5"><img src="/img/bVbwhZG" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="连接测试成功后-不要点ok-选最上面的-mappings项继续配置">连接测试成功后， 不要点OK， 选最上面的 Mappings项,继续配置</h4>
-<figure data-type="image" tabindex="6"><img src="/img/bVbwhZ4" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="上面配置完后点ok然后开始上传">上面配置完后，点OK，然后开始上传</h4>
-<figure data-type="image" tabindex="7"><img src="/img/bVbwh9K" alt="clipboard.png" loading="lazy"></figure>
-<h1 id="四-创建docker里的python解释器">四、创建Docker里的Python解释器</h1>
-<h4 id="ctrlalts打开配置-然后按下图操作添加解释器">ctrl+alt+s打开配置， 然后按下图操作添加解释器</h4>
-<figure data-type="image" tabindex="8"><img src="/img/bVbwh1j" alt="clipboard.png" loading="lazy"></figure>
-<figure data-type="image" tabindex="9"><img src="/img/bVbwh13" alt="clipboard.png" loading="lazy"></figure>
-<h1 id="五-给脚本指定解释器-及-相关配置">五、给脚本指定解释器 及 相关配置</h1>
-<figure data-type="image" tabindex="10"><img src="/img/bVbwh17" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="下面其他都是默认配好的-主要配置下面红框部分的-2-处内容">下面其他都是默认配好的， 主要配置下面红框部分的 2 处内容</h4>
-<figure data-type="image" tabindex="11"><img src="/img/bVbwh3d" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="切记-上面的第一个红框-path-mappings项-必须配不然就会出现下图的错误">切记： 上面的第一个红框： Path mappings项 必须配，不然就会出现下图的错误</h4>
-<p><img src="/img/bVbwhLU" alt="clipboard.png" loading="lazy"><br>
-这个错误，stack, github都没找到解决办法。 （明明已经是绝对路径了，还是让你提供绝对路径）<br>
-后来无奈之下，随手把 Path mappings 这项映射配了。  居然就成功了。。。。。！！</p>
-<h1 id="六-最后直接执行本地python文件即可">六、最后直接执行本地python文件即可</h1>
-<h4 id="就是我们平时在pycharm正常写代码的执行操作">就是我们平时在pycharm正常写代码的执行操作。。。</h4>
-<h1 id="总结-解惑">总结 + 解惑</h1>
-<h4 id="总结">总结</h4>
-<ol>
-<li>我们创建了Docker客户端,并修改了相关配置</li>
-<li>sftp上传代码（我们映射部分，填的是路径， 它会自动把该路径下的文件上传到云服务器）</li>
-<li>创建python解释器，并做出详细配置（各种映射）</li>
-</ol>
-<h4 id="疑惑解析">疑惑解析：</h4>
-<ol>
-<li>为啥修改代码保存一次，远程服务器也会同步自动修改？？？？？？？？？<br>
-因为我们在sftp的时候，mapppings选项中 配置了客户端和云服务器的代码目录 映射。<br>
-并且，我们在第一次同步代码的时候勾选了，自动同步选项 （Automatic upload）</li>
-<li>为啥可以操作远程的Docker里面的python解释器？？？？？？<br>
-首先我们创建了 docker 的客户端。并做出了 连接远程服务器的配置。<br>
-基于上述条件，我们在建解释器时做了如下操作:
-<ol>
-<li>选定云服务器的Docker,</li>
-<li>选定Docker中的镜像</li>
-<li>选定Docker中的镜像中的python解释器</li>
-</ol>
-</li>
-<li>python镜像是Docker（内部），为什么我们可以直接访问云服务器（外部）来达到需求 ？？？？？？<br>
-因为我们在配置解释器的时候， 配置了数据卷映射（第 五 章截图内Docker Container settings项）<br>
-当然这属于Docker数据卷（volume）知识点范畴。<br>
-Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#articleHeader37</li>
-</ol>
-<h1 id="end">END</h1>
+<h3 id="gopath工程目录里面有bin-pkg-src">GOPATH：工程目录（里面有bin, pkg, src）</h3>
+<pre><code>D:\code\go\work
+    # 我们只需用goland 去 open src目录即可
+</code></pre>
+<h3 id="gobingopath里面的bin目录">GOBIN：GOPATH里面的bin目录</h3>
+<p>作用： go install 生成的exe 会自动存到这里</p>
+<pre><code>D:\code\go\work\bin
+</code></pre>
+<p>此外我们还需将此目录放入到环境变量，随时随地exe执行</p>
+<h3 id="go111module">GO111MODULE</h3>
+<pre><code>off ：无模块支持，go 会从 GOPATH 和 vendor 文件夹寻找包。
+on ：模块支持，go 会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod 下载依赖。
+auto ：在 $GOPATH/src 外面且根目录有 go.mod 文件时，开启模块支持。
+</code></pre>
+<h1 id="平台go命令">平台+Go命令</h1>
+<h2 id="查看go的环境变量">查看GO的环境变量</h2>
+<pre><code>go env | grep GOOS
+go env | grep GOARCH
+</code></pre>
+<p>GOOS变量值是什么平台，编译后的文件就只能在什么平台运行</p>
+<h2 id="windows">windows:</h2>
+<pre><code> go build .\hello.go
+.\hello.exe
+</code></pre>
+<p>Goland terminal修改GOOS</p>
+<pre><code>cmd: set GOOS=linux
+ps:    $env:GOOS=&quot;linux&quot;
+# go env | grep GOOS   # 此时已变为linux
+
+go build .\hello.go
+.\hello
+# 😴 执行失败，平台不兼容
+</code></pre>
+<h2 id="linux">linux:</h2>
+<pre><code>./hello 执行成功
+./hello.exe    执行成功 （纯Linux是会执行失败的，但是这是WSL）
+# WSL特殊，因为WSL可以兼容执行windows exe的格式
+</code></pre>
+<h2 id="go-install">go install</h2>
+<p>把目录下 go build 编译后的 exe文件，自动添加到 GOBIN目录下</p>
+<pre><code># 需要把上面的环境变量配置好：GO111MODULE auto
+go install
+</code></pre>
+<h1 id="赋值">赋值</h1>
+<pre><code>:=       (python3.8也出了，不过，其用途是 条件赋值一体化)
+</code></pre>
+<p>特殊：空赋值（定义后可不使用，也不能使用）： _</p>
+<pre><code>a := 1    // a必须在下文使用
+_,b := 1,2  // 必须在下文使用
+// _,_ := 1,2  // 这种写法是错误的
+_,_ = 1,2   // 当有所有变量都是空变量的时候， 用 = 即可，而不是用:=
+</code></pre>
+<h1 id="真假">真假</h1>
+<p>只有 true/false<br>
+不能使用 0 &quot;&quot; 之类的数据来代替真假（py可以， if 1:pass）</p>
+<h1 id="i">i++</h1>
+<p>go: 只有 i++ 和 i+= ,  且只能单独放一行 (i-- 和 i-= 也是可以的)<br>
+py: 只有 i+=</p>
+<h1 id="交换变量的四种方式">交换变量的四种方式</h1>
+<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
+a := 1<br>
+b := 3</p>
+<h3 id="方式0">方式0</h3>
+<pre><code>c := 0
+c = a
+a = b
+b = c
+</code></pre>
+<h3 id="方式1">方式1</h3>
+<pre><code>a,b = b,a
+</code></pre>
+<h3 id="方式2">方式2</h3>
+<pre><code>a = a + b
+b = a - b
+a = a - b
+</code></pre>
+<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
+<pre><code>a = a ^ b
+b = a ^ b
+a = a ^ b
+
+fmt.Println(a)
+fmt.Println(b)
+</code></pre>
+<h1 id="string">string</h1>
+<p>原生字符串输入：</p>
+<pre><code>python &quot;&quot;&quot; &quot;&quot;&quot;
+golang ` `          反引号
+</code></pre>
+<p>python和golang都是内部不可变，外部可变（可以整体替换赋值）<br>
+都有 len()</p>
+<h1 id="数组">数组</h1>
+<h2 id="定长创建">定长创建</h2>
+<p>方式1</p>
+<pre><code>arr1 := [3]int{1,2,3}
+</code></pre>
+<p>方式2</p>
+<pre><code>var arr2 [3]int
+arr2 = [3]int{1,2,3}
+fmt.Println(arr1)
+fmt.Println(arr2)
+</code></pre>
+<h2 id="非定长创建">非定长创建</h2>
+<pre><code>arr1 := []int{1,2,3}
+</code></pre>
+<p>append:</p>
+<pre><code>arr1 = append(arr1, 4)
+</code></pre>
+<p>len:</p>
+<pre><code>len(arr1)
+</code></pre>
+<p>😏cap:</p>
+<pre><code>arr1 := []int{1,2,3}
+fmt.Println(len(arr1),cap(arr1))      // 3,3
+arr1 = append(arr1, 4,5)	  // 5,6  
+fmt.Println(len(arr1),cap(arr1))
+</code></pre>
+<p>len()的变化是没什么好说的<br>
+cap() 首先 arr1的只有3个元素，容量就分了3个（满了）<br>
+既然满了，那就append一个元素，开一个空间？这太费劲了。<br>
+于是 go 会在你每次元素容量溢出的时候，为你😊2倍扩容。</p>
+<p>😑注意0，不足1024，2倍扩容。 超过1024，1.25倍扩容。<br>
+😑注意1，这个二倍是在现有的容量进行2倍扩容。 eg:</p>
+<pre><code>3 * 2 = 6
+6 * 2 = 12
+...
+</code></pre>
+<p>😊特别注意<br>
+如果是用 for 循环的方式append （）</p>
+<pre><code>那么你给多少长度，他就会给你扩充至多少。
+😊虽然最后一次遍历输出看起来 len 和 cap 趋近相等
+😊但是每一次循环的过程，还是采用 二倍扩容原则！！！
+</code></pre>
+<p>eg:</p>
+<pre><code>arr1 := []int{1,2,3}
+fmt.Println(len(arr1),cap(arr1))      // 3,3
+for i := 0; i &lt; 92; i++ {
+	arr1 = append(arr1, i)
+}
+fmt.Println(len(arr1),cap(arr1))      // 95, 96
+arr1 = append(arr1, 1,2,3,4,5) // 我们的容量只有96，所以越界了，2倍
+fmt.Println(len(arr1),cap(arr1))      // 96, 192
+</code></pre>
+<h2 id="遍历">遍历</h2>
+<p>方式1：</p>
+<pre><code>for i, v := range arr2 {    // 和python一样 v只是copy的值，并不能用v改变数组
+	fmt.Println(i,v)           // index,  value
+}
+// fmt.Println(i,v)    // 报错 , 因为上面的 i, v 都是临时变量， python则体外可用
+</code></pre>
+<p>😎Note: Go的 i,和v都是临时面两<br>
+方式2：</p>
+<pre><code>for i := 0; i &lt; len(arr2); i++ {
+	fmt.Println(i,arr2[i])
+}
+</code></pre>
+<h1 id="切片">切片</h1>
+<h2 id="认知">认知</h2>
+<p>和python一样，都是左闭右开</p>
+<pre><code>arr1 := []int{1,2,3,4,5,6,7}
+slice1 := arr1[2:5]
+fmt.Println(slice1)
+</code></pre>
+<h2 id="使用方式">使用方式</h2>
+<pre><code>[:n]
+[m:]
+</code></pre>
+<p>数组转切片：<br>
+// 这个和python截然相反，go意味着数组转切片，完全引用（指针），py表示浅拷贝<br>
+[:]</p>
+<h2 id="原理">原理</h2>
+<p>切片就是数组的部分引用（指针）（2者都是互相，牵一发而动全身，）<br>
+😣这点和python完全相反（python 切出来就是新地址了）</p>
+<h2 id="创建指定空切片长度len容量cap">创建指定空切片,长度len+容量cap</h2>
+<p>好处：一次性分配，成本开销低。</p>
+<pre><code>str2 := make([]string, 0, 20)      // 如果不指定cap, 则默认与len一致
+fmt.Println(len(str2), cap(str2))  // len=0, cap=20
+</code></pre>
+<h2 id="浅拷贝">浅拷贝</h2>
+<p>copy(新，旧) ， 二者必须都是切片类型 （数组转切片上面说了 [:]）</p>
+<pre><code>arr1 := [5]int{1,2,3,4,5}
+slice1 := make([]int, len(arr1))
+copy(slice1, arr1[:])  // arr1必须转切片， arr1[:]
+fmt.Println(slice1)
+</code></pre>
+<h1 id="if">if</h1>
+<p>无小括号</p>
+<h1 id="for">for</h1>
+<p>无小括号</p>
+<h1 id="指针">指针</h1>
+<p>GC自动回收，不需要手动回收(py可 del 动态回收)</p>
+<h2 id="new">new</h2>
+<pre><code>name := new(string) // new出来的就地址
+*name = &quot;zhangsan&quot;</code></pre>
 
                 </div>
                 <div class="clear"></div>
@@ -190,11 +324,11 @@ Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#
             <section class="related section">
               
               <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/1L4lr0i2f.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-python-ban-docker-shi-yong-appium-jian-dan-shi-yan/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/gridea.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Python版-Docker使用Appium简单实验</h4>
+                  <time datetime="2021-02-28">2021-02-28</time>
+                  <h4 class="title white no-margin">RS =&gt; 复习</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
@@ -204,11 +338,11 @@ Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#
               
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/1L4lr0i2f.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-docker-yu-fa-quan-mian-hui-yi/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Docker语法全面回忆</h4>
+                  <time datetime="2021-02-22">2021-02-22</time>
+                  <h4 class="title white no-margin">PR =&gt; Cheat.sh</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">

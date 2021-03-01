@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PY =&gt; Pycharm连接Docker及代码自动上传与运行 | Cython_lin</title>
+<title>RS =&gt; 复习 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,15 +15,15 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="一、Pycharm创建Docker客户端
+    <meta name="description" content="常用语句
+列表爆炸：
+mysql
+SELECT xxx FROM xxx
+LATERAL VIEW explode(某列表) 
 
-二、修改Docker客户端配置
-在pycharm底部点这个打开配置
-
-填写Docker服务端，的IP地址及端口（tcp:// 不能少）
-
-上面这个配置完后，下面会出现 connected succ..." />
-    <meta name="keywords" content="Docker" />
+pyspark
+df.withColumn(&quot;某新列&quot;, F.explode(&quot;..." />
+    <meta name="keywords" content="" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -93,21 +93,19 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-28"><i class="fa fa-calendar"></i><span class="lately">13 小时前</span></time>
               
-              <a href="https://cythonlin.github.io/post/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/#comments" class="comments meta-info" title="">
-                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/"> </span>
+              <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/#comments" class="comments meta-info" title="">
+                <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater-fu-xi/"> </span>
               </a>
-              <span id="/py-greater-pycharm-lian-jie-docker-ji-dai-ma-zi-dong-shang-chuan-yu-yun-xing/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
+              <span id="/rs-greater-fu-xi/" class="leancloud_visitors views-counter meta-info" title=""><i class="fa fa-leancloud remixicon"></i><span class="leancloud-visitors-count"></span></span>
               
             </div>
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-0 ctag-1L4lr0i2f" aria-label="">Docker</a>
-                    
               </div>
-              <h1 class="title ularge white bold">PY =&gt; Pycharm连接Docker及代码自动上传与运行</h1>
+              <h1 class="title ularge white bold">RS =&gt; 复习</h1>
             </div>
           </div>
         </div>  
@@ -117,69 +115,60 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="一-pycharm创建docker客户端">一、Pycharm创建Docker客户端</h1>
-<figure data-type="image" tabindex="1"><img src="/img/bVbwhXy" alt="clipboard.png" loading="lazy"></figure>
-<h1 id="二-修改docker客户端配置">二、修改Docker客户端配置</h1>
-<h4 id="在pycharm底部点这个打开配置">在pycharm底部点这个打开配置</h4>
-<figure data-type="image" tabindex="2"><img src="/img/bVbwhXP" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="填写docker服务端的ip地址及端口tcp-不能少">填写Docker服务端，的IP地址及端口（tcp:// 不能少）</h4>
-<figure data-type="image" tabindex="3"><img src="/img/bVbwh9e" alt="clipboard.png" loading="lazy"></figure>
-<pre><code>上面这个配置完后，下面会出现 connected successfully，说明配置成功。
-如果配置失败，有几种情况：
-    一、 你当前主机环境 无法 ping 通 Docker所在服务器（云服务器、防火墙、的端口没放通）
-    二、 Docker未做 IP配置
-        如何配置参考下面链接的解决方案即可配置成功。
-        https://segmentfault.com/q/1010000020042977
-        配置完成后，记得重启 Docker服务
+                  <h1 id="常用语句">常用语句</h1>
+<h2 id="列表爆炸">列表爆炸：</h2>
+<p>mysql</p>
+<pre><code>SELECT xxx FROM xxx
+LATERAL VIEW explode(某列表) 
 </code></pre>
-<h1 id="三-pycharm-sftp向docker所在主机上传代码">三、Pycharm sftp向Docker所在主机上传代码</h1>
-<figure data-type="image" tabindex="4"><img src="/img/bVbwhZa" alt="clipboard.png" loading="lazy"></figure>
-<figure data-type="image" tabindex="5"><img src="/img/bVbwhZG" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="连接测试成功后-不要点ok-选最上面的-mappings项继续配置">连接测试成功后， 不要点OK， 选最上面的 Mappings项,继续配置</h4>
-<figure data-type="image" tabindex="6"><img src="/img/bVbwhZ4" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="上面配置完后点ok然后开始上传">上面配置完后，点OK，然后开始上传</h4>
-<figure data-type="image" tabindex="7"><img src="/img/bVbwh9K" alt="clipboard.png" loading="lazy"></figure>
-<h1 id="四-创建docker里的python解释器">四、创建Docker里的Python解释器</h1>
-<h4 id="ctrlalts打开配置-然后按下图操作添加解释器">ctrl+alt+s打开配置， 然后按下图操作添加解释器</h4>
-<figure data-type="image" tabindex="8"><img src="/img/bVbwh1j" alt="clipboard.png" loading="lazy"></figure>
-<figure data-type="image" tabindex="9"><img src="/img/bVbwh13" alt="clipboard.png" loading="lazy"></figure>
-<h1 id="五-给脚本指定解释器-及-相关配置">五、给脚本指定解释器 及 相关配置</h1>
-<figure data-type="image" tabindex="10"><img src="/img/bVbwh17" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="下面其他都是默认配好的-主要配置下面红框部分的-2-处内容">下面其他都是默认配好的， 主要配置下面红框部分的 2 处内容</h4>
-<figure data-type="image" tabindex="11"><img src="/img/bVbwh3d" alt="clipboard.png" loading="lazy"></figure>
-<h4 id="切记-上面的第一个红框-path-mappings项-必须配不然就会出现下图的错误">切记： 上面的第一个红框： Path mappings项 必须配，不然就会出现下图的错误</h4>
-<p><img src="/img/bVbwhLU" alt="clipboard.png" loading="lazy"><br>
-这个错误，stack, github都没找到解决办法。 （明明已经是绝对路径了，还是让你提供绝对路径）<br>
-后来无奈之下，随手把 Path mappings 这项映射配了。  居然就成功了。。。。。！！</p>
-<h1 id="六-最后直接执行本地python文件即可">六、最后直接执行本地python文件即可</h1>
-<h4 id="就是我们平时在pycharm正常写代码的执行操作">就是我们平时在pycharm正常写代码的执行操作。。。</h4>
-<h1 id="总结-解惑">总结 + 解惑</h1>
-<h4 id="总结">总结</h4>
-<ol>
-<li>我们创建了Docker客户端,并修改了相关配置</li>
-<li>sftp上传代码（我们映射部分，填的是路径， 它会自动把该路径下的文件上传到云服务器）</li>
-<li>创建python解释器，并做出详细配置（各种映射）</li>
-</ol>
-<h4 id="疑惑解析">疑惑解析：</h4>
-<ol>
-<li>为啥修改代码保存一次，远程服务器也会同步自动修改？？？？？？？？？<br>
-因为我们在sftp的时候，mapppings选项中 配置了客户端和云服务器的代码目录 映射。<br>
-并且，我们在第一次同步代码的时候勾选了，自动同步选项 （Automatic upload）</li>
-<li>为啥可以操作远程的Docker里面的python解释器？？？？？？<br>
-首先我们创建了 docker 的客户端。并做出了 连接远程服务器的配置。<br>
-基于上述条件，我们在建解释器时做了如下操作:
-<ol>
-<li>选定云服务器的Docker,</li>
-<li>选定Docker中的镜像</li>
-<li>选定Docker中的镜像中的python解释器</li>
-</ol>
-</li>
-<li>python镜像是Docker（内部），为什么我们可以直接访问云服务器（外部）来达到需求 ？？？？？？<br>
-因为我们在配置解释器的时候， 配置了数据卷映射（第 五 章截图内Docker Container settings项）<br>
-当然这属于Docker数据卷（volume）知识点范畴。<br>
-Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#articleHeader37</li>
-</ol>
-<h1 id="end">END</h1>
+<p>pyspark</p>
+<pre><code>df.withColumn(&quot;某新列&quot;, F.explode(&quot;某列表&quot;))
+</code></pre>
+<h1 id="用户行为">用户行为</h1>
+<p>曝光 exposure<br>
+点击 clicked<br>
+分享 shared<br>
+收藏 collected<br>
+阅时 read_time<br>
+......</p>
+<h1 id="用户画像标签权重算法">用户画像标签权重算法</h1>
+<h2 id="公式">公式</h2>
+<pre><code>用户标签权重 = 行为对应每个关键词（标签）权重分数之和 * 时间衰减系数
+</code></pre>
+<h2 id="行为权重分数">行为权重分数</h2>
+<pre><code>action                      score
+阅时&lt;1000                     1
+阅时&gt;=1000                    2
+收藏                          2
+分享                          3
+点击                          5
+</code></pre>
+<p>行为权重对应相加（一般都是True 或 False），故用乘法查位</p>
+<pre><code>sum_score = shraed * 3 + collected * 2 + ..............
+</code></pre>
+<h2 id="时间衰减">时间衰减</h2>
+<p>note:  log无论是math.log 还是 np.log，还是AI，通通都是 e为底</p>
+<pre><code>1 / ( log(t)+1 )   # t为 当前时间与，行为发生时间的差值
+</code></pre>
+<p>t:时间差值越大，衰减系数越小。</p>
+<pre><code>用户标签权重 = 行为权重分数之和 * 时间衰减系数
+</code></pre>
+<p>则，用户对应每个关键词（标签）权重被拉低，代码如下</p>
+<pre><code>from datetime import datetime, timedelta
+delta = datetime.now() - datetime.strptime(&quot;2019-3-3 08:08:08&quot;, &quot;%Y-%m-%d %H:%M:%S&quot;)
+timeweight = 1 / (np.log(delta.days+1) ) 
+</code></pre>
+<h1 id="用户画像存储">用户画像存储</h1>
+<h2 id="方案1">方案1：</h2>
+<pre><code>存到 hive，用 hbase 关联hive
+</code></pre>
+<p>出现的问题：删HBase，hive会出现 tablenotfound的异常</p>
+<h2 id="方案2">方案2：</h2>
+<pre><code>存到hbase, 用 hive 关联 hbase
+</code></pre>
+<p>这样即使删除了hive，hbase自己也不会报错</p>
+<h2 id="存储过程">存储过程</h2>
+<p>Happybase</p>
 
                 </div>
                 <div class="clear"></div>
@@ -189,26 +178,13 @@ Docker数据卷教程参考链接：https://segmentfault.com/a/1190000020039341#
 
             <section class="related section">
               
-              <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/1L4lr0i2f.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-python-ban-docker-shi-yong-appium-jian-dan-shi-yan/" class="full-link"></a>
-                 <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Python版-Docker使用Appium简单实验</h4>
-                </div>
-                 <span class="epcl-button red">
-                  <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
-                </span>
-                <div class="overlay"></div>
-              </article>
-              
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/1L4lr0i2f.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/py-greater-docker-yu-fa-quan-mian-hui-yi/" class="full-link"></a>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/gridea.jpg');"></div>
+                 <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="full-link"></a>
                  <div class="info">
-                  <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">PY =&gt; Docker语法全面回忆</h4>
+                  <time datetime="2021-02-25">2021-02-25</time>
+                  <h4 class="title white no-margin">GO =&gt; 复习</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">

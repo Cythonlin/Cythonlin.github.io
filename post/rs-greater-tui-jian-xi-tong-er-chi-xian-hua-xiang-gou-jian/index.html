@@ -77,7 +77,7 @@ class SparkSessionBas..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614180827563" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1614572789328" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -183,18 +183,22 @@ class OriginArticleData(SparkSessionBase):
 
 oa = OriginArticleData()   # oa就是带有配置的 sparkSession的实例化对象
 </code></pre>
-<h3 id="文章-表-合并">文章 表 合并</h3>
-<p>文章基本信息表+文章内容表+频道表：<br>
-titlce_content = oa.spark.sql(&quot;select a.article_id, a.channel_id, a.title, b.content from news_article_basic a inner join news_article_content b on a.article_id=b.article_id)<br>
-因为得到的是 DF类型，想要用SQL，可以把DF注册为临时表<br>
-titlce_content.registerTempTable('temptable')<br>
-再把 频道表 的 频道名 合并进来<br>
-channel_title_content = oa.spark.sql(&quot;select t.*, n.channel_name from temptable t left join news_channel n on t.channel_id=n.channel_id&quot;)</p>
+<h3 id="文章表合并">文章表合并</h3>
+<p>文章基本信息表+文章内容表+频道表：</p>
+<pre><code>titlce_content = oa.spark.sql(&quot;select a.article_id, a.channel_id, a.title, b.content from news_article_basic a inner join news_article_content b on a.article_id=b.article_id)    
+</code></pre>
+<p>因为得到的是 DF类型，想要用SQL，可以把DF注册为临时表</p>
+<pre><code>titlce_content.registerTempTable('temptable')
+</code></pre>
+<p>再把 频道表 的 频道名 合并进来</p>
+<pre><code>channel_title_content = oa.spark.sql(&quot;select t.*, n.channel_name from temptable t left join news_channel n on t.channel_id=n.channel_id&quot;)
+</code></pre>
 <h3 id="文章-字段-合并">文章 字段 合并</h3>
-<p>将 文章标题+文章内容+文章频道 的列，拼接成一个大字符串<br>
-import pyspark.sql.functions as F<br>
-import gc</p>
-<pre><code># 增加channel的名字，后面会使用
+<p>将 文章标题+文章内容+文章频道 的列，拼接成一个大字符串</p>
+<pre><code>import pyspark.sql.functions as F
+import gc
+
+# 增加channel的名字，后面会使用
 basic_content.registerTempTable(&quot;temparticle&quot;)
 channel_basic_content = oa.spark.sql(
 	&quot;select t.*, n.channel_name from temparticle t left join news_channel n on t.channel_id=n.channel_id&quot;
@@ -273,11 +277,12 @@ for row in partition:
     yield row.article_id, row.channel_id, words
 </code></pre>
 <h3 id="计算-tf-idf">计算 TF-IDF</h3>
-<p>TF:<br>
-ktt.spark.sql(&quot;use article&quot;)<br>
-article_dataframe = ktt.spark.sql(&quot;select * from article_data limit 20&quot;)<br>
-words_df = article_dataframe.rdd.mapPartitions(segmentation).toDF([&quot;article_id&quot;, &quot;channel_id&quot;, &quot;words&quot;])</p>
-<pre><code>from pyspark.ml.feature import CountVectorizer
+<p>TF:</p>
+<pre><code>ktt.spark.sql(&quot;use article&quot;)
+article_dataframe = ktt.spark.sql(&quot;select * from article_data limit 20&quot;)
+words_df = article_dataframe.rdd.mapPartitions(segmentation).toDF([&quot;article_id&quot;, &quot;channel_id&quot;, &quot;words&quot;])
+
+from pyspark.ml.feature import CountVectorizer
 # 总词汇的大小，文本中必须出现的次数
 cv = CountVectorizer(inputCol=&quot;words&quot;, outputCol=&quot;countFeatures&quot;, vocabSize=200*10000, minDF=1.0)
 # 训练词频统计模型
@@ -286,30 +291,33 @@ cv_model.write().overwrite().save(&quot;hdfs://hadoop-master:9000/headlines/mode
 
 # cv_model.vocabulary 查看统计词表（相当于groupby结果的 key,  但不包括value）
 </code></pre>
-<p>训练TF-IDF:<br>
-# 词语与词频统计<br>
-from pyspark.ml.feature import CountVectorizerModel<br>
-cv_model = CountVectorizerModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/CV.model&quot;)<br>
-# 得出词频向量结果<br>
-cv_result = cv_model.transform(words_df)<br>
-# 训练IDF模型 (把 tf结果传进去，其实说是 IDF模型，计算结果得出的就是 TF-IDF)<br>
-from pyspark.ml.feature import IDF<br>
-idf = IDF(inputCol=&quot;countFeatures&quot;, outputCol=&quot;idfFeatures&quot;)<br>
-idfModel = idf.fit(cv_result)<br>
-idfModel.write().overwrite().save(&quot;hdfs://hadoop-master:9000/headlines/models/IDF.model&quot;)</p>
-<pre><code># idfModel.idf.toArray()[:20]    查看逆文档频率矩阵
+<p>训练TF-IDF:</p>
+<pre><code># 词语与词频统计
+from pyspark.ml.feature import CountVectorizerModel
+cv_model = CountVectorizerModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/CV.model&quot;)
+# 得出词频向量结果
+cv_result = cv_model.transform(words_df)
+# 训练IDF模型 (把 tf结果传进去，其实说是 IDF模型，计算结果得出的就是 TF-IDF)
+from pyspark.ml.feature import IDF
+idf = IDF(inputCol=&quot;countFeatures&quot;, outputCol=&quot;idfFeatures&quot;)
+idfModel = idf.fit(cv_result)
+idfModel.write().overwrite().save(&quot;hdfs://hadoop-master:9000/headlines/models/IDF.model&quot;)
+
+# idfModel.idf.toArray()[:20]    查看逆文档频率矩阵
 </code></pre>
-<p>TF-IDF结果数据格式：<br>
-列1， 列...， 列 TF-IDF<br>
-(1000,[804,1032],[6.349777077,7.0761797]) 。。。<br>
-使用TF-IDF模型，取Top-K个词：<br>
-from pyspark.ml.feature import CountVectorizerModel<br>
-cv_model = CountVectorizerModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/countVectorizerOfArticleWords.model&quot;)<br>
-from pyspark.ml.feature import IDFModel<br>
-idf_model = IDFModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/IDFOfArticleWords.model&quot;)<br>
-cv_result = cv_model.transform(words_df)<br>
-tfidf_result = idf_model.transform(cv_result)</p>
-<pre><code>def func(partition):            
+<p>TF-IDF结果数据格式：</p>
+<pre><code>列1， 列...， 列 TF-IDF
+			  (1000,[804,1032],[6.349777077,7.0761797]) 。。。
+</code></pre>
+<p>使用TF-IDF模型，取Top-K个词：</p>
+<pre><code>from pyspark.ml.feature import CountVectorizerModel
+cv_model = CountVectorizerModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/countVectorizerOfArticleWords.model&quot;)
+from pyspark.ml.feature import IDFModel
+idf_model = IDFModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/IDFOfArticleWords.model&quot;)
+cv_result = cv_model.transform(words_df)
+tfidf_result = idf_model.transform(cv_result)
+
+def func(partition):            
 	TOPK = 20
 	for row in partition:
 		# 找到索引与IDF值并进行排序
@@ -327,21 +335,24 @@ tfidf_result = idf_model.transform(cv_result)</p>
             
 _keywordsByTFIDF = tfidf_result.rdd.mapPartitions(func).toDF([&quot;article_id&quot;, &quot;channel_id&quot;, &quot;index&quot;, &quot;tfidf&quot;])
 </code></pre>
-<p>我们的目标是： 构成  词+TFIDF值, 而不是索引+TFIDF<br>
-cv_model.vocabulary 结果是所有单词的列表。 上面的 index就是对应这个列表的索引<br>
-最终构建一个词典+索引表：<br>
-index	word<br>
-..		..	<br>
-然后将 主表（文章id,频道id,索引，tfidf）与 词典表（index+word） 合并<br>
+<p>我们的目标是： 构成  词+TFIDF值, 而不是索引+TFIDF</p>
+<pre><code>cv_model.vocabulary 结果是所有单词的列表。 上面的 index就是对应这个列表的索引
+</code></pre>
+<p>最终构建一个词典+索引表：</p>
+<pre><code>index	word
+..		..	
+</code></pre>
+<p>然后将 主表（文章id,频道id,索引，tfidf）与 词典表（index+word） 合并<br>
 得到  （文章id,频道id, 词， tfidf）</p>
 <h3 id="计算-textrank">计算 TextRank</h3>
 <p>TextRank和核心就是设定一个固定窗口来滑动<br>
 把每个窗口内的每个词， 设为字典的Key, value就是他附近的n个词的列表<br>
-然后每个词都这样做， 遇到相同的词就追加到字典的value 列表中<br>
-# 分词<br>
-def textrank(partition):<br>
-import os</p>
-<pre><code>import jieba
+然后每个词都这样做， 遇到相同的词就追加到字典的value 列表中</p>
+<pre><code># 分词
+def textrank(partition):
+import os
+
+import jieba
 import jieba.analyse
 import jieba.posseg as pseg
 import codecs
@@ -399,25 +410,27 @@ textrank_keywords_df = article_dataframe.rdd.mapPartitions(textrank).toDF(
 
 # textrank_keywords_df.write.insertInto(&quot;textrank_keywords_values&quot;)
 </code></pre>
-<p>textrank运行结果如下：<br>
-hive&gt; select * from textrank_keywords_values limit 20;<br>
-OK<br>
-文章ID  channel   word    textrank<br>
-98319   17      var     20.6079<br>
-98323   17      var     7.4938<br>
-98326   17      var     104.9128<br>
-然后和 tfidf一样 根据 textrank值，  取TOP-K个词</p>
+<p>textrank运行结果如下：</p>
+<pre><code>hive&gt; select * from textrank_keywords_values limit 20;
+OK
+文章ID  channel   word    textrank
+98319   17      var     20.6079
+98323   17      var     7.4938
+98326   17      var     104.9128
+</code></pre>
+<p>然后和 tfidf一样 根据 textrank值，  取TOP-K个词</p>
 <h3 id="计算-主题词-和-关键词">计算 主题词 和 关键词</h3>
 <p>关键词：TEXTRANK计算出的结果TOPK个词以及权重<br>
 主题词：TEXTRANK的TOPK词 与 ITFDF计算的TOPK个词的交集<br>
-格式如下：<br>
-hive&gt; desc article_profile;<br>
-OK<br>
-article_id              int                     article_id<br>
-channel_id              int                     channel_id<br>
-keywords               map								 keywords<br>
-topics						  array								topics</p>
-<pre><code>hive&gt; select * from article_profile limit 1;    
+格式如下：</p>
+<pre><code>hive&gt; desc article_profile;
+OK
+article_id              int                     article_id          
+channel_id              int                     channel_id          
+keywords               map								 keywords            
+topics						  array								topics      
+
+hive&gt; select * from article_profile limit 1;    
 # 这里把结果按行排列开方便观看
 article_id			26
 channel_id		   17            
@@ -426,32 +439,35 @@ channel_id		   17
 主题词列表				[&quot;Electron&quot;,&quot;全自动&quot;,&quot;产品&quot;,&quot;版本号&quot;,&quot;安装包&quot;,&quot;检查更新&quot;,&quot;方案&quot;,&quot;版本&quot;,&quot;退出应用&quot;,&quot;逻辑&quot;,&quot;安装过程&quot;,&quot;方式&quot;,&quot;定性&quot;,&quot;新版本&quot;,&quot;Setup&quot;,&quot;静默&quot;,&quot;用户&quot;]
 </code></pre>
 <h3 id="增量更新-离线文章画像">增量更新 离线文章画像</h3>
-<p>更新流程：<br>
-1、toutiao 数据库中，news_article_content 与news_article_basic—&gt;更新到article数据库中article_data表，方便操作<br>
-2. 第一次：所有更新，后面增量每天的数据更新26日：1：00<sub>2：00，2：00</sub>3：00，左闭右开,一个小时更新一次<br>
-3、刚才新更新的文章，通过已有的idf计算出tfidf值以及hive 的textrank_keywords_values<br>
-4、更新hive的article_profile</p>
-<p>离线更新文章画像 代码组装：Pycharm<br>
-注意在Pycharm中运行要设置环境：</p>
-<pre><code>PYTHONUNBUFFERED=1
+<p>更新流程：</p>
+<pre><code>1、toutiao 数据库中，news_article_content 与news_article_basic—&gt;更新到article数据库中article_data表，方便操作
+2. 第一次：所有更新，后面增量每天的数据更新26日：1：00~2：00，2：00~3：00，左闭右开,一个小时更新一次
+3、刚才新更新的文章，通过已有的idf计算出tfidf值以及hive 的textrank_keywords_values
+4、更新hive的article_profile
+</code></pre>
+<p>离线更新文章画像 代码组装：Pycharm</p>
+<pre><code>注意在Pycharm中运行要设置环境：
+
+PYTHONUNBUFFERED=1
 JAVA_HOME=/root/bigdata/jdk
 SPARK_HOME=/root/bigdata/spark
 HADOOP_HOME=/root/bigdata/hadoop
 PYSPARK_PYTHON=/root/anaconda3/envs/reco_sys/bin/python
 PYSPARK_DRIVER_PYTHON=/root/anaconda3/envs/reco_sys/bin/python
 </code></pre>
-<p>具体代码如下：<br>
-import os<br>
-import sys<br>
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(<strong>file</strong>)))<br>
-sys.path.insert(0, os.path.join(BASE_DIR))<br>
-from offline import SparkSessionBase<br>
-from datetime import datetime<br>
-from datetime import timedelta<br>
-import pyspark.sql.functions as F<br>
-import pyspark<br>
-import gc</p>
-<pre><code>class UpdateArticle(SparkSessionBase):
+<p>具体代码如下：</p>
+<pre><code>import os
+import sys
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+from offline import SparkSessionBase
+from datetime import datetime
+from datetime import timedelta
+import pyspark.sql.functions as F
+import pyspark
+import gc
+
+class UpdateArticle(SparkSessionBase):
 &quot;&quot;&quot;
 更新文章画像
 &quot;&quot;&quot;
@@ -639,11 +655,12 @@ if sentence_df.rdd.collect():
     rank, idf = ua.generate_article_label(sentence_df)
     articleProfile = ua.get_article_profile(rank, idf)
 </code></pre>
-<p>使用工具：Supervisor+Apscheduler<br>
-# pip install APScheduler<br>
-from apscheduler.schedulers.blocking import BlockingScheduler<br>
-from apscheduler.executors.pool import ProcessPoolExecutor</p>
-<pre><code>from scheduler.update import update_article_profile
+<p>使用工具：Supervisor+Apscheduler</p>
+<pre><code> # pip install APScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.executors.pool import ProcessPoolExecutor
+
+from scheduler.update import update_article_profile
 
 # 创建scheduler，多进程执行
 executors = {
@@ -654,11 +671,12 @@ scheduler = BlockingScheduler(executors=executors)
 scheduler.add_job(update_article_profile, trigger='interval', hours=1)
 scheduler.start()
 </code></pre>
-<p>自定义Logger:<br>
-import logging<br>
-import logging.handlers<br>
-import os</p>
-<pre><code>logging_file_dir = '/root/logs/'
+<p>自定义Logger:</p>
+<pre><code>import logging
+import logging.handlers
+import os
+
+logging_file_dir = '/root/logs/'
 def create_logger():
 	# 离线处理更新打印日志
 	 log_trace = logging.getLogger('offline')
@@ -671,27 +689,29 @@ def create_logger():
     log_trace.addHandler(trace_file_handler)
     log_trace.setLevel(logging.INFO)
 </code></pre>
-<p>supervisor管理apscheduler:<br>
-[program:offline]<br>
-environment=JAVA_HOME=/root/bigdata/jdk,SPARK_HOME=/root/bigdata/spark,HADOOP_HOME=/root/bigdata/hadoop,PYSPARK_PYTHON=/miniconda2/envs/reco_sys/bin/python,PYSPARK_DRIVER_PYTHON=/miniconda2/envs/reco_sys/bin/python<br>
-command=/miniconda2/envs/reco_sys/bin/python /root/toutiao_project/scheduler/main.py<br>
-directory=/root/toutiao_project/scheduler<br>
-user=root<br>
-autorestart=true<br>
-redirect_stderr=true<br>
-stdout_logfile=/root/logs/offlinesuper.log<br>
-loglevel=info<br>
-stopsignal=KILL<br>
-stopasgroup=true<br>
-killasgroup=true</p>
+<p>supervisor管理apscheduler:</p>
+<pre><code>[program:offline]
+environment=JAVA_HOME=/root/bigdata/jdk,SPARK_HOME=/root/bigdata/spark,HADOOP_HOME=/root/bigdata/hadoop,PYSPARK_PYTHON=/miniconda2/envs/reco_sys/bin/python,PYSPARK_DRIVER_PYTHON=/miniconda2/envs/reco_sys/bin/python
+command=/miniconda2/envs/reco_sys/bin/python /root/toutiao_project/scheduler/main.py
+directory=/root/toutiao_project/scheduler
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/root/logs/offlinesuper.log
+loglevel=info
+stopsignal=KILL
+stopasgroup=true
+killasgroup=true
+</code></pre>
 <h3 id="word2vec与文章相似度">Word2Vec与文章相似度</h3>
 <pre><code>w2v.spark.sql(&quot;use article&quot;)
 article = w2v.spark.sql(&quot;select * from article_data where channel_id=18 limit 2&quot;)
 words_df = article.rdd.mapPartitions(segmentation).toDF(['article_id', 'channel_id', 'words'])
 </code></pre>
-<p>Spark Word2Vec API介绍：<br>
-模块：from pyspark.ml.feature import Word2Vec</p>
-<pre><code>API：class pyspark.ml.feature.Word2Vec(vectorSize=100, minCount=5, numPartitions=1, stepSize=0.025, maxIter=1, seed=None, inputCol=None, outputCol=None, windowSize=5, maxSentenceLength=1000)
+<p>Spark Word2Vec API介绍：</p>
+<pre><code>模块：from pyspark.ml.feature import Word2Vec
+
+API：class pyspark.ml.feature.Word2Vec(vectorSize=100, minCount=5, numPartitions=1, stepSize=0.025, maxIter=1, seed=None, inputCol=None, outputCol=None, windowSize=5, maxSentenceLength=1000)
 参数说明：
 	vectorSize=100: 词向量长度
 	minCount：过滤次数小于默认5次的词
@@ -699,12 +719,14 @@ words_df = article.rdd.mapPartitions(segmentation).toDF(['article_id', 'channel_
 	inputCol=None：输入列名
 	outputCol=None：输出列名
 </code></pre>
-<p>Spark Word2Vec训练保存模型：<br>
-new_word2Vec = Word2Vec(vectorSize=100, inputCol=&quot;words&quot;, outputCol=&quot;model&quot;, minCount=3)<br>
-new_model = new_word2Vec.fit(words_df)<br>
-new_model.save(&quot;hdfs://hadoop-master:9000/headlines/models/test.word2vec&quot;)<br>
-上传历史数据训练的模型：<br>
-hadoop dfs -put ./word2vec_model /headlines/models/</p>
+<p>Spark Word2Vec训练保存模型：</p>
+<pre><code>new_word2Vec = Word2Vec(vectorSize=100, inputCol=&quot;words&quot;, outputCol=&quot;model&quot;, minCount=3)
+new_model = new_word2Vec.fit(words_df)
+new_model.save(&quot;hdfs://hadoop-master:9000/headlines/models/test.word2vec&quot;)
+</code></pre>
+<p>上传历史数据训练的模型：</p>
+<pre><code>hadoop dfs -put ./word2vec_model /headlines/models/
+</code></pre>
 <h3 id="增量更新-文章向量计算">增量更新-文章向量计算</h3>
 <p>有了词向量之后，我们就可以得到一篇文章的向量了，为了后面快速使用文章的向量，我们会将每个频道所有的文章向量保存起来。</p>
 <p>目的：保存所有历史训练的文章向量<br>
@@ -713,31 +735,34 @@ hadoop dfs -put ./word2vec_model /headlines/models/</p>
 2、获取频道的文章画像，得到文章画像的关键词(接着之前增量更新的文章article_profile)<br>
 3、计算得到文章每个词的向量<br>
 4、计算得到文章的平均词向量即文章的向量<br>
-加载某个频道模型，得到每个词的向量<br>
-from pyspark.ml.feature import Word2VecModel<br>
-channel_id = 18<br>
-channel = &quot;python&quot;<br>
-wv_model = Word2VecModel.load(<br>
-&quot;hdfs://hadoop-master:9000/headlines/models/word2vec_model/channel_%d_%s.word2vec&quot; % (channel_id, channel))<br>
-vectors = wv_model.getVectors()<br>
-获取新增的文章画像，得到文章画像的关键词：<br>
-# 选出新增的文章的画像做测试，上节计算的画像中有不同频道的，我们选取Python频道的进行计算测试<br>
-# 新增的文章画像获取部分<br>
-profile = w2v.spark.sql(&quot;select * from article_profile where channel_id=18 limit 10&quot;)<br>
-# profile = articleProfile.filter('channel_id = {}'.format(channel_id))</p>
-<pre><code>profile.registerTempTable(&quot;incremental&quot;)
+加载某个频道模型，得到每个词的向量</p>
+<pre><code>from pyspark.ml.feature import Word2VecModel
+channel_id = 18
+channel = &quot;python&quot;
+wv_model = Word2VecModel.load(
+            &quot;hdfs://hadoop-master:9000/headlines/models/word2vec_model/channel_%d_%s.word2vec&quot; % (channel_id, channel))
+vectors = wv_model.getVectors()
+</code></pre>
+<p>获取新增的文章画像，得到文章画像的关键词：</p>
+<pre><code># 选出新增的文章的画像做测试，上节计算的画像中有不同频道的，我们选取Python频道的进行计算测试
+# 新增的文章画像获取部分
+profile = w2v.spark.sql(&quot;select * from article_profile where channel_id=18 limit 10&quot;)
+# profile = articleProfile.filter('channel_id = {}'.format(channel_id))
+
+profile.registerTempTable(&quot;incremental&quot;)
 articleKeywordsWeights = w2v.spark.sql(
                 &quot;select article_id, channel_id, keyword, weight from incremental LATERAL VIEW explode(keywords) AS keyword, weight&quot;)
 _article_profile = articleKeywordsWeights.join(vectors, vectors.word==articleKeywordsWeights.keyword, &quot;inner&quot;)
 </code></pre>
-<p>计算得到文章的平均词向量即文章的向量<br>
-def avg(row):<br>
-x = 0<br>
-for v in row.vectors:<br>
-x += v<br>
-#  将平均向量作为article的向量<br>
-return row.article_id, row.channel_id, x / len(row.vectors)</p>
-<pre><code>articleKeywordVectors.registerTempTable(&quot;tempTable&quot;)
+<p>计算得到文章的平均词向量即文章的向量</p>
+<pre><code>def avg(row):
+	x = 0
+	for v in row.vectors:
+		x += v
+		#  将平均向量作为article的向量
+		return row.article_id, row.channel_id, x / len(row.vectors)
+
+articleKeywordVectors.registerTempTable(&quot;tempTable&quot;)
 articleVector = w2v.spark.sql(
 	&quot;select article_id, min(channel_id) channel_id, collect_set(weightingVector) vectors from tempTable group by article_id&quot;).rdd \
     # 分组之后， 求map的平均之前， 结果是  artile_id, channel_id, vector_list # vector_list 是二维数组。
@@ -747,69 +772,80 @@ articleVector = w2v.spark.sql(
 <h3 id="文章相似度计算">文章相似度计算</h3>
 <h4 id="存在的问题以进行某频道全量所有的两两相似度计算-但是事实当文章量达到千万级别或者上亿级别特征也会上亿级别计算量就会很大-以下有两种类型解决方案">存在的问题：以进行某频道全量所有的两两相似度计算。但是事实当文章量达到千万级别或者上亿级别，特征也会上亿级别，计算量就会很大。以下有两种类型解决方案：</h4>
 <ol>
-<li>每个频道的文章先进行聚类（缺点，（分成几个簇）也是个超参数）</li>
-<li>局部敏感哈希LSH(Locality Sensitive Hashing)<br>
-基本思想1：LSH算法基于一个假设，如果两个文本在原有的数据空间是相似的，那么分别经过哈希函数转换以后的它们也具有很高的相似度<br>
+<li>
+<p>每个频道的文章先进行聚类（缺点，（分成几个簇）也是个超参数）</p>
+</li>
+<li>
+<p>局部敏感哈希LSH(Locality Sensitive Hashing)</p>
+<p>基本思想1：LSH算法基于一个假设，如果两个文本在原有的数据空间是相似的，那么分别经过哈希函数转换以后的它们也具有很高的相似度<br>
 基本思想2: 经常使用的哈希函数，冲突总是难以避免。LSH却依赖于冲突，在解决NNS(Nearest neighbor search )时，我们期望：<br>
 离得越近的对象，发生冲突的概率越高<br>
-离得越远的对象，发生冲突的概率越低</li>
+离得越远的对象，发生冲突的概率越低</p>
+</li>
 </ol>
 <h4 id="局部敏感哈希lshlocality-sensitive-hashing-lsh过程">局部敏感哈希LSH(Locality Sensitive Hashing) LSH过程：</h4>
 <p>mini hashing(略)	<br>
-Random Projection（特征压缩）：<br>
-Random Projection是一种随机算法.随机投影的算法有很多，如PCA、Gaussian random projection - 高斯随机投影。<br>
-随机桶投影是用于欧几里德距离的 LSH family。其LSH family将x特征向量映射到随机单位矢量v，并将映射结果分为哈希桶中。哈希表中的每个位置表示一个哈希桶。	<br>
-使得：<br>
-离得越近的对象，发生冲突的概率越高<br>
-离得越远的对象，发生冲突的概率越低</p>
+Random Projection（特征压缩）：</p>
+<pre><code>Random Projection是一种随机算法.随机投影的算法有很多，如PCA、Gaussian random projection - 高斯随机投影。
+随机桶投影是用于欧几里德距离的 LSH family。其LSH family将x特征向量映射到随机单位矢量v，并将映射结果分为哈希桶中。哈希表中的每个位置表示一个哈希桶。	
+使得：
+	离得越近的对象，发生冲突的概率越高
+	离得越远的对象，发生冲突的概率越低
+</code></pre>
 <h4 id="代码实现">代码实现：</h4>
-<p>读取数据，进行类型处理(数组转换类型为Vector)：<br>
-from pyspark.ml.linalg import Vectors<br>
-# 选取部分数据做测试<br>
-article_vector = w2v.spark.sql(&quot;select article_id, articlevector from article_vector where channel_id=18 limit 10&quot;)<br>
-train = articlevector.select(['article_id', 'articleVector'])</p>
-<pre><code>def _array_to_vector(row):
+<p>读取数据，进行类型处理(数组转换类型为Vector)：</p>
+<pre><code>from pyspark.ml.linalg import Vectors
+# 选取部分数据做测试
+article_vector = w2v.spark.sql(&quot;select article_id, articlevector from article_vector where channel_id=18 limit 10&quot;)
+train = articlevector.select(['article_id', 'articleVector'])
+
+def _array_to_vector(row):
 	return row.article_id, Vectors.dense(row.articleVector)
 
 train = train.rdd.map(_array_to_vector).toDF(['article_id', 'articleVector'])
 </code></pre>
-<p>相似度计算（BRP进行FIT）：<br>
-函数参数说明：<br>
-class pyspark.ml.feature.BucketedRandomProjectionLSH(inputCol=None, outputCol=None, seed=None, numHashTables=1, bucketLength=None)<br>
-inputCol=None：输入特征列<br>
-outputCol=None：输出特征列<br>
-numHashTables=1：哈希表数量，几个hash function对数据进行hash操作<br>
-bucketLength=None：桶的数量，值越大相同数据进入到同一个桶的概率越高<br>
-method:<br>
-# 计算df1每个文章相似的df2数据集的数据<br>
-approxSimilarityJoin(df1, df2, 2.0, distCol='EuclideanDistance')  # 转为向量</p>
-<pre><code># 代码调用：
+<p>相似度计算（BRP进行FIT）：</p>
+<pre><code>函数参数说明：
+class pyspark.ml.feature.BucketedRandomProjectionLSH(inputCol=None, outputCol=None, seed=None, numHashTables=1, bucketLength=None)
+	inputCol=None：输入特征列
+	outputCol=None：输出特征列
+	numHashTables=1：哈希表数量，几个hash function对数据进行hash操作
+	bucketLength=None：桶的数量，值越大相同数据进入到同一个桶的概率越高
+	method:
+		# 计算df1每个文章相似的df2数据集的数据        
+		approxSimilarityJoin(df1, df2, 2.0, distCol='EuclideanDistance')  # 转为向量
+
+# 代码调用：
 from pyspark.ml.feature import BucketedRandomProjectionLSH
 
 brp = BucketedRandomProjectionLSH(inputCol='articleVector', outputCol='hashes', numHashTables=4.0, bucketLength=10.0)
 model = brp.fit(旧文章向量)
 </code></pre>
-<p>计算相似的文章以及相似度<br>
-# 计算文章和文章之间的相似度<br>
-similar = model.approxSimilarityJoin(新增文章向量, 新增文章向量, 2.0, distCol='Similarity')  # 输出列名<br>
-similar.sort(['EuclideanDistance']).show()<br>
-计算结果：<br>
-datasetA(新增),    datasetB（旧的）,     Similarity<br>
-[2,[文章向量]]		[5,[文章向量]]			0.0051<br>
-[1,[文章向量]]		[3,[文章向量]]			0.0054<br>
-[2,[文章向量]]		[8,[文章向量]]			0.0053<br>
-[1,[文章向量]]		[4,[文章向量]]			0.0052<br>
-[2,[文章向量]]		[7,[文章向量]]			0.0055<br>
-...</p>
+<p>计算相似的文章以及相似度</p>
+<pre><code># 计算文章和文章之间的相似度
+similar = model.approxSimilarityJoin(新增文章向量, 新增文章向量, 2.0, distCol='Similarity')  # 输出列名
+similar.sort(['EuclideanDistance']).show()
+</code></pre>
+<p>计算结果：</p>
+<pre><code>datasetA(新增),    datasetB（旧的）,     Similarity
+[2,[文章向量]]		[5,[文章向量]]			0.0051
+[1,[文章向量]]		[3,[文章向量]]			0.0054
+[2,[文章向量]]		[8,[文章向量]]			0.0053
+[1,[文章向量]]		[4,[文章向量]]			0.0052
+[2,[文章向量]]		[7,[文章向量]]			0.0055
+...
+</code></pre>
 <h3 id="文章相似度存储-hbase">文章相似度存储 HBase</h3>
 <h4 id="存储目标存储-文章相似文章-相似度">存储目标：存储 文章，相似文章， 相似度</h4>
-<p>调用foreachPartition：<br>
-foreachPartition不同于map和mapPartition。<br>
-无返回结果，主要用于离线分析之后的数据（数据库存储等）落地<br>
-如果想要返回新的一个数据DF，就使用map后者。<br>
-我们需要建立一个HBase存储文章相似度的表：<br>
-create 'article_similar', 'similar'</p>
-<pre><code># 存储格式如下：
+<p>调用foreachPartition：</p>
+<pre><code>foreachPartition不同于map和mapPartition。
+无返回结果，主要用于离线分析之后的数据（数据库存储等）落地
+如果想要返回新的一个数据DF，就使用map后者。
+</code></pre>
+<p>我们需要建立一个HBase存储文章相似度的表：</p>
+<pre><code>create 'article_similar', 'similar'
+
+# 存储格式如下：
 		 表           row_key  column_family   value
 	put 'article_similar', '1', 	'similar:1',    0.2
 	put 'article_similar', '1', 	'similar:2',    0.34
@@ -817,32 +853,37 @@ create 'article_similar', 'similar'</p>
 <p>HBase 开启失败可能的原因的：</p>
 <ol>
 <li>
-<p>时间未同步的解决办法：<br>
-ntpdate 0.cn.pool.ntp.org<br>
-或<br>
-ntpdate ntp1.aliyun.com</p>
+<p>时间未同步的解决办法：</p>
+<pre><code> ntpdate 0.cn.pool.ntp.org
+ 或
+ ntpdate ntp1.aliyun.com
+</code></pre>
 </li>
 <li>
-<p>thrift服务未开启的解决办法：<br>
-hbase-daemon.sh start thrift<br>
-happybase代码实现：<br>
-def save_hbase(partition):<br>
-import happybase<br>
-pool = happybase.ConnectionPool(size=3, host='hadoop-master')</p>
-<p>with pool.connection() as conn:<br>
-# 建议表的连接<br>
-table = conn.table('article_similar')<br>
-for row in partition:<br>
-if row.datasetA.article_id == row.datasetB.article_id:<br>
-pass<br>
-else:<br>
-table.put(str(row.datasetA.article_id).encode(),<br>
-{&quot;similar:{}&quot;.format(row.datasetB.article_id).encode(): b'%0.4f' % (row.EuclideanDistance)})<br>
-# 手动关闭所有的连接<br>
-conn.close()</p>
-<p>similar.foreachPartition(save_hbase)</p>
+<p>thrift服务未开启的解决办法：</p>
+<pre><code> hbase-daemon.sh start thrift
+</code></pre>
 </li>
 </ol>
+<p>happybase代码实现：</p>
+<pre><code>def save_hbase(partition):
+import happybase
+pool = happybase.ConnectionPool(size=3, host='hadoop-master')
+
+with pool.connection() as conn:
+    # 建议表的连接
+    table = conn.table('article_similar')
+    for row in partition:
+        if row.datasetA.article_id == row.datasetB.article_id:
+            pass
+        else:
+            table.put(str(row.datasetA.article_id).encode(),
+                     {&quot;similar:{}&quot;.format(row.datasetB.article_id).encode(): b'%0.4f' % (row.EuclideanDistance)})
+    # 手动关闭所有的连接
+    conn.close()
+
+similar.foreachPartition(save_hbase)
+</code></pre>
 <h3 id="文章相似度增量更新代码整理">文章相似度增量更新代码整理</h3>
 <pre><code>def compute_article_similar(self, articleProfile):
     &quot;&quot;&quot;
@@ -924,22 +965,25 @@ conn.close()</p>
                     conn.close()
         similar.foreachPartition(save_hbase)
 </code></pre>
-<p>添加函数到主函数中文件中，修改update更新代码：<br>
-ua = UpdateArticle()<br>
-sentence_df = ua.merge_article_data()<br>
-if sentence_df.rdd.collect():<br>
-rank, idf = ua.generate_article_label(sentence_df)<br>
-articleProfile = ua.get_article_profile(rank, idf)<br>
-ua.compute_article_similar(articleProfile)</p>
+<p>添加函数到主函数中文件中，修改update更新代码：</p>
+<pre><code>ua = UpdateArticle()
+sentence_df = ua.merge_article_data()
+if sentence_df.rdd.collect():
+	rank, idf = ua.generate_article_label(sentence_df)
+	articleProfile = ua.get_article_profile(rank, idf)
+	ua.compute_article_similar(articleProfile)
+</code></pre>
 <h1 id="用户画像构建与更新">用户画像构建与更新</h1>
 <h3 id="组成成分">组成成分</h3>
 <p>用户基本信息+用户行为(历史+新增)<br>
-用户行为包括：<br>
-hive&gt; select * from user_action limit 1;<br>
-OK<br>
-2019-03-05 10:19:40		0		{&quot;action&quot;:&quot;exposure&quot;,&quot;userId&quot;:&quot;2&quot;,&quot;articleId&quot;:&quot;[16000, 44371, 16421, 16181, 17454]&quot;,&quot;algorithmCombine&quot;:&quot;C2&quot;} 2019-03-05<br>
-我们需要对用户行为（字典）数据格式平铺处理<br>
-user_id	action_time	article_id	share	click	collected	exposure	read_time</p>
+用户行为包括：</p>
+<pre><code>hive&gt; select * from user_action limit 1;
+OK
+2019-03-05 10:19:40		0		{&quot;action&quot;:&quot;exposure&quot;,&quot;userId&quot;:&quot;2&quot;,&quot;articleId&quot;:&quot;[16000, 44371, 16421, 16181, 17454]&quot;,&quot;algorithmCombine&quot;:&quot;C2&quot;} 2019-03-05
+</code></pre>
+<p>我们需要对用户行为（字典）数据格式平铺处理</p>
+<pre><code>user_id	action_time	article_id	share	click	collected	exposure	read_time
+</code></pre>
 <h3 id="步骤">步骤：</h3>
 <p>1、创建HIVE基本数据表<br>
 2、读取固定时间内的用户行为日志<br>
@@ -962,11 +1006,12 @@ STORED as textfile
 LOCATION '/user/hive/warehouse/profile.db/user_article_basic';
 </code></pre>
 <h4 id="读取增量用户行为数据-固定时间内的用户行为日志">读取增量用户行为数据-固定时间内的用户行为日志</h4>
-<p>关联历史日期文件<br>
-# 在进行日志信息的处理之前，先将我们之前建立的user_action表之间进行所有日期关联，spark hive不会自动关联<br>
-import pandas as pd<br>
-from datetime import datetime</p>
-<pre><code>def datelist(beginDate, endDate):
+<p>关联历史日期文件</p>
+<pre><code># 在进行日志信息的处理之前，先将我们之前建立的user_action表之间进行所有日期关联，spark hive不会自动关联
+import pandas as pd
+from datetime import datetime
+
+def datelist(beginDate, endDate):
 	date_list=[datetime.strftime(x,'%Y-%m-%d') for x in list(pd.date_range(start=beginDate, end=endDate))]
 	return date_list
 
@@ -986,14 +1031,16 @@ sqlDF = uup.spark.sql(
 )
 </code></pre>
 <h4 id="原始数据格式与目标数据格式">原始数据格式与目标数据格式</h4>
-<p>原始数据格式：（行为参数都算在 action列内）<br>
-actionTime	readTime	channelID	articleId	算法名称	action		userId<br>
-123						1						exposure	1<br>
-321						1						click		1<br>
-目标数据格式（行为参数1拆4，action列被爆炸为4列，均为bool类型）<br>
-user_id	action_time	article_id	shared	clicked	collected	expore	read_time<br>
-1					1			false	false	false		true<br>
-1					2			false	true	false		true</p>
+<p>原始数据格式：（行为参数都算在 action列内）</p>
+<pre><code>actionTime	readTime	channelID	articleId	算法名称	action		userId
+			123						1						exposure	1
+			321						1						click		1
+</code></pre>
+<p>目标数据格式（行为参数1拆4，action列被爆炸为4列，均为bool类型）</p>
+<pre><code>user_id	action_time	article_id	shared	clicked	collected	expore	read_time
+1					1			false	false	false		true
+1					2			false	true	false		true
+</code></pre>
 <h4 id="进行用户日志数据格式处理">进行用户日志数据格式处理</h4>
 <pre><code>if sqlDF.collect():
 def _compute(row):
@@ -1033,19 +1080,21 @@ _res = sqlDF.rdd.flatMap(_compute)
 data = _res.toDF([&quot;user_id&quot;, &quot;action_time&quot;,&quot;article_id&quot;, &quot;channel_id&quot;, &quot;shared&quot;, &quot;clicked&quot;, &quot;collected&quot;, &quot;exposure&quot;, &quot;read_time&quot;])
 </code></pre>
 <h4 id="将上述目标格式的数据按照-userid-和-articleid-分组">将上述目标格式的数据按照 userid 和 articleid 分组</h4>
-<p>先合并历史数据，存储到user-article-basic表中<br>
-# 合并历史数据，插入表中<br>
-old = uup.spark.sql(&quot;select * from user_article_basic&quot;)<br>
-# 由于合并的结果中不是对于user_id和article_id唯一的，一个用户会对文章多种操作<br>
-new_old = old.unionAll(data)<br>
-HIVE目前支持hive终端操作ACID，不支持python的pyspark原子性操作，并且开启配置中开启原子性相关配置也不行。<br>
-new_old.registerTempTable(&quot;temptable&quot;)<br>
-# 按照用户，文章分组存放进去<br>
-uup.spark.sql(<br>
-&quot;insert overwrite table user_article_basic select user_id, max(action_time) as action_time, &quot;<br>
-&quot;article_id, max(channel_id) as channel_id, max(shared) as shared, max(clicked) as clicked, &quot;<br>
-&quot;max(collected) as collected, max(exposure) as exposure, max(read_time) as read_time from temptable &quot;<br>
-&quot;group by user_id, article_id&quot;)</p>
+<p>先合并历史数据，存储到user-article-basic表中</p>
+<pre><code># 合并历史数据，插入表中
+old = uup.spark.sql(&quot;select * from user_article_basic&quot;)
+# 由于合并的结果中不是对于user_id和article_id唯一的，一个用户会对文章多种操作
+new_old = old.unionAll(data)
+</code></pre>
+<p>HIVE目前支持hive终端操作ACID，不支持python的pyspark原子性操作，并且开启配置中开启原子性相关配置也不行。</p>
+<pre><code>new_old.registerTempTable(&quot;temptable&quot;)
+# 按照用户，文章分组存放进去
+uup.spark.sql(
+     &quot;insert overwrite table user_article_basic select user_id, max(action_time) as action_time, &quot;
+     &quot;article_id, max(channel_id) as channel_id, max(shared) as shared, max(clicked) as clicked, &quot;
+     &quot;max(collected) as collected, max(exposure) as exposure, max(read_time) as read_time from temptable &quot;
+      &quot;group by user_id, article_id&quot;)
+</code></pre>
 <h3 id="用户画像标签权重计算">用户画像标签权重计算</h3>
 <h4 id="如何存储">如何存储</h4>
 <p>用户画像，作为特征提供给一些算法排序，方便与快速读取使用<br>
@@ -1073,53 +1122,59 @@ WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,basic:,part
 TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;user_profile&quot;);
 </code></pre>
 <h4 id="spark-sql关联表读取问题">Spark SQL关联表读取问题</h4>
-<p>创建关联表之后，离线读取表内容需要一些依赖包。解决办法：<br>
-拷贝/root/bigdata/hbase/lib/下面hbase-<em>.jar 到 /root/bigdata/spark/jars/目录下<br>
-拷贝/root/bigdata/hive/lib/h</em>.jar 到 /root/bigdata/spark/jars/目录下<br>
-上述操作三台虚拟机都执行一遍。</p>
+<p>创建关联表之后，离线读取表内容需要一些依赖包。解决办法：</p>
+<pre><code>拷贝/root/bigdata/hbase/lib/下面hbase-*.jar 到 /root/bigdata/spark/jars/目录下
+拷贝/root/bigdata/hive/lib/h*.jar 到 /root/bigdata/spark/jars/目录下
+</code></pre>
+<p>上述操作三台虚拟机都执行一遍。</p>
 <h4 id="用户画像频道关键词获取与权重计算">用户画像频道关键词获取与权重计算</h4>
 <p>目标：获取用户1~25频道(不包括推荐频道)的关键词，并计算权重<br>
 1、读取user-article-basic表，合并行为表与文章画像中的主题词<br>
-2、进行用户权重计算公式、同时落地存储<br>
-# 获取基本用户行为信息，然后进行文章画像的主题词合并<br>
-uup.spark.sql(&quot;use profile&quot;)<br>
-# 取出日志中的channel_id<br>
-user_article_ = uup.spark.sql(&quot;select * from user_article_basic&quot;).drop('channel_id')<br>
-uup.spark.sql('use article')<br>
-article_label = uup.spark.sql(&quot;select article_id, channel_id, topics from article_profile&quot;)<br>
-# 合并使用文章中正确的channel_id<br>
-click_article_res = user_article_.join(article_label, how='left', on=['article_id'])<br>
-将关键词字段的列表爆炸<br>
-import pyspark.sql.functions as F<br>
-click_article_res = click_article_res.withColumn('topic', F.explode('topics')).drop('topics')<br>
-爆炸后格式如下：<br>
-user_id article_id topic ...<br>
-1     1			 python<br>
-1     1			 golang<br>
-1     1			 linux<br>
-...    ...		  ...</p>
+2、进行用户权重计算公式、同时落地存储</p>
+<pre><code># 获取基本用户行为信息，然后进行文章画像的主题词合并
+uup.spark.sql(&quot;use profile&quot;)
+# 取出日志中的channel_id
+user_article_ = uup.spark.sql(&quot;select * from user_article_basic&quot;).drop('channel_id')
+uup.spark.sql('use article')
+article_label = uup.spark.sql(&quot;select article_id, channel_id, topics from article_profile&quot;)
+# 合并使用文章中正确的channel_id
+click_article_res = user_article_.join(article_label, how='left', on=['article_id'])
+</code></pre>
+<p>将关键词字段的列表爆炸</p>
+<pre><code>import pyspark.sql.functions as F
+click_article_res = click_article_res.withColumn('topic', F.explode('topics')).drop('topics')
+</code></pre>
+<p>爆炸后格式如下：</p>
+<pre><code>user_id article_id topic ...
+1     1			 python
+1     1			 golang
+1     1			 linux
+...    ...		  ...
+</code></pre>
 <h4 id="用户画像之标签权重算法">用户画像之标签权重算法</h4>
 <p>用户标签权重 =( 行为类型权重之和) × 时间衰减<br>
-行为类型权重 的 分值 的确定需要整体协商<br>
-行为					分值<br>
-阅读时间&lt;1000ms		  1<br>
-阅读时间&gt;=1000ms	  2<br>
-收藏					2<br>
-分享					3<br>
-点击					5<br>
-时间衰减: 1/(log(t)+1) ,t为时间发生时间距离当前时间的大小。<br>
-# 计算每个用户对每篇文章的标签的权重<br>
-def compute_weights(rowpartition):<br>
-&quot;&quot;&quot;处理每个用户对文章的点击数据<br>
-&quot;&quot;&quot;<br>
-weightsOfaction = {<br>
-&quot;read_min&quot;: 1,<br>
-&quot;read_middle&quot;: 2,<br>
-&quot;collect&quot;: 2,<br>
-&quot;share&quot;: 3,<br>
-&quot;click&quot;: 5<br>
-}</p>
-<pre><code>import happybase
+行为类型权重 的 分值 的确定需要整体协商</p>
+<pre><code>行为					分值
+阅读时间&lt;1000ms		  1
+阅读时间&gt;=1000ms	  2
+收藏					2
+分享					3
+点击					5
+</code></pre>
+<p>时间衰减: 1/(log(t)+1) ,t为时间发生时间距离当前时间的大小。</p>
+<pre><code># 计算每个用户对每篇文章的标签的权重
+def compute_weights(rowpartition):
+&quot;&quot;&quot;处理每个用户对文章的点击数据
+&quot;&quot;&quot;
+weightsOfaction = {
+    &quot;read_min&quot;: 1,
+    &quot;read_middle&quot;: 2,
+    &quot;collect&quot;: 2,
+    &quot;share&quot;: 3,
+    &quot;click&quot;: 5
+}
+
+import happybase
 from datetime import datetime
 import numpy as np
 #  用于读取hbase缓存结果配置
@@ -1154,11 +1209,12 @@ for row in rowpartition:
 
 click_article_res.foreachPartition(compute_weights)
 </code></pre>
-<p>落地Hbase中之后，在HBASE中查询，happybase或者hbase终端<br>
-import happybase<br>
-# 用于读取hbase缓存结果配置<br>
-pool = happybase.ConnectionPool(size=10, host='192.168.19.137', port=9090)</p>
-<pre><code>with pool.connection() as conn:
+<p>落地Hbase中之后，在HBASE中查询，happybase或者hbase终端</p>
+<pre><code>import happybase
+# 用于读取hbase缓存结果配置
+pool = happybase.ConnectionPool(size=10, host='192.168.19.137', port=9090)
+
+with pool.connection() as conn:
 	table = conn.table('user_profile')
 	# 获取每个键 对应的所有列的结果
 	data = table.row(b'user:2', columns=[b'partial'])
@@ -1208,9 +1264,10 @@ pool = happybase.ConnectionPool(size=10, host='192.168.19.137', port=9090)</p>
 </code></pre>
 <h3 id="用户画像增量更新定时开启">用户画像增量更新定时开启:</h3>
 <p>用户画像增量更新代码整理<br>
-添加定时任务以及进程管理<br>
-from offline.update_user import UpdateUserProfile</p>
-<pre><code>def update_user_profile():
+添加定时任务以及进程管理</p>
+<pre><code>from offline.update_user import UpdateUserProfile
+
+def update_user_profile():
 	&quot;&quot;&quot;
 	更新用户画像
 	&quot;&quot;&quot;
@@ -1281,6 +1338,36 @@ scheduler.add_job(update_user_profile, trigger='interval', hours=2)</code></pre>
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-02-28">2021-02-28</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/">RS =&gt; 复习</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-02-25">2021-02-25</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/go-greater-fu-xi/">GO =&gt; 复习</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
@@ -1294,34 +1381,6 @@ scheduler.add_job(update_user_profile, trigger='interval', hours=2)</code></pre>
                   </article>
                   
                   
-                  
-                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-02-18">2021-02-18</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/">PR =&gt; Powershell 7</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
-                  
-                  
-                  
-                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/pr-greater-oh-my-posh3/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-02-12">2021-02-12</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/pr-greater-oh-my-posh3/">PR =&gt; Oh-my-Posh3+Banner</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
                   
                   
                   
@@ -1491,15 +1550,13 @@ scheduler.add_job(update_user_profile, trigger='interval', hours=2)</code></pre>
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-3 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-4 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-4 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-5 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="ctag ctag-5 ctag-n16me-6oV" aria-label="">AI</a>
                     
-                      <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="ctag ctag-6 ctag-n16me-6oV" aria-label="">AI</a>
+                      <a href="https://cythonlin.github.io/tag/FLS_eF6Eg/" class="ctag ctag-6 ctag-FLS_eF6Eg" aria-label="">KG</a>
                     
-                      <a href="https://cythonlin.github.io/tag/FLS_eF6Eg/" class="ctag ctag-7 ctag-FLS_eF6Eg" aria-label="">KG</a>
-                    
-                      <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="ctag ctag-8 ctag-sJAb6NuUK" aria-label="">DB</a>
+                      <a href="https://cythonlin.github.io/tag/sJAb6NuUK/" class="ctag ctag-7 ctag-sJAb6NuUK" aria-label="">DB</a>
                     
                   </div>
                   <div class="clear"></div>
@@ -1541,7 +1598,7 @@ scheduler.add_job(update_user_profile, trigger='interval', hours=2)</code></pre>
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 78 篇文章
+          ©2019 共 79 篇文章
           <br/>
 
         </p>
