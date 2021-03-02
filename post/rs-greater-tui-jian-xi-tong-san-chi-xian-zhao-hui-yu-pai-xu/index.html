@@ -18,12 +18,12 @@
     <meta name="description" content="召回设计
 召回排序流程
 匿名用户：
-通常使用用户冷启动方案，区别在于user_id为匿名用户手机识别号(黑马头条不允许匿名用户)
+通常使用用户冷启动方案，区别在于user_id为匿名用户手机识别号(不允许匿名用户)
 所有只正针对于登录用户：
 
 用户冷启动（前期点击行为较少情况）
 非个性化推荐
-热门召回：自定义热门规则，根据当..." />
+热门召回：自定义热门规则，根据当前时间段..." />
     <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -79,7 +79,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614572970384" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1614654832738" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -121,34 +121,40 @@
                   <h1 id="召回设计">召回设计</h1>
 <h3 id="召回排序流程">召回排序流程</h3>
 <h4 id="匿名用户">匿名用户：</h4>
-<pre><code>通常使用用户冷启动方案，区别在于user_id为匿名用户手机识别号(黑马头条不允许匿名用户)
+<pre><code>通常使用用户冷启动方案，区别在于user_id为匿名用户手机识别号(不允许匿名用户)
 所有只正针对于登录用户：
 </code></pre>
 <h4 id="用户冷启动前期点击行为较少情况">用户冷启动（前期点击行为较少情况）</h4>
-<p>非个性化推荐<br>
-热门召回：自定义热门规则，根据当前时间段热点定期更新维护人点文章库<br>
-新文章召回：为了提高新文章的曝光率，建立新文章库，进行推荐<br>
-个性化推荐：<br>
-基于内容的协同过滤在线召回：基于用户实时兴趣画像相似的召回结果用于首页的个性化推荐</p>
+<p>非个性化推荐</p>
+<pre><code>热门召回：自定义热门规则，根据当前时间段热点定期更新维护人点文章库
+新文章召回：为了提高新文章的曝光率，建立新文章库，进行推荐
+</code></pre>
+<p>个性化推荐：</p>
+<pre><code>基于内容的协同过滤在线召回：基于用户实时兴趣画像相似的召回结果用于首页的个性化推荐
+</code></pre>
 <h4 id="后期离线部分用户点击行为较多用户画像完善">后期离线部分（用户点击行为较多，用户画像完善）</h4>
 <p>建立用户长期兴趣画像（详细）：包括用户各个维度的兴趣特征<br>
-训练排序模型<br>
-LR模型、FTRL、Wide&amp;Deep<br>
-离线部分的召回：<br>
-基于模型协同过滤推荐离线召回：ALS<br>
-基于内容的离线召回：或者称基于用户画像的召回</p>
+训练排序模型</p>
+<pre><code>LR模型、FTRL、Wide&amp;Deep
+</code></pre>
+<p>离线部分的召回：</p>
+<pre><code>基于模型协同过滤推荐离线召回：ALS
+基于内容的离线召回：或者称基于用户画像的召回
+</code></pre>
 <h3 id="召回表设计与模型召回">召回表设计与模型召回</h3>
 <h4 id="召回表设计">召回表设计</h4>
 <p>我们的召回方式有很多种。<br>
 多路召回结果存储模型召回 与 内容召回的结果 需要进行相应频道推荐合并。<br>
-方案：基于模型与基于内容的召回结果存入同一张表，避免多张表进行读取处理<br>
-由于HBASE有多个版本数据功能存在的支持<br>
-TTL=&gt;7776000, VERSIONS=&gt;999999<br>
-如下：<br>
-create 'cb_recall', {NAME=&gt;'als', TTL=&gt;7776000, VERSIONS=&gt;999999}<br>
-alter 'cb_recall', {NAME=&gt;'content', TTL=&gt;7776000, VERSIONS=&gt;999999}<br>
-alter 'cb_recall', {NAME=&gt;'online', TTL=&gt;7776000, VERSIONS=&gt;999999}</p>
-<pre><code># 例子（多版本）：
+方案：基于模型与基于内容的召回结果存入同一张表，避免多张表进行读取处理</p>
+<pre><code>由于HBASE有多个版本数据功能存在的支持
+TTL=&gt;7776000, VERSIONS=&gt;999999
+</code></pre>
+<p>如下：</p>
+<pre><code>create 'cb_recall', {NAME=&gt;'als', TTL=&gt;7776000, VERSIONS=&gt;999999}
+alter 'cb_recall', {NAME=&gt;'content', TTL=&gt;7776000, VERSIONS=&gt;999999}
+alter 'cb_recall', {NAME=&gt;'online', TTL=&gt;7776000, VERSIONS=&gt;999999}
+
+# 例子（多版本）：
 put 'cb_recall', 'recall:user:5', 'als:1',[45,3,5,10]
 put 'cb_recall', 'recall:user:5', 'als:1',[289,11,65,52,109,8]
 put 'cb_recall', 'recall:user:5', 'als:2',[1,2,3,4,5,6,7,8,9,10]
@@ -177,16 +183,17 @@ CHE_INDEX_ON_WRITE =&gt; 'false', IN_MEMORY =&gt; 'false', CACHE_BLOOMS_ON_WRITE
 ON_OPEN =&gt; 'false', COMPRESSION =&gt; 'NONE', BLOCKCACHE =&gt; 'true', BLOCKSIZE =&gt; '65536'}                 
 3 row(s)	
 </code></pre>
-<p>（几乎不用）在HIVE用户数据数据库下建立HIVE外部表,若hbase表有修改，则进行HIVE 表删除更新<br>
-create external table cb_recall_hbase(<br>
-user_id STRING comment &quot;userID&quot;,<br>
-als map&lt;string, ARRAY<BIGINT>&gt; comment &quot;als recall&quot;,<br>
-content map&lt;string, ARRAY<BIGINT>&gt; comment &quot;content recall&quot;,<br>
-online map&lt;string, ARRAY<BIGINT>&gt; comment &quot;online recall&quot;)<br>
-COMMENT &quot;user recall table&quot;<br>
-STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'<br>
-WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,als:,content:,online:&quot;)<br>
-TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;cb_recall&quot;);</p>
+<p>（几乎不用）在HIVE用户数据数据库下建立HIVE外部表,若hbase表有修改，则进行HIVE 表删除更新</p>
+<pre><code>create external table cb_recall_hbase(
+user_id STRING comment &quot;userID&quot;,
+als map&lt;string, ARRAY&lt;BIGINT&gt;&gt; comment &quot;als recall&quot;,
+content map&lt;string, ARRAY&lt;BIGINT&gt;&gt; comment &quot;content recall&quot;,
+online map&lt;string, ARRAY&lt;BIGINT&gt;&gt; comment &quot;online recall&quot;)
+COMMENT &quot;user recall table&quot;
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,als:,content:,online:&quot;)
+TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;cb_recall&quot;);
+</code></pre>
 <h4 id="增加一个历史召回结果表">增加一个历史召回结果表</h4>
 <pre><code>create 'history_recall', {NAME=&gt;'channel', TTL=&gt;7776000, VERSIONS=&gt;999999}
 
@@ -194,9 +201,10 @@ put 'history_recall', 'recall:user:5', 'als:1',[1,2,3]
 put 'history_recall', 'recall:user:5', 'als:1',[4,5,6,7]
 put 'history_recall', 'recall:user:5', 'als:1',[8,9,10]
 </code></pre>
-<p>为什么增加历史召回表？<br>
-1、直接在存储召回结果部分进行过滤，比之后排序过滤，节省排序时间<br>
-2、防止Redis缓存没有消耗完，造成重复推荐，从源头进行过滤</p>
+<p>为什么增加历史召回表？</p>
+<pre><code>1、直接在存储召回结果部分进行过滤，比之后排序过滤，节省排序时间
+2、防止Redis缓存没有消耗完，造成重复推荐，从源头进行过滤
+</code></pre>
 <h3 id="基于模型召回集合计算">基于模型召回集合计算</h3>
 <h4 id="als模型推荐实现">ALS模型推荐实现</h4>
 <p>步骤：<br>
@@ -204,46 +212,52 @@ put 'history_recall', 'recall:user:5', 'als:1',[8,9,10]
 2、ALS模型训练以及推荐<br>
 3、推荐结果解析处理<br>
 4、推荐结果存储<br>
-数据类型转换,clicked( bool 转 int)<br>
-ur.spark.sql(&quot;use profile&quot;)<br>
-user_article_click = ur.spark.sql(&quot;select * from user_article_basic&quot;).<br>
-select(['user_id', 'article_id', 'clicked'])<br>
-# 更换类型<br>
-def change_types(row):<br>
-return row.user_id, row.article_id, int(row.clicked)</p>
-<pre><code>user_article_click = user_article_click.rdd.map(change_types).toDF(['user_id', 'article_id', 'clicked'])
+数据类型转换,clicked( bool 转 int)</p>
+<pre><code>ur.spark.sql(&quot;use profile&quot;)
+user_article_click = ur.spark.sql(&quot;select * from user_article_basic&quot;).\
+            select(['user_id', 'article_id', 'clicked'])
+# 更换类型
+def change_types(row):
+    return row.user_id, row.article_id, int(row.clicked)
+
+user_article_click = user_article_click.rdd.map(change_types).toDF(['user_id', 'article_id', 'clicked'])
 </code></pre>
-<p>这步处理结果格式如下：<br>
-user_id	article_id	clicked<br>
-0<br>
-1<br>
-用户ID与文章ID处理，编程ID索引（原用户ID和文章ID是长字符串，ALS模型不能处理，要重新编排ID索引）<br>
-from pyspark.ml.feature import StringIndexer<br>
-from pyspark.ml import Pipeline<br>
-# 用户和文章ID超过ALS最大整数值，需要使用StringIndexer进行转换<br>
-user_id_indexer = StringIndexer(inputCol='user_id', outputCol='als_user_id')<br>
-article_id_indexer = StringIndexer(inputCol='article_id', outputCol='als_article_id')<br>
-pip = Pipeline(stages=[user_id_indexer, article_id_indexer])<br>
-pip_fit = pip.fit(user_article_click)<br>
-als_user_article_click = pip_fit.transform(user_article_click)<br>
-ALS 模型训练与推荐（ALS模型需要输出用户ID列，文章ID列以及点击列）<br>
-from pyspark.ml.recommendation import ALS<br>
-# 模型训练和推荐默认每个用户固定文章个数<br>
-als = ALS(userCol='als_user_id', itemCol='als_article_id', ratingCol='clicked', checkpointInterval=1)<br>
-model = als.fit(als_user_article_click)<br>
-recall_res = model.recommendForAllUsers(100)<br>
-结果：<br>
-als_user_id	recommendations<br>
-1			[[article_id, 分数]]</p>
+<p>这步处理结果格式如下：</p>
+<pre><code>user_id	article_id	clicked
+					0
+					1
+</code></pre>
+<p>用户ID与文章ID处理，编程ID索引（原用户ID和文章ID是长字符串，ALS模型不能处理，要重新编排ID索引）</p>
+<pre><code>from pyspark.ml.feature import StringIndexer
+from pyspark.ml import Pipeline
+# 用户和文章ID超过ALS最大整数值，需要使用StringIndexer进行转换
+user_id_indexer = StringIndexer(inputCol='user_id', outputCol='als_user_id')
+article_id_indexer = StringIndexer(inputCol='article_id', outputCol='als_article_id')
+pip = Pipeline(stages=[user_id_indexer, article_id_indexer])
+pip_fit = pip.fit(user_article_click)
+als_user_article_click = pip_fit.transform(user_article_click)
+</code></pre>
+<p>ALS 模型训练与推荐（ALS模型需要输出用户ID列，文章ID列以及点击列）</p>
+<pre><code>from pyspark.ml.recommendation import ALS
+# 模型训练和推荐默认每个用户固定文章个数
+als = ALS(userCol='als_user_id', itemCol='als_article_id', ratingCol='clicked', checkpointInterval=1)
+model = als.fit(als_user_article_click)
+recall_res = model.recommendForAllUsers(100)
+</code></pre>
+<p>结果：</p>
+<pre><code>als_user_id	recommendations
+1			[[article_id, 分数]]
+</code></pre>
 <h4 id="推荐结果处理">推荐结果处理</h4>
-<p>通过StringIndexer变换后的下标知道原来的和用户ID<br>
-# recall_res得到需要使用StringIndexer变换后的下标<br>
-# 保存原来的下表映射关系<br>
-refection_user = als_user_article_click.groupBy(['user_id']).max('als_user_id').withColumnRenamed(<br>
-'max(als_user_id)', 'als_user_id')<br>
-refection_article = als_user_article_click.groupBy(['article_id']).max('als_article_id').withColumnRenamed(<br>
-'max(als_article_id)', 'als_article_id')</p>
-<pre><code># Join推荐结果与 refection_user映射关系表
+<p>通过StringIndexer变换后的下标知道原来的和用户ID</p>
+<pre><code># recall_res得到需要使用StringIndexer变换后的下标
+# 保存原来的下表映射关系
+refection_user = als_user_article_click.groupBy(['user_id']).max('als_user_id').withColumnRenamed(
+'max(als_user_id)', 'als_user_id')
+refection_article = als_user_article_click.groupBy(['article_id']).max('als_article_id').withColumnRenamed(
+'max(als_article_id)', 'als_article_id')
+
+# Join推荐结果与 refection_user映射关系表
 # +-----------+--------------------+-------------------+
 # | als_user_id | recommendations | user_id |
 # +-----------+--------------------+-------------------+
@@ -253,16 +267,17 @@ refection_article = als_user_article_click.groupBy(['article_id']).max('als_arti
 recall_res = recall_res.join(refection_user, on=['als_user_id'], how='left').select(
 ['als_user_id', 'recommendations', 'user_id'])
 </code></pre>
-<p>对推荐文章ID后处理：得到推荐列表,获取推荐列表中的ID索引<br>
-# Join推荐结果与 refection_article映射关系表<br>
-# +-----------+-------+----------------+<br>
-# | als_user_id | user_id | als_article_id |<br>
-# +-----------+-------+----------------+<br>
-# | 8 | 2 | [163, 0.91328144] |<br>
-# | 8 | 2 | [132, 0.91328144] |<br>
-import pyspark.sql.functions as F<br>
-recall_res = recall_res.withColumn('als_article_id', F.explode('recommendations')).drop('recommendations')</p>
-<pre><code># +-----------+-------+--------------+
+<p>对推荐文章ID后处理：得到推荐列表,获取推荐列表中的ID索引</p>
+<pre><code># Join推荐结果与 refection_article映射关系表
+# +-----------+-------+----------------+
+# | als_user_id | user_id | als_article_id |
+# +-----------+-------+----------------+
+# | 8 | 2 | [163, 0.91328144] |
+# | 8 | 2 | [132, 0.91328144] |
+import pyspark.sql.functions as F
+recall_res = recall_res.withColumn('als_article_id', F.explode('recommendations')).drop('recommendations')
+
+# +-----------+-------+--------------+
 # | als_user_id | user_id | als_article_id |
 # +-----------+-------+--------------+
 # | 8 | 2 | 163 |
@@ -270,43 +285,47 @@ recall_res = recall_res.withColumn('als_article_id', F.explode('recommendations'
 def _article_id(row):
 	return row.als_user_id, row.user_id, row.als_article_id[0]
 </code></pre>
-<p>进行索引对应文章ID获取<br>
-als_recall = recall_res.rdd.map(_article_id).toDF(['als_user_id', 'user_id', 'als_article_id'])<br>
-als_recall = als_recall.join(refection_article, on=['als_article_id'], how='left').select(<br>
-['user_id', 'article_id'])<br>
-# 得到每个用户ID 对应推荐文章<br>
-# +-------------------+----------+<br>
-# | user_id |				 article_id |<br>
-# +-------------------+----------+<br>
-# | 1106476833370537984 |   44075 |<br>
-# | 1 | 					 44075 |<br>
-获取每个文章对应的频道，推荐给用户时按照频道存储:<br>
-ur.spark.sql(&quot;use toutiao&quot;)<br>
-news_article_basic = ur.spark.sql(&quot;select article_id, channel_id from news_article_basic&quot;)</p>
-<pre><code>als_recall = als_recall.join(news_article_basic, on=['article_id'], how='left')
+<p>进行索引对应文章ID获取</p>
+<pre><code>als_recall = recall_res.rdd.map(_article_id).toDF(['als_user_id', 'user_id', 'als_article_id'])
+als_recall = als_recall.join(refection_article, on=['als_article_id'], how='left').select(
+                    ['user_id', 'article_id'])
+# 得到每个用户ID 对应推荐文章
+# +-------------------+----------+
+# | user_id |				 article_id |
+# +-------------------+----------+
+# | 1106476833370537984 |   44075 |
+# | 1 | 					 44075 |
+</code></pre>
+<p>获取每个文章对应的频道，推荐给用户时按照频道存储:</p>
+<pre><code>ur.spark.sql(&quot;use toutiao&quot;)
+news_article_basic = ur.spark.sql(&quot;select article_id, channel_id from news_article_basic&quot;)
+
+als_recall = als_recall.join(news_article_basic, on=['article_id'], how='left')
 als_recall = als_recall.groupBy(['user_id', 'channel_id']).agg(F.collect_list('article_id')).withColumnRenamed(
                     'collect_list(article_id)', 'article_list')
 
 als_recall = als_recall.dropna()
 </code></pre>
 <h4 id="召回结果存储">召回结果存储</h4>
-<p>HBASE表设计概览：<br>
-put 'cb_recall', 'recall:user:5', 'als:1',[45,3,5,10,289,11,65,52,109,8]<br>
-put 'cb_recall', 'recall:user:5', 'als:2',[1,2,3,4,5,6,7,8,9,10]<br>
-存储代码如下：<br>
-def save_offline_recall_hbase(partition):<br>
-&quot;&quot;&quot;离线模型召回结果存储<br>
-&quot;&quot;&quot;<br>
-import happybase<br>
-pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)<br>
-for row in partition:<br>
-with pool.connection() as conn:<br>
-# 获取历史看过的该频道文章<br>
-history_table = conn.table('history_recall')<br>
-# 多个版本<br>
-data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),<br>
-'channel:{}'.format(row.channel_id).encode())</p>
-<pre><code>            history = []
+<p>HBASE表设计概览：</p>
+<pre><code>put 'cb_recall', 'recall:user:5', 'als:1',[45,3,5,10,289,11,65,52,109,8]
+put 'cb_recall', 'recall:user:5', 'als:2',[1,2,3,4,5,6,7,8,9,10]
+</code></pre>
+<p>存储代码如下：</p>
+<pre><code>def save_offline_recall_hbase(partition):
+    &quot;&quot;&quot;离线模型召回结果存储
+    &quot;&quot;&quot;
+    import happybase
+    pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)
+    for row in partition:
+        with pool.connection() as conn:
+            # 获取历史看过的该频道文章
+            history_table = conn.table('history_recall')
+            # 多个版本
+            data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),
+                                       'channel:{}'.format(row.channel_id).encode())
+
+            history = []
             if len(data) &gt;= 2:
                 for l in data[:-1]:
                     history.extend(eval(l))
@@ -331,18 +350,21 @@ data = history_table.cells('reco:his:{}'.format(row.user_id).encode(),<br>
 als_recall.foreachPartition(save_offline_recall_hbase)
 </code></pre>
 <h3 id="离线用户基于内容召回集">离线用户基于内容召回集</h3>
-<p>目标<br>
-知道离线内容召回的概念<br>
-知道如何进行内容召回计算存储规则<br>
-应用<br>
-应用spark完成离线用户基于内容的协同过滤推荐</p>
+<p>目标</p>
+<pre><code>知道离线内容召回的概念
+知道如何进行内容召回计算存储规则
+</code></pre>
+<p>应用</p>
+<pre><code>应用spark完成离线用户基于内容的协同过滤推荐
+</code></pre>
 <h4 id="基于内容召回实现文章向量之前已经弄好了">基于内容召回实现（文章向量之前已经弄好了）</h4>
-<p>过滤用户点击的文章<br>
-# 基于内容相似召回（画像召回）<br>
-ur.spark.sql(&quot;use profile&quot;)<br>
-user_article_basic = self.spark.sql(&quot;select * from user_article_basic&quot;)<br>
-user_article_basic = user_article_basic.filter(&quot;clicked=True&quot;)</p>
-<pre><code>def save_content_filter_history_to__recall(partition):
+<p>过滤用户点击的文章</p>
+<pre><code># 基于内容相似召回（画像召回）
+ur.spark.sql(&quot;use profile&quot;)
+user_article_basic = self.spark.sql(&quot;select * from user_article_basic&quot;)
+user_article_basic = user_article_basic.filter(&quot;clicked=True&quot;)
+
+def save_content_filter_history_to__recall(partition):
     &quot;&quot;&quot;计算每个用户的每个操作文章的相似文章，过滤之后，写入content召回表当中（支持不同时间戳版本）
     &quot;&quot;&quot;
     import happybase
@@ -607,10 +629,11 @@ if __name__ == '__main__':
     ur.update_als_recall()
     ur.update_content_recall()
 </code></pre>
-<p>定时更新代码，在main.py和update.py中添加以下代码：<br>
-from offline.update_recall import UpdateRecall<br>
-from schedule.update_profile import update_user_profile, update_article_profile, update_recall</p>
-<pre><code>def update_recall():
+<p>定时更新代码，在main.py和update.py中添加以下代码：</p>
+<pre><code>from offline.update_recall import UpdateRecall
+from schedule.update_profile import update_user_profile, update_article_profile, update_recall
+
+def update_recall():
     &quot;&quot;&quot;
     更新用户的召回集
     :return:
@@ -619,38 +642,303 @@ from schedule.update_profile import update_user_profile, update_article_profile,
     udp.update_als_recall()
     udp.update_content_recall()
 </code></pre>
-<p>main中添加<br>
-scheduler.add_job(update_recall, trigger='interval', hour=3)</p>
+<p>main中添加</p>
+<pre><code>scheduler.add_job(update_recall, trigger='interval', hour=3)
+</code></pre>
 <h1 id="排序设计">排序设计</h1>
 <h3 id="排序模型">排序模型</h3>
-<p>宽模型 + 特征⼯程<br>
-LR/MLR + 非ID类特征(⼈⼯离散/GBDT/FM)<br>
-spark 中可以直接使用<br>
-宽模型 + 深模型<br>
-wide&amp;deep,DeepFM<br>
-使用TensorFlow进行训练<br>
-深模型：<br>
-DNN + 特征embedding<br>
-使用TensorFlow进行训练</p>
+<p>宽模型 + 特征⼯程</p>
+<pre><code>LR/MLR + 非ID类特征(⼈⼯离散/GBDT/FM)
+spark 中可以直接使用
+</code></pre>
+<p>宽模型 + 深模型</p>
+<pre><code>wide&amp;deep,DeepFM
+使用TensorFlow进行训练
+</code></pre>
+<p>深模型：</p>
+<pre><code>DNN + 特征embedding
+使用TensorFlow进行训练
+</code></pre>
 <h3 id="特征处理原则">特征处理原则</h3>
-<p>离散数据<br>
-one-hot编码<br>
-连续数据<br>
-归一化<br>
-图片/文本<br>
-文章标签/关键词提取<br>
-embedding</p>
+<p>离散数据</p>
+<pre><code>one-hot编码
+</code></pre>
+<p>连续数据</p>
+<pre><code>归一化
+</code></pre>
+<p>图片/文本</p>
+<pre><code>文章标签/关键词提取
+embedding
+</code></pre>
 <h3 id="优化训练方式">优化训练方式</h3>
-<p>使用Batch SGD优化<br>
-加入正则化防止过拟合</p>
+<p>使用Batch SGD优化</p>
+<pre><code>加入正则化防止过拟合
+</code></pre>
 <h3 id="spark-lr-进行预估">spark LR 进行预估</h3>
 <p>目的：通过LR模型进行CTR预估<br>
-步骤：<br>
-1、需要通过spark读取HIVE外部表，需要新的sparksession配置<br>
-增加HBASE配置<br>
-2、读取用户点击行为表，与用户画像和文章画像，构造训练样本<br>
-3、LR模型进行训练<br>
-4、LR模型预测、结果评估</p>
+步骤：</p>
+<pre><code>1、需要通过spark读取HIVE外部表，需要新的sparksession配置
+	增加HBASE配置
+2、读取用户点击行为表，与用户画像和文章画像，构造训练样本
+3、LR模型进行训练
+4、LR模型预测、结果评估
+</code></pre>
+<p>创建环境</p>
+<pre><code>import os
+import sys
+# 如果当前代码文件运行测试需要加入修改路径，避免出现后导包问题
+BASE_DIR = os.path.dirname(os.path.dirname(os.getcwd()))
+sys.path.insert(0, os.path.join(BASE_DIR))
+
+PYSPARK_PYTHON = &quot;/miniconda2/envs/reco_sys/bin/python&quot;
+# 当存在多个版本时，不指定很可能会导致出错
+os.environ[&quot;PYSPARK_PYTHON&quot;] = PYSPARK_PYTHON
+os.environ[&quot;PYSPARK_DRIVER_PYTHON&quot;] = PYSPARK_PYTHON
+
+from pyspark.ml.feature import OneHotEncoder
+from pyspark.ml.feature import StringIndexer
+from pyspark.ml import Pipeline
+from pyspark.sql.types import *
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.classification import LogisticRegressionModel
+from offline import SparkSessionBase
+
+class CtrLogisticRegression(SparkSessionBase):
+
+    SPARK_APP_NAME = &quot;ctrLogisticRegression&quot;
+    ENABLE_HIVE_SUPPORT = True
+
+    def __init__(self):
+
+        self.spark = self._create_spark_hbase()
+
+ctr = CtrLogisticRegression()
+</code></pre>
+<p>这里注意的是_create_spark_hbase，我们后面需要通过spark读取HIVE外部表，需要新的配置</p>
+<pre><code>def _create_spark_hbase(self):
+
+    conf = SparkConf()  # 创建spark config对象
+    config = (
+        (&quot;spark.app.name&quot;, self.SPARK_APP_NAME),  # 设置启动的spark的app名称，没有提供，将随机产生一个名称
+        (&quot;spark.executor.memory&quot;, self.SPARK_EXECUTOR_MEMORY),  # 设置该app启动时占用的内存用量，默认2g
+        (&quot;spark.master&quot;, self.SPARK_URL),  # spark master的地址
+        (&quot;spark.executor.cores&quot;, self.SPARK_EXECUTOR_CORES),  # 设置spark executor使用的CPU核心数，默认是1核心
+        (&quot;spark.executor.instances&quot;, self.SPARK_EXECUTOR_INSTANCES),
+        (&quot;hbase.zookeeper.quorum&quot;, &quot;192.168.19.137&quot;),
+        (&quot;hbase.zookeeper.property.clientPort&quot;, &quot;22181&quot;)
+    )
+
+    conf.setAll(config)
+
+    # 利用config对象，创建spark session
+    if self.ENABLE_HIVE_SUPPORT:
+        return SparkSession.builder.config(conf=conf).enableHiveSupport().getOrCreate()
+    else:
+        return SparkSession.builder.config(conf=conf).getOrCreate()
+</code></pre>
+<p>读取用户点击行为表，与用户画像和文章画像，构造训练样本</p>
+<ol>
+<li>目标值：clicked</li>
+<li>特征值：
+<ul>
+<li>
+<p>用户画像关键词权重：权重值排序TOPK，这里取10个</p>
+</li>
+<li>
+<p>文章频道号：channel_id, ID类型通常要做one_hot编码，变成25维度(25个频道)</p>
+</li>
+<li>
+<p>这里由于我们的历史点击日志测试时候是只有18号频道，所以不进行转换</p>
+</li>
+<li>
+<p>文章向量：articlevector<br>
+进行行为日志数据读取</p>
+<pre><code>  ctr.spark.sql(&quot;use profile&quot;)
+  # +-------------------+----------+----------+-------+
+  # |            user_id|article_id|channel_id|clicked|
+  # +-------------------+----------+----------+-------+
+  # |1105045287866466304|     14225|         0|  false|
+  user_article_basic = ctr.spark.sql(&quot;select * from user_article_basic&quot;).select(
+      ['user_id', 'article_id', 'channel_id', 'clicked'])
+</code></pre>
+</li>
+</ul>
+</li>
+</ol>
+<p>用户画像读取处理与日志数据合并</p>
+<pre><code>user_profile_hbase = ctr.spark.sql(
+    &quot;select user_id, information.birthday, information.gender, article_partial, env from user_profile_hbase&quot;)
+user_profile_hbase = user_profile_hbase.drop('env')
+
+# +--------------------+--------+------+--------------------+
+# |             user_id|birthday|gender|     article_partial|
+# +--------------------+--------+------+--------------------+
+# |              user:1|     0.0|  null|Map(18:Animal -&gt; ...|
+
+_schema = StructType([
+    StructField(&quot;user_id&quot;, LongType()),
+    StructField(&quot;birthday&quot;, DoubleType()),
+    StructField(&quot;gender&quot;, BooleanType()),
+    StructField(&quot;weights&quot;, MapType(StringType(), DoubleType()))
+])
+
+def get_user_id(row):
+    return int(row.user_id.split(&quot;:&quot;)[1]), row.birthday, row.gender, row.article_partial
+</code></pre>
+<p>读取用户画像HIVE的外部表，构造样本:</p>
+<pre><code>user_profile_hbase_temp = user_profile_hbase.rdd.map(get_user_id)
+user_profile_hbase_schema = ctr.spark.createDataFrame(user_profile_hbase_temp, schema=_schema)
+
+    train = user_article_basic.join(user_profile_hbase_schema, on=['user_id'], how='left').drop('channel_id')
+</code></pre>
+<p>文章频道与向量读取合并，删除无用的特征</p>
+<pre><code># +-------------------+----------+-------+--------+------+--------------------+
+# |            user_id|article_id|clicked|birthday|gender|             weights|
+# +-------------------+----------+-------+--------+------+--------------------+
+# |1106473203766657024|     13778|  false|     0.0|  null|Map(18:text -&gt; 0....|
+ctr.spark.sql(&quot;use article&quot;)
+article_vector = ctr.spark.sql(&quot;select * from article_vector&quot;)
+train = train.join(article_vector, on=['article_id'], how='left').drop('birthday').drop('gender')
+
+# +-------------------+-------------------+-------+--------------------+----------+--------------------+
+# |         article_id|            user_id|clicked|             weights|channel_id|       articlevector|
+# +-------------------+-------------------+-------+--------------------+----------+--------------------+
+# |              13401|                 10|  false|Map(18:tp2 -&gt; 0.2...|        18|[0.06157120217893...|
+</code></pre>
+<p>结果格式(删除了gender和birthday)：</p>
+<pre><code>article_id  use_id  channel_id  articlevector   weight   clicked
+--------------
+article_id: n
+user_id:    n
+channel_id: n
+articlevector: []
+weight: Map(channel_id: keyword -&gt; weight)
+clicked: bool
+</code></pre>
+<p>合并文章画像的权重特征</p>
+<pre><code>ctr.spark.sql(&quot;use article&quot;)
+article_profile = ctr.spark.sql(&quot;select * from article_profile&quot;)
+
+def article_profile_to_feature(row):
+
+    try:
+        weights = sorted(row.keywords.values())[:10]
+    except Exception as e:
+        weights = [0.0] * 10
+    return row.article_id, weights
+article_profile = article_profile.rdd.map(article_profile_to_feature).toDF(['article_id', 'article_weights'])
+
+article_profile.show()
+
+train = train.join(article_profile, on=['article_id'], how='left')
+</code></pre>
+<p>结果格式：</p>
+<pre><code>article_id  use_id  channel_id  articlevector   weight  article_weight  clicked
+--------------
+article_id: n
+user_id:    n
+channel_id: n
+articlevector: []
+weight: Map(channel_id: keyword -&gt; weight)
+article_weight: []
+clicked: bool
+</code></pre>
+<p>进行用户的权重特征筛选处理，类型处理</p>
+<ul>
+<li>用户权重排序筛选，缺失值:
+<ul>
+<li>
+<p>获取用户对应文章频道号的关键词权重</p>
+</li>
+<li>
+<p>若无：生成默认值</p>
+<pre><code>  columns = ['article_id', 'user_id', 'channel_id', 'articlevector', 'user_weights', 'article_weights', 'clicked']
+  def get_user_weights(row):
+      from pyspark.ml.linalg import Vectors
+      try:
+          user_weights = sorted([row.article_partial[key] for key in row.article_partial.keys() if key.split(':')[0] == str(row.channel_id)])[
+                  :10]
+      except Exception:
+          user_weights = [0.0] * 10
+
+      return row.article_id, row.user_id, row.channel_id, Vectors.dense(row.articlevector), Vectors.dense(
+          user_weights), Vectors.dense(row.article_weights), int(row.clicked)
+
+  train_vector = train_user_article.rdd.map(get_user_weights).toDF(columns)
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>结果格式：Note: Vectors.dense要根据列的数据来指定字段</p>
+<pre><code>article_id  use_id  channel_id  articlevector   weight  article_weight  clicked
+--------------
+article_id: n
+user_id:    n
+channel_id: n
+articlevector: []
+weight: []                   # 和上面对比，这里从Map变成了 []
+article_weight: []
+clicked: bool
+</code></pre>
+<h1 id="lr点击率预测">LR点击率预测</h1>
+<p>输入模型的特征格式指定，通过VectorAssembler()收集<br>
+只要channel_id，articlevector，weights，article_weights作为输入特征</p>
+<pre><code>train_version_two = VectorAssembler().setInputCols(cols[2:6]).setOutputCol(&quot;features&quot;).transform(train)
+</code></pre>
+<p>把输入特征平铺，再输入到LR中<br>
+合并特征向量(channel_id1个+用户特征权重10个+文章向量100个+文章关键词权重10个) = 121个特征<br>
+按理说，把channel做one-hot会更多： 121-1+25=145</p>
+<pre><code>lr = LogisticRegression()
+model = lr.setLabelCol(&quot;clicked&quot;).setFeaturesCol(&quot;features&quot;).fit(train_version_two)
+model.save(&quot;hdfs://hadoop-master:9000/headlines/models/logistic_ctr_model.obj&quot;)
+</code></pre>
+<p>使用model模型加载预估</p>
+<pre><code>online_model = LogisticRegressionModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/logistic_ctr_model.obj&quot;)
+
+res_transfrom = online_model.transform(train_version_two)
+
+res_transfrom.select([&quot;clicked&quot;, &quot;probability&quot;, &quot;prediction&quot;]).show()
+</code></pre>
+<p>probability结果中有对某个文章点击(1为目标)的概率，和不点击（0为目标）的概率，是个列表<br>
+eg: probability = [不点击的概率， 点击的概率]<br>
+def vector_to_double(row):<br>
+return float(row.clicked), float(row.probability[1])</p>
+<pre><code>score_label = res_transfrom.select([&quot;clicked&quot;, &quot;probability&quot;]).rdd.map(vector_to_double)
+</code></pre>
+<h1 id="模型评估-accuracy与auc">模型评估-Accuracy与AUC</h1>
+<h2 id="roc-曲线图">ROC 曲线图</h2>
+<p>画出ROC图,使用训练的时候的模型model中会有</p>
+<pre><code>import matplotlib.pyplot as plt
+plt.figure(figsize=(5,5))
+plt.plot([0, 1], [0, 1], 'r--')
+plt.plot(model.summary.roc.select('FPR').collect(),
+        model.summary.roc.select('TPR').collect())
+plt.xlabel('FPR')
+plt.ylabel('TPR')
+plt.show()
+</code></pre>
+<h2 id="计算auc值">计算AUC值</h2>
+<p>方式1：spark内置方法</p>
+<pre><code>from pyspark.mllib.evaluation import BinaryClassificationMetrics
+# score_label包括[&quot;clicked&quot;, &quot;probability&quot;]
+metrics = BinaryClassificationMetrics(score_label) 
+metrics.areaUnderROC
+0.7364334522585716
+</code></pre>
+<p>方式2：sklearn方法</p>
+<pre><code>from sklearn.metrics import roc_auc_score, accuracy_score
+import numpy as np
+
+arr = np.array(score_label.collect())
+
+#评估AUC与准确率
+accuracy_score(arr[:, 0], arr[:, 1].round())
+0.9051438053097345
+
+roc_auc_score(arr[:, 0], arr[:, 1])
+0.719274521004087</code></pre>
 
                 </div>
                 <div class="clear"></div>
@@ -917,17 +1205,17 @@ embedding</p>
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-0 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-1 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-2 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-3 ctag-1L4lr0i2f" aria-label="">Docker</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-3 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-4 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-4 ctag-c137hZpK4" aria-label="">IDE</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-5 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-5 ctag-1L4lr0i2f" aria-label="">Docker</a>
                     
                       <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="ctag ctag-6 ctag-n16me-6oV" aria-label="">AI</a>
                     
