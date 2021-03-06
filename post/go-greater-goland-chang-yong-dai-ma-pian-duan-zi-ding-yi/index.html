@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; 推荐系统（四）离线召回与排序  | Cython_lin</title>
+<title>RS =&gt; 推荐系统（四）实时计算解决冷启动 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,9 +15,19 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="1
-" />
-    <meta name="keywords" content="" />
+    <meta name="description" content="实时计算业务需求
+实时（在线）计算：
+
+解决用户冷启动问题
+实时计算能够根据用户的点击实时反馈，快速跟踪用户的喜好
+
+Flume收集日志到Kafka
+
+目的：收集本地实时日志行为数据，到kafka
+步骤：
+
+开启zookeeper以及kaf..." />
+    <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -72,7 +82,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614655186961" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -98,8 +108,10 @@
             <div class="info">
               <div class="tags ">
                 
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                    
               </div>
-              <h1 class="title ularge white bold">RS =&gt; 推荐系统（四）离线召回与排序 </h1>
+              <h1 class="title ularge white bold">RS =&gt; 推荐系统（四）实时计算解决冷启动</h1>
             </div>
           </div>
         </div>  
@@ -109,7 +121,542 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <p>1</p>
+                  <h1 id="实时计算业务需求">实时计算业务需求</h1>
+<p>实时（在线）计算：</p>
+<ul>
+<li>解决用户冷启动问题</li>
+<li>实时计算能够根据用户的点击实时反馈，快速跟踪用户的喜好</li>
+</ul>
+<h1 id="flume收集日志到kafka">Flume收集日志到Kafka</h1>
+<ul>
+<li>目的：收集本地实时日志行为数据，到kafka</li>
+<li>步骤：
+<ul>
+<li>开启zookeeper以及kafka测试</li>
+<li>创建flume配置文件，开启flume</li>
+<li>开启kafka进行日志写入测试</li>
+<li>脚本添加以及supervisor管理</li>
+</ul>
+</li>
+</ul>
+<ol>
+<li>
+<p>开启zookeeper,需要在一直在服务器端实时运行，以守护进程运行</p>
+<pre><code> /root/bigdata/kafka/bin/zookeeper-server-start.sh -daemon /root/bigdata/kafka/config/zookeeper.properties
+</code></pre>
+</li>
+<li>
+<p>以及kafka的测试：</p>
+<pre><code> /root/bigdata/kafka/bin/kafka-server-start.sh /root/bigdata/kafka/config/server.properties
+</code></pre>
+</li>
+<li>
+<p>kafka测试过程：<br>
+开启消息生产者</p>
+<pre><code> /root/bigdata/kafka/bin/kafka-console-producer.sh --broker-list 192.168.19.137:9092 --sync --topic click-trace
+</code></pre>
+<p>开启消费者</p>
+<pre><code> /root/bigdata/kafka/bin/kafka-console-consumer.sh --bootstrap-server 192.168.19.137:9092 --topic  click-trace
+</code></pre>
+</li>
+</ol>
+<h3 id="正式配置">正式配置</h3>
+<p>修改原来收集日志的文件，添加flume收集日志行为到kafka的source, channel, sink</p>
+<pre><code>a1.sources = s1
+a1.sinks = k1 k2
+a1.channels = c1 c2
+
+a1.sources.s1.channels= c1 c2
+a1.sources.s1.type = exec
+a1.sources.s1.command = tail -F /root/logs/userClick.log
+a1.sources.s1.interceptors=i1 i2
+a1.sources.s1.interceptors.i1.type=regex_filter
+a1.sources.s1.interceptors.i1.regex=\\{.*\\}
+a1.sources.s1.interceptors.i2.type=timestamp
+
+# channel1
+a1.channels.c1.type=memory
+a1.channels.c1.capacity=30000
+a1.channels.c1.transactionCapacity=1000
+
+# channel2
+a1.channels.c2.type=memory
+a1.channels.c2.capacity=30000
+a1.channels.c2.transactionCapacity=1000
+
+# k1
+a1.sinks.k1.type=hdfs
+a1.sinks.k1.channel=c1
+a1.sinks.k1.hdfs.path=hdfs://192.168.19.137:9000/user/hive/warehouse/profile.db/user_action/%Y-%m-%d
+a1.sinks.k1.hdfs.useLocalTimeStamp = true
+a1.sinks.k1.hdfs.fileType=DataStream
+a1.sinks.k1.hdfs.writeFormat=Text
+a1.sinks.k1.hdfs.rollInterval=0
+a1.sinks.k1.hdfs.rollSize=10240
+a1.sinks.k1.hdfs.rollCount=0
+a1.sinks.k1.hdfs.idleTimeout=60
+
+# k2
+a1.sinks.k2.channel=c2
+a1.sinks.k2.type=org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.k2.kafka.bootstrap.servers=192.168.19.137:9092
+a1.sinks.k2.kafka.topic=click-trace
+a1.sinks.k2.kafka.batchSize=20
+a1.sinks.k2.kafka.producer.requiredAcks=1
+</code></pre>
+<p>开启flume新的配置进行测试, 开启之前关闭之前的flume程序</p>
+<pre><code>supervisor&gt; status
+collect-click                    RUNNING   May 26 09:43 AM
+offline                          STOPPED   May 27 06:03 AM
+supervisor&gt;
+</code></pre>
+<p>stop collect-click</p>
+<pre><code>#!/usr/bin/env bash
+
+export JAVA_HOME=/root/bigdata/jdk
+export HADOOP_HOME=/root/bigdata/hadoop
+export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin
+
+/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1
+</code></pre>
+<p>添加之后，开启supervisor里面的flume进程</p>
+<pre><code>start collect-click
+</code></pre>
+<p>开启kafka进行日志写入测试</p>
+<ul>
+<li>
+<p>开启kafka脚本进行测试，为了保证每次能够正常把zookeeper也放入脚本中，关闭之前的zookeeper，统一在kafka的开启脚本中加入zookeeper，名为 start_kafka.sh</p>
+<pre><code>  #!/usr/bin/env bash
+
+  /root/bigdata/kafka/bin/zookeeper-server-start.sh -daemon /root/bigdata/kafka/config/zookeeper.properties
+
+  /root/bigdata/kafka/bin/kafka-server-start.sh /root/bigdata/kafka/config/server.properties
+
+  /root/bigdata/kafka/bin/kafka-topics.sh --zookeeper 192.168.19.137:2181 --create --replication-factor 1 --topic click-trace --partitions 1
+</code></pre>
+</li>
+</ul>
+<p>supervisor添加脚本<br>
+<a href="https://www.cklin.top/post/rs-greater-tui-jian-xi-tong-yi-huan-jing-pei-zhi-shu-ju-shou-ji/">=&gt; supervisor详情配置</a></p>
+<pre><code>[program:kafka]
+command=/bin/bash /root/toutiao_project/scripts/start_kafka.sh
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/root/logs/kafka.log
+loglevel=info
+stopsignal=KILL
+stopasgroup=true
+killasgroup=true
+</code></pre>
+<p>supervisor进行update</p>
+<h3 id="测试配置后的kafka">测试配置后的Kafka</h3>
+<p>开启Kafka消费者</p>
+<pre><code>/root/bigdata/kafka/bin/kafka-console-consumer.sh --bootstrap-server 192.168.19.137:9092 --topic  click-trace
+</code></pre>
+<p>写入一次点击数据：</p>
+<pre><code>echo {\&quot;actionTime\&quot;:\&quot;2019-04-10 21:04:39\&quot;,\&quot;readTime\&quot;:\&quot;\&quot;,\&quot;channelId\&quot;:18,\&quot;param\&quot;:{\&quot;action\&quot;: \&quot;click\&quot;, \&quot;userId\&quot;: \&quot;2\&quot;, \&quot;articleId\&quot;: \&quot;14299\&quot;, \&quot;algorithmCombine\&quot;: \&quot;C2\&quot;}} &gt;&gt; userClick.log
+</code></pre>
+<p>观察消费者结果</p>
+<pre><code>[root@hadoop-master ~]# /root/bigdata/kafka/bin/kafka-console-consumer.sh --bootstrap-server 192.168.19.137:9092 --topic  click-trace
+{&quot;actionTime&quot;:&quot;2019-04-10 21:04:39&quot;,&quot;readTime&quot;:&quot;&quot;,&quot;channelId&quot;:18,&quot;param&quot;:{&quot;action&quot;: &quot;click&quot;, &quot;userId&quot;: &quot;2&quot;, &quot;articleId&quot;: &quot;14299&quot;, &quot;algorithmCombine&quot;: &quot;C2&quot;}}
+</code></pre>
+<h2 id="总结数据流通的两条路径">总结数据流通的两条路径</h2>
+<pre><code>Flume -&gt; Hadoop -&gt; Hive
+Flume
+    -&gt; Kafka生产者主题(click-trace) 
+        -&gt; 消费者（Spark Streaming 或 Storm）
+</code></pre>
+<h1 id="实时召回-spark-streaming">实时召回 Spark Streaming</h1>
+<h2 id="目的">目的</h2>
+<ul>
+<li>使用Spark Streaming 读取 Kafka生产者topic里面的行为日志数据（kafka去flume那里收集的）</li>
+<li>根据行为日志找出用户行为操作的文章， 并根据内容把相似文章推荐推给用户，实现实时内容召回。</li>
+</ul>
+<h2 id="步骤">步骤</h2>
+<ul>
+<li>配置spark streaming信息</li>
+<li>读取点击行为日志数据，获取相似文章列表</li>
+<li>过滤历史文章集合</li>
+<li>存入召回结果以及历史记录结果</li>
+<li>写入日志进行测试</li>
+</ul>
+<h2 id="创建spark-streaming配置信息以及happybase">创建spark streaming配置信息以及happybase</h2>
+<p>导入默认的配置，SPARK_ONLINE_CONFIG</p>
+<pre><code># 增加spark online 启动配置
+class DefaultConfig(object):
+    &quot;&quot;&quot;默认的一些配置信息
+    &quot;&quot;&quot;
+    SPARK_ONLINE_CONFIG = (
+        (&quot;spark.app.name&quot;, &quot;onlineUpdate&quot;),  # 设置启动的spark的app名称，没有提供，将随机产生一个名称
+        (&quot;spark.master&quot;, &quot;yarn&quot;),
+        (&quot;spark.executor.instances&quot;, 4)
+    )
+</code></pre>
+<p>配置StreamingContext，在online的__init__.py文件添加，导入模块时直接使用</p>
+<pre><code># 添加sparkstreaming启动对接kafka的配置
+
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+from pyspark.streaming.kafka import KafkaUtils
+from setting.default import DefaultConfig
+
+import happybase
+
+#  用于读取hbase缓存结果配置
+pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)
+# 1、创建conf
+conf = SparkConf()
+conf.setAll(DefaultConfig.SPARK_ONLINE_CONFIG)
+# 建立spark session以及spark streaming context
+sc = SparkContext(conf=conf)
+# 创建Streaming Context
+stream_c = StreamingContext(sc, 60)
+</code></pre>
+<h3 id="kafka-消费者组">Kafka 消费者组</h3>
+<p>配置streaming 读取Kafka的配置,在配置文件中增加KAFKAIP和端口<br>
+下面groupby代表分组，Kafka分组的作用就是把数据copy n份，放到n个组中<br>
+这样，即使Topic内的数据被消费了一个，还有其他组的数据可供使用</p>
+<pre><code># KAFKA配置
+KAFKA_SERVER = &quot;192.168.19.137:9092&quot;
+
+# 基于内容召回配置，用于收集用户行为，获取相似文章实时推荐
+similar_kafkaParams = {&quot;metadata.broker.list&quot;: DefaultConfig.KAFKA_SERVER, &quot;group.id&quot;: 'similar'}
+SIMILAR_DS = KafkaUtils.createDirectStream(stream_c, ['click-trace'], similar_kafkaParams)
+</code></pre>
+<p>创建online_update文件，建立在线召回类</p>
+<pre><code>import os
+import sys
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+from online import stream_sc, SIMILAR_DS, pool
+from datetime import datetime
+from setting.default import DefaultConfig
+import redis
+import json
+import time
+import setting.logging as lg
+import logging
+</code></pre>
+<p>注意添加运行时环境</p>
+<pre><code># 注意，如果是使用jupyter或ipython中，利用spark streaming链接kafka的话，必须加上下面语句
+# 同时注意：spark version&gt;2.2.2的话，pyspark中的kafka对应模块已被遗弃，因此这里暂时只能用2.2.2版本的spark
+os.environ[&quot;PYSPARK_SUBMIT_ARGS&quot;] = &quot;--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.2 pyspark-shell&quot;
+</code></pre>
+<p>Kafka读取点击行为日志数据，获取相似文章列表<br>
+传入Kafka的数据：</p>
+<pre><code>{&quot;actionTime&quot;:&quot;2019-04-10 21:04:39&quot;,&quot;readTime&quot;:&quot;&quot;,&quot;channelId&quot;:18,&quot;param&quot;:{&quot;action&quot;: &quot;click&quot;, &quot;userId&quot;: &quot;2&quot;, &quot;articleId&quot;: &quot;116644&quot;, &quot;algorithmCombine&quot;: &quot;C2&quot;}}
+Time taken: 3.72 seconds, Fetched: 1 row(s)
+</code></pre>
+<p>过滤历史文章集合<br>
+存入召回结果以及历史记录结果</p>
+<pre><code>class OnlineRecall(object):
+    &quot;&quot;&quot;在线处理计算平台
+    &quot;&quot;&quot;
+    def __init__(self):
+        pass
+
+def _update_content_recall(self):
+    &quot;&quot;&quot;
+    在线内容召回计算
+    :return:
+    &quot;&quot;&quot;
+    # {&quot;actionTime&quot;:&quot;2019-04-10 21:04:39&quot;,&quot;readTime&quot;:&quot;&quot;,&quot;channelId&quot;:18,
+    # &quot;param&quot;:{&quot;action&quot;: &quot;click&quot;, &quot;userId&quot;: &quot;2&quot;, &quot;articleId&quot;: &quot;116644&quot;, &quot;algorithmCombine&quot;: &quot;C2&quot;}}
+    # x [,'json.....']
+    def get_similar_online_recall(rdd):
+        &quot;&quot;&quot;
+        解析rdd中的内容，然后进行获取计算
+        :param rdd:
+        :return:
+        &quot;&quot;&quot;
+        # rdd---&gt; 数据本身
+        # [row(1,2,3), row(4,5,6)]-----&gt;[[1,2,3], [4,5,6]]
+        import happybase
+        # 初始化happybase连接
+        pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)
+        for data in rdd.collect():
+
+            # 进行data字典处理过滤
+            if data['param']['action'] in [&quot;click&quot;, &quot;collect&quot;, &quot;share&quot;]:
+
+                logger.info(
+                    &quot;{} INFO: get user_id:{} action:{}  log&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                                                    data['param']['userId'], data['param']['action']))
+
+                # 读取param当中articleId，相似的文章
+                with pool.connection() as conn:
+
+                    sim_table = conn.table(&quot;article_similar&quot;)
+
+                    # 根据用户点击流日志涉及文章找出与之最相似文章(基于内容的相似)，选取TOP-k相似的作为召回推荐结果
+                    _dic = sim_table.row(str(data[&quot;param&quot;][&quot;articleId&quot;]).encode(), columns=[b&quot;similar&quot;])
+                    _srt = sorted(_dic.items(), key=lambda obj: obj[1], reverse=True)  # 按相似度排序
+                    if _srt:
+
+                        topKSimIds = [int(i[0].split(b&quot;:&quot;)[1]) for i in _srt[:10]]
+
+                        # 根据历史推荐集过滤，已经给用户推荐过的文章
+                        history_table = conn.table(&quot;history_recall&quot;)
+
+                        _history_data = history_table.cells(
+                            b&quot;reco:his:%s&quot; % data[&quot;param&quot;][&quot;userId&quot;].encode(),
+                            b&quot;channel:%d&quot; % data[&quot;channelId&quot;]
+                        )
+
+                        history = []
+                        if len(_history_data) &gt; 1:
+                            for l in _history_data:
+                                history.extend(l)
+
+                        # 根据历史召回记录，过滤召回结果
+                        recall_list = list(set(topKSimIds) - set(history))
+
+                        # 如果有推荐结果集，那么将数据添加到cb_recall表中，同时记录到历史记录表中
+                        logger.info(
+                            &quot;{} INFO: store online recall data:{}&quot;.format(
+                                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), str(recall_list)))
+
+                        if recall_list:
+
+                            recall_table = conn.table(&quot;cb_recall&quot;)
+
+                            recall_table.put(
+                                b&quot;recall:user:%s&quot; % data[&quot;param&quot;][&quot;userId&quot;].encode(),
+                                {b&quot;online:%d&quot; % data[&quot;channelId&quot;]: str(recall_list).encode()}
+                            )
+
+                            history_table.put(
+                                b&quot;reco:his:%s&quot; % data[&quot;param&quot;][&quot;userId&quot;].encode(),
+                                {b&quot;channel:%d&quot; % data[&quot;channelId&quot;]: str(recall_list).encode()}
+                            )
+                    conn.close()
+
+    # x可以是多次点击行为数据，同时拿到多条数据
+    # 😀 注意：kafka 生产出的数据 的 数据类型为 RDD操作，所以用了for RDD
+    SIMILAR_DS.map(lambda x: json.loads(x[1])).foreachRDD(get_similar_online_recall)
+</code></pre>
+<p>开启实时运行,同时增加日志打印</p>
+<pre><code>if __name__ == '__main__':
+    # 启动日志配置
+    lg.create_logger()
+    op = OnlineRecall()
+    op._update_online_cb()
+    stream_c.start()
+    # 使用 ctrl+c 可以退出服务
+    _ONE_DAY_IN_SECONDS = 60 * 60 * 24
+    try:
+        while True:
+            time.sleep(_ONE_DAY_IN_SECONDS)
+    except KeyboardInterrupt:
+        pass
+</code></pre>
+<h3 id="添加文件打印日志">添加文件打印日志</h3>
+<pre><code># 添加到需要打印日志内容的文件中
+logger = logging.getLogger('online')
+
+# 在线更新日志
+# 离线处理更新打印日志
+trace_file_handler = logging.FileHandler(
+os.path.join(logging_file_dir, 'online.log')
+)
+trace_file_handler.setFormatter(logging.Formatter('%(message)s'))
+log_trace = logging.getLogger('online')
+log_trace.addHandler(trace_file_handler)
+log_trace.setLevel(logging.INFO)
+</code></pre>
+<p>添加日志数据，进行测试</p>
+<pre><code>echo {\&quot;actionTime\&quot;:\&quot;2019-04-10 21:04:39\&quot;,\&quot;readTime\&quot;:\&quot;\&quot;,\&quot;channelId\&quot;:18,\&quot;param\&quot;:{\&quot;action\&quot;: \&quot;click\&quot;, \&quot;userId\&quot;: \&quot;2\&quot;, \&quot;articleId\&quot;: \&quot;116644\&quot;, \&quot;algorithmCombine\&quot;: \&quot;C2\&quot;}} &gt;&gt; userClick.log
+
+2019-05-29 07:37:00 INFO: get user_id:2 action:click  log
+2019-05-29 07:37:02 INFO: store online recall data:[118560, 18530, 59747, 118370, 49962, 17613, 117199, 15315, 118550, 140376]
+</code></pre>
+<p>结果查询</p>
+<pre><code>hbase(main):028:0&gt; get 'cb_recall', 'recall:user:2'
+COLUMN                     CELL                                                                        
+als:13                    timestamp=1558041569201, value=[141431]                                     
+als:18                    timestamp=1558041572176, value=[19200, 17665, 19476, 16151, 16411, 19233, 13
+                        090, 15140, 16421, 19494, 14381, 17966, 17454, 14125, 16174, 14899, 44339, 1
+                        6437, 18743, 44090, 18238, 13890, 14915, 15429, 15944, 44371, 18005, 15196, 
+                        13410, 13672, 44137, 18795, 19052, 44652, 44654, 44657, 14961, 17522, 43894,
+                            44412, 16000, 14208, 44419, 17802, 14223, 18836, 140956, 18335, 13728, 1449
+                        8, 44451, 44456, 18609, 18353, 44468, 18103, 13757, 14015, 13249, 44739, 444
+                        83, 17605, 14021, 15309, 18127, 43983, 44754, 43986, 19413, 14805, 18904, 44
+                        761, 17114, 13272, 14810, 18907, 13022, 14299, 17120, 17632, 43997, 17889, 1
+                        7385, 18156, 15085, 13295, 44020, 14839, 44024, 14585, 18172, 44541]        
+als:5                     timestamp=1558041564163, value=[141440]                                     
+als:7                     timestamp=1558041568776, value=[141437]                                     
+online:18                 timestamp=1559086622107, value=[118560, 18530, 59747, 118370, 49962, 17613, 
+                        117199, 15315, 118550, 140376]
+</code></pre>
+<h1 id="热门文章与新文章实时召回">热门文章与新文章实时召回</h1>
+<p>热门文章与新文章是存到Redis中，Redis存储结构：</p>
+<pre><code>新文章召回	        结构	    示例
+new_article	        ch:{}:new   ch:18:new
+热门文章召回	        结构	    示例
+popular_recall	        ch:{}:hot   ch:18:hot
+</code></pre>
+<p>redis实现基本思路</p>
+<pre><code># 新文章存储
+# ZADD ZRANGE
+# ZADD key score member [[score member] [score member] ...]
+# ZRANGE page_rank 0 -1
+client.zadd(&quot;ch:{}:new&quot;.format(channel_id), {article_id: time.time()})
+
+# 热门文章存储
+# ZINCRBY key increment member
+# ZSCORE
+# 为有序集 key 的成员 member 的 score 值加上增量 increment 。
+client.zincrby(&quot;ch:{}:hot&quot;.format(row['channelId']), 1, row['param']['articleId'])
+
+# ZREVRANGE key start stop [WITHSCORES]
+client.zrevrange(ch:{}:new, 0, -1)
+</code></pre>
+<h2 id="添加热门文章kafka配置信息">添加热门文章kafka配置信息</h2>
+<pre><code># 添加sparkstreaming启动对接kafka的配置
+# 配置KAFKA相关，用于热门文章KAFKA读取
+click_kafkaParams = {&quot;metadata.broker.list&quot;: DefaultConfig.KAFKA_SERVER}
+HOT_DS = KafkaUtils.createDirectStream(stream_c, ['click-trace'], click_kafkaParams)
+</code></pre>
+<h2 id="编写热门文章收集程序">编写热门文章收集程序</h2>
+<p>在setting中增加redis的配置</p>
+<pre><code># redis的IP和端口配置
+REDIS_HOST = &quot;192.168.19.137&quot;
+REDIS_PORT = 6379
+</code></pre>
+<p>然后添加初始化信息</p>
+<pre><code>class OnlineRecall(object):
+    &quot;&quot;&quot;实时处理（流式计算）部分
+    &quot;&quot;&quot;
+
+    def __init__(self):
+
+        self.client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
+                                        port=DefaultConfig.REDIS_PORT,
+                                        db=10)
+        # 在线召回筛选TOP-k个结果
+        self.k = 20
+</code></pre>
+<p>收集热门文章代码：</p>
+<pre><code>def _update_hot_redis(self):
+    &quot;&quot;&quot;更新热门文章  click-trace
+    :return:
+    &quot;&quot;&quot;
+    client = self.client
+
+    def updateHotArt(rdd):
+        for row in rdd.collect():
+            logger.info(&quot;{}, INFO: {}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), row))
+            # 如果是曝光参数，和阅读时长选择过滤
+            if row['param']['action'] == 'exposure' or row['param']['action'] == 'read':
+                pass
+            else:
+                # 解析每条行为日志，然后进行分析保存点击，喜欢，分享次数，这里所有行为都自增1
+                client.zincrby(&quot;ch:{}:hot&quot;.format(row['channelId']), 1, row['param']['articleId'])
+
+    HOT_DS.map(lambda x: json.loads(x[1])).foreachRDD(updateHotArt)
+
+    return None
+</code></pre>
+<h3 id="查看redis热门文章">查看Redis热门文章</h3>
+<p>zrevrange表示从高到低遍历：</p>
+<pre><code>client.zrevrange(ch:{}:new, 0, -1)
+</code></pre>
+<h2 id="编写新文章收集程序">编写新文章收集程序</h2>
+<p>新文章如何而来，黑马头条后台在文章发布之后，会将新文章ID以固定格式传到KAFKA的new-article topic当中。<br>
+新文章的Kafka的Topic配置 类似 上面热门文章的配置：</p>
+<pre><code># new-article，新文章的读取  KAFKA配置
+NEW_ARTICLE_DS = KafkaUtils.createDirectStream(stream_c, ['new-article'], click_kafkaParams)
+</code></pre>
+<p>并且导入相关包</p>
+<pre><code>from online import HOT_DS, NEW_ARTICLE_DS
+</code></pre>
+<p>然后，并且在kafka启动脚本start-kafka.sh中添加，先在supervisor中关闭flume与kafka的进程</p>
+<pre><code>/root/bigdata/kafka/bin/kafka-topics.sh --zookeeper 192.168.19.137:2181 --create --replication-factor 1 --topic new-article --partitions 1
+</code></pre>
+<p>然后supervisor start重新启动 supervisor配置见下方 👇</p>
+<h2 id="添加supervisor在线实时运行进程管理">添加supervisor在线实时运行进程管理</h2>
+<p>supervisor配置文件增加以下配置</p>
+<pre><code>[program:online]
+environment=JAVA_HOME=/root/bigdata/jdk,SPARK_HOME=/root/bigdata/spark,HADOOP_HOME=/root/bigdata/hadoop,PYSPARK_PYTHON=/miniconda2/envs/reco_sys/bin/python ,PYSPARK_DRIVER_PYTHON=/miniconda2/envs/reco_sys/bin/python,PYSPARK_SUBMIT_ARGS='--packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.2 pyspark-shell'
+command=/miniconda2/envs/reco_sys/bin/python /root/toutiao_project/reco_sys/online/online_update.py
+directory=/root/toutiao_project/reco_sys/online
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/root/logs/onlinesuper.log
+loglevel=info
+stopsignal=KILL
+stopasgroup=true
+killasgroup=true
+</code></pre>
+<p>通过supervisor运行新文章更新的进程</p>
+<pre><code>supervisor&gt; update
+online: added process group
+supervisor&gt; status
+collect-click                    RUNNING   pid 97209, uptime 6:46:53
+kafka                            RUNNING   pid 105159, uptime 6:20:09
+offline                          STOPPED   Apr 16 04:31 PM
+online                           RUNNING   pid 124591, uptime 0:00:02
+supervisor&gt;
+</code></pre>
+<p>增加一个新文章kafka的topic，这里会与后台对接</p>
+<h3 id="新文章代码">新文章代码</h3>
+<pre><code>def _update_new_redis(self):
+    &quot;&quot;&quot;更新频道新文章 new-article
+    :return:
+    &quot;&quot;&quot;
+    client = self.client
+
+    def computeFunction(rdd):
+        for row in rdd.collect():
+            channel_id, article_id = row.split(',')
+            logger.info(&quot;{}, INFO: get kafka new_article each data:channel_id{}, article_id{}&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), channel_id, article_id))
+            client.zadd(&quot;ch:{}:new&quot;.format(channel_id), {article_id: time.time()})
+
+    NEW_ARTICLE_DS.map(lambda x: x[1]).foreachRDD(computeFunction)
+
+    return None
+</code></pre>
+<h3 id="测试">测试:</h3>
+<p>python安装kafka:</p>
+<pre><code>pip install kafka-python
+</code></pre>
+<p>查看所有本地topic情况</p>
+<pre><code>from kafka import KafkaClient
+client = KafkaClient(hosts=&quot;127.0.0.1:9092&quot;)
+for topic in client.topics:
+    print(topic)
+
+
+from kafka import KafkaProducer 
+
+# kafka消息生产者
+kafka_producer = KafkaProducer(bootstrap_servers=['192.168.19.137:9092'])
+
+# 构造消息并发送
+msg = '{},{}'.format(18, 13891)
+kafka_producer.send('new-article', msg.encode())
+</code></pre>
+<p>可以得到redis结果</p>
+<pre><code>127.0.0.1:6379[10]&gt; keys *
+1) &quot;ch:18:hot&quot;
+2) &quot;ch:18:new&quot;
+127.0.0.1:6379[10]&gt; ZRANGE &quot;ch:18:new&quot; 0 -1
+1) &quot;13890&quot;
+2) &quot;13891&quot;
+</code></pre>
+<p>流程回顾</p>
+<ul>
+<li>协商好新文章发送格式以及Topic</li>
+<li>定义一个新的Topic</li>
+<li>配置好Kafka的新的Topic，重新开启Kafka</li>
+<li>Streaming程序对接读取逻辑，存入Redis，实时运行程序，检测Kafka是否有新数据</li>
+<li>实时计算脚本，封装为一个函数，并作为.py脚本，通过supervisor 管理py脚本相关运行命令</li>
+</ul>
 
                 </div>
                 <div class="clear"></div>
@@ -172,13 +719,13 @@
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-28">2021-02-28</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/">RS =&gt; RS复习</a>
+                        <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/">IDE =&gt; My Sublime（PY）</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -187,13 +734,13 @@
                   
                   
                   <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-25">2021-02-25</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/go-greater-fu-xi/">GO =&gt; Golang复习（未完待续）</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -202,17 +749,37 @@
                   
                   
                   <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-22">2021-02-22</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">PR =&gt; Cheat.sh</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
                   
                   
                   
@@ -378,15 +945,15 @@
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-3 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-4 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
                       <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-5 ctag-1L4lr0i2f" aria-label="">Docker</a>
                     
@@ -436,7 +1003,7 @@
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 80 篇文章
+          ©2019 共 90 篇文章
           <br/>
 
         </p>

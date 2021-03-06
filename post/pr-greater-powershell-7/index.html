@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PR =&gt; Powershell 7 | Cython_lin</title>
+<title>PR =&gt; Pshell7+cheat.sh | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -80,7 +80,7 @@ sublime C:\Users\lin..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614655186961" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -95,7 +95,7 @@ sublime C:\Users\lin..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">12 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">16 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-powershell-7/"> </span>
@@ -109,7 +109,7 @@ sublime C:\Users\lin..." />
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
               </div>
-              <h1 class="title ularge white bold">PR =&gt; Powershell 7</h1>
+              <h1 class="title ularge white bold">PR =&gt; Pshell7+cheat.sh</h1>
             </div>
           </div>
         </div>  
@@ -415,6 +415,242 @@ Set-Alias clear new_clear
 Set-Alias cls clear
 Set-Alias sudo gsudo
 </code></pre>
+<h1 id="回忆准备cheatsh的介绍">回忆（准备cheat.sh的介绍）</h1>
+<p>由于Scoop对cheat.sh支持不友好，我就又把WSL2加了进来<br>
+<a href="https://www.cklin.top/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">=&gt; WSL2+ZSH</a><br>
+同时也更新了最新的一次 WT的配置文件，如下：</p>
+<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
+    // For documentation on these settings, see: https://aka.ms/terminal-documentation
+
+    {
+        // 官方设置指南?
+        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
+
+        // 一些globals设置
+        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
+        // &quot;initialRows&quot;: 25,
+        // &quot;initialCols&quot;: 100,
+        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
+
+        // 设置默认终端
+        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
+        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+
+        &quot;profiles&quot;: {
+
+            &quot;defaults&quot;: {
+                // Put settings here that you want to apply to all profiles
+                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
+                &quot;useAcrylic&quot;: true,
+                &quot;acrylicOpacity&quot;: 0.55,
+                &quot;cursorShape&quot;: &quot;vintage&quot;,
+                &quot;cursorHeight&quot;: 60,
+                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
+                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
+                &quot;fontSize&quot;: 18
+            },
+
+            &quot;list&quot;: [
+                {
+                    &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;UBT&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;,
+        &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
+                {
+                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;CON&quot;,
+                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;
+                },
+                {
+                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;PS7&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+                },
+                {
+                    // Make changes here to the cmd.exe profile
+                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
+                    &quot;name&quot;: &quot;cmd&quot;,
+                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+                },
+    {
+                    // Make changes here to the powershell.exe profile
+                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
+                    &quot;name&quot;: &quot;PS5&quot;,
+                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
+                    &quot;startingDirectory&quot;: &quot;d:&quot;,
+                    &quot;hidden&quot;: false
+                },
+                // {	
+    //                 // Make changes here to the powershell.exe profile
+    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
+    //                 &quot;name&quot;: &quot;PWSH&quot;,
+    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
+    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
+    //                 &quot;hidden&quot;: false
+    //             },
+
+                {
+                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
+                    &quot;hidden&quot;: false,
+                    &quot;name&quot;: &quot;AWS&quot;,
+                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
+                }
+                // {
+    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
+    //                 &quot;hidden&quot;: false,
+    //                 &quot;name&quot;: &quot;ssh&quot;,
+    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
+    //             }
+
+            ]
+        },
+
+        // Add custom color schemes to this array
+        &quot;schemes&quot;: [
+    {
+    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
+    &quot;black&quot;: &quot;#000000&quot;,
+    &quot;red&quot;: &quot;#ff7092&quot;,
+    &quot;green&quot;: &quot;#00fbac&quot;,
+    &quot;yellow&quot;: &quot;#fffa6a&quot;,
+    &quot;blue&quot;: &quot;#00bfff&quot;,
+    &quot;purple&quot;: &quot;#df95ff&quot;,
+    &quot;cyan&quot;: &quot;#86cbfe&quot;,
+    &quot;white&quot;: &quot;#ffffff&quot;,
+    &quot;brightBlack&quot;: &quot;#000000&quot;,
+    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
+    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
+    &quot;brightYellow&quot;: &quot;#fff787&quot;,
+    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
+    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
+    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
+    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
+    &quot;background&quot;: &quot;#332a57&quot;,
+    &quot;foreground&quot;: &quot;#e5e5e5&quot;
+    }
+    ],
+
+        // Add any keybinding overrides to this array.
+        // To unbind a default keybinding, set the command to &quot;unbound&quot;
+        &quot;keybindings&quot;: [],
+        &quot;actions&quot;:
+        [
+            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
+            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
+            // To learn more about selection, visit https://aka.ms/terminal-selection
+            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
+            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
+
+            // Press Ctrl+Shift+F to open the search box
+            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
+            // settings
+            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
+            // Press Alt+Shift+D to open a new pane.
+            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
+            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
+            // To learn more about panes, visit https://aka.ms/terminal-panes
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
+            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
+            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
+        ]
+    }
+</code></pre>
+<h1 id="cheatsh">Cheat.sh</h1>
+<p><a href="https://github.com/chubin/cheat.sh">-&gt; cheat.sh</a><br>
+以下说的都是Cheat.sh的几种用法👇</p>
+<h1 id="for-curl可以用下面wsl代替">For Curl(可以用下面WSL代替)</h1>
+<p>类似如下语法：</p>
+<pre><code>curl cht.sh/python/string+time
+</code></pre>
+<h1 id="for-client最好用">For Client（最好用）</h1>
+<p>说明一下，只有 Curl原生的方式是需要路径符号规则的， 如 /,+ 都是必须的，比较难用。<br>
+下面的所有方式就很方便了，往下看吧👇</p>
+<h2 id="wsl命令行只能用wsl来运行cheatsh">WSL（命令行只能用WSL来运行cheat.sh）</h2>
+<p>（cheat支持ZSH，恰好前面配置了ZSH，下面说如何支持ZSH）<br>
+先安装依赖：</p>
+<pre><code>sudo apt install rlwrap 
+
+# 下面这条语句是为 stealth Q 模式准备的（因为没图形界面，所以下面2条语句已废）
+sudo apt install xsel
+export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
+</code></pre>
+<p>下载 cht.sh，应修改为全局命令</p>
+<pre><code>curl https://cht.sh/:cht.sh | sudo tee /usr/local/bin/cht.sh
+sudo chmod +x /usr/local/bin/cht.sh
+</code></pre>
+<p>👍正常命令行模式</p>
+<pre><code>cht.sh python string time
+</code></pre>
+<p>👍--shell 模式</p>
+<pre><code>cht.sh --shell
+
+cd python       # cd 就代表选择哪类语言，或者技术领域
+string time     # 看见了吧，这次直接输入语句就搞定，不需要 写什么 cht.sh python了😊
+
+Note: 如果查到了， q键 是退出文本， 输入 exit 是退出 --shell模式
+</code></pre>
+<p>👍支持ZSH(不然按tab找不到 cht.sh，加了下面的配置就有了)</p>
+<pre><code># 第二条命令curl ... 一次可能网有问题，注意有没有con't的提示，如果出错，那就再执行一次
+
+mkdir ~/.zsh.d
+curl https://cheat.sh/:zsh &gt; ~/.zsh.d/_cht                       
+echo 'fpath=(~/.zsh.d/ $fpath)' &gt;&gt; ~/.zshrc
+
+# 然后重新登录/重新打开shell
+</code></pre>
+<p>👍Stealth mode （属于--shell 下面的一个参数， 进入--shell，用help命令可以查看所有参数）</p>
+<pre><code>研究了半天，很遗憾，Stealth mode模式，需要 server 的 GUI
+需要安装 VcXsrv， 那这个 Stealth mode 模式就算了
+</code></pre>
+<h2 id="powershell不可行">Powershell(不可行)</h2>
+<pre><code>scoop install cht
+</code></pre>
+<p>但是这种方式不太行，因为是scoop下载的是 cht.exe 而非 cht.sh<br>
+即使下到了cht.sh。 BusyBox是 dash，而非 bash，不支持执行.sh脚本<br>
+即使用了真的bash（git bash, gow 这些工具，也缺依赖）并且不是在powershell运行。<br>
+所以我还是放弃了工具化的方式， 还是用WSL了</p>
+<h1 id="for-pycharm也可以">For Pycharm（也可以）</h1>
+<h2 id="plugins">Plugins</h2>
+<pre><code>cheat.sh code snippets
+</code></pre>
+<h2 id="方式1使用面板">方式1：使用面板</h2>
+<p>调出面板快捷键 alt + p</p>
+<pre><code>alt + p
+</code></pre>
+<p>在面板中输入语句测试：</p>
+<pre><code>string time
+
+和
+
+time string 
+</code></pre>
+<p>两个单词顺序是不同的，但是却有不同的语句块</p>
+<h2 id="方式2直接在写代码">方式2：直接在写代码</h2>
+<p>代码中直接写：</p>
+<pre><code>string time
+</code></pre>
+<p>选中此代码</p>
+<pre><code>string time
+</code></pre>
+<p>按组合键复制生成的代码块</p>
+<pre><code>alt + c
+</code></pre>
+<p>然后全部松手再复制生成的代码块(直接一个单s键即可)</p>
+<pre><code>s
+</code></pre>
+<h1 id="for-sublime">For Sublime</h1>
+<p>sublime这方面配置文档欠缺，缺快捷键</p>
 
                 </div>
                 <div class="clear"></div>
@@ -425,11 +661,11 @@ Set-Alias sudo gsudo
             <section class="related section">
               
               <article class="prev grid-50 tablet-grid-50 grid-parent">
-                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/sKPdrpV6Y.jpg');"></div>
+                <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/EjFvvnhFs.jpg');"></div>
                  <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-02-22">2021-02-22</time>
-                  <h4 class="title white no-margin">PR =&gt; Cheat.sh</h4>
+                  <h4 class="title white no-margin">RS =&gt; 推荐系统（五）实时推荐+ABTest+推荐中心</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
@@ -477,13 +713,13 @@ Set-Alias sudo gsudo
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-28">2021-02-28</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/">RS =&gt; RS复习</a>
+                        <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/">IDE =&gt; My Sublime（PY）</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -492,13 +728,13 @@ Set-Alias sudo gsudo
                   
                   
                   <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-25">2021-02-25</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/go-greater-fu-xi/">GO =&gt; Golang复习（未完待续）</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -507,17 +743,37 @@ Set-Alias sudo gsudo
                   
                   
                   <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-22">2021-02-22</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">PR =&gt; Cheat.sh</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
                   
                   
                   
@@ -683,15 +939,15 @@ Set-Alias sudo gsudo
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-3 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-4 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
                       <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-5 ctag-1L4lr0i2f" aria-label="">Docker</a>
                     
@@ -741,7 +997,7 @@ Set-Alias sudo gsudo
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 80 篇文章
+          ©2019 共 90 篇文章
           <br/>
 
         </p>

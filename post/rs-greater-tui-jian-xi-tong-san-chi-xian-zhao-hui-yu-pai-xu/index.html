@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; 推荐系统（三）离线召回与排序  | Cython_lin</title>
+<title>RS =&gt; 推荐系统（三）离线召回  | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -79,7 +79,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614655186961" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -108,7 +108,7 @@
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
               </div>
-              <h1 class="title ularge white bold">RS =&gt; 推荐系统（三）离线召回与排序 </h1>
+              <h1 class="title ularge white bold">RS =&gt; 推荐系统（三）离线召回 </h1>
             </div>
           </div>
         </div>  
@@ -938,7 +938,379 @@ accuracy_score(arr[:, 0], arr[:, 1].round())
 0.9051438053097345
 
 roc_auc_score(arr[:, 0], arr[:, 1])
-0.719274521004087</code></pre>
+0.719274521004087
+</code></pre>
+<h1 id="离线ctr特征中心创建">离线ctr特征中心创建</h1>
+<ul>
+<li>特征服务中心可以作为离线计算用户与文章的高级特征。</li>
+<li>不仅仅提供给离线使用。还可以作为实时的特征供其他场景读取进行</li>
+<li>用户，文章能用到的特征都进行处理进行存储，便于实时推荐进行读取</li>
+<li>存储到HBASE</li>
+</ul>
+<h2 id="创建user特征hbase表">创建User特征Hbase表：</h2>
+<pre><code>create 'ctr_feature_user', 'channel'
+    4                         column=channel:13, timestamp=1555647172980, value=[]                        
+    4                         column=channel:14, timestamp=1555647172980, value=[]                        
+    4                         column=channel:15, timestamp=1555647172980, value=[]                        
+    4                         column=channel:16, timestamp=1555647172980, value=[]                        
+    4                         column=channel:18, timestamp=1555647172980, value=[0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073, 0.2156294170196073]                                                      
+    4                         column=channel:19, timestamp=1555647172980, value=[]                        
+    4                         column=channel:20, timestamp=1555647172980, value=[]                        
+    4                         column=channel:2, timestamp=1555647172980, value=[]                         
+    4                         column=channel:21, timestamp=1555647172980, value=[]
+</code></pre>
+<h2 id="创建article特征hbase表">创建Article特征Hbase表</h2>
+<pre><code>create 'ctr_feature_article', 'article'
+    COLUMN                     CELL                                                                        
+    article:13401             timestamp=1555635749357, value=[18.0,0.08196639249252607,0.11217275332895373,0.1353835167902181,0.16086650318453152,0.16356418791892943,0.16740082750337945,0.18091837445730974,0.1907214431716628,0.2........................-0.04634634410271921,-0.06451843378804649,-0.021564142420785692,0.10212902152136256]
+</code></pre>
+<h2 id="使用hive关联特种中心基本不需要">使用Hive关联特种中心（基本不需要）</h2>
+<p>关联用户</p>
+<pre><code>create external table ctr_feature_user_hbase(
+user_id STRING comment &quot;user_id&quot;,
+user_channel map comment &quot;user_channel&quot;)
+COMMENT &quot;ctr table&quot;
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,channel:&quot;)
+TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;ctr_feature_user&quot;);
+</code></pre>
+<p>关联文章</p>
+<pre><code>create external table ctr_feature_article_hbase(
+article_id STRING comment &quot;article_id&quot;,
+article_feature map comment &quot;article&quot;)
+COMMENT &quot;ctr table&quot;
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,article:&quot;)
+TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;ctr_feature_article&quot;);
+</code></pre>
+<h1 id="用户特征中心更新">用户特征中心更新</h1>
+<ul>
+<li>目的：计算用户特征更新到HBASE</li>
+<li>步骤：
+<ul>
+<li>获取特征进行用户画像权重过滤</li>
+<li>特征批量存储</li>
+</ul>
+</li>
+</ul>
+<p>获取特征进行用户画像权重过滤</p>
+<pre><code># 构造样本
+ctr.spark.sql(&quot;use profile&quot;)
+
+user_profile_hbase = ctr.spark.sql(
+    &quot;select user_id, information.birthday, information.gender, article_partial, env from user_profile_hbase&quot;)
+
+# 特征工程处理
+# 抛弃获取值少的特征
+user_profile_hbase = user_profile_hbase.drop('env', 'birthday', 'gender')
+
+def get_user_id(row):
+    return int(row.user_id.split(&quot;:&quot;)[1]), row.article_partial
+
+user_profile_hbase_temp = user_profile_hbase.rdd.map(get_user_id)
+
+from pyspark.sql.types import *
+
+_schema = StructType([
+    StructField(&quot;user_id&quot;, LongType()),
+    StructField(&quot;weights&quot;, MapType(StringType(), DoubleType()))
+])
+
+user_profile_hbase_schema = ctr.spark.createDataFrame(user_profile_hbase_temp, schema=_schema)
+
+def frature_preprocess(row):
+
+    from pyspark.ml.linalg import Vectors
+
+    channel_weights = []
+    for i in range(1, 26):
+        try:
+            _res = sorted([row.weights[key] for key
+                        in row.weights.keys() if key.split(':')[0] == str(i)])[:10]
+            channel_weights.append(_res)
+        except:
+            channel_weights.append([0.0] * 10)
+
+    return row.user_id, channel_weights
+
+res = user_profile_hbase_schema.rdd.map(frature_preprocess).collect()
+</code></pre>
+<p>结果格式：</p>
+<pre><code>[
+    # weight 代表用户的标签权重
+    ( user_id,  [ [weight], [], [], ..., 25个[]，代表25个channel ]   
+
+]
+</code></pre>
+<p>特征批量存储，保存用户每个频道的特征</p>
+<pre><code>import happybase
+# 批量插入Hbase数据库中
+pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)
+with pool.connection() as conn:
+    ctr_feature = conn.table('ctr_feature_user')
+    with ctr_feature.batch(transaction=True) as b:
+        for i in range(len(res)):
+            for j in range(25):
+                b.put(&quot;{}&quot;.format(res[i][0]).encode(),{&quot;channel:{}&quot;.format(j+1).encode(): str(res[i][1][j]).encode()})
+    conn.close()
+</code></pre>
+<h1 id="文章特征中心更新">文章特征中心更新</h1>
+<p>文章特征：</p>
+<ul>
+<li>关键词权重</li>
+<li>文章的频道</li>
+<li>文章向量结果</li>
+</ul>
+<p>存储这些特征以便于后面实时排序时候快速使用特征</p>
+<p>步骤：</p>
+<ul>
+<li>读取相关文章画像</li>
+<li>进行文章相关特征处理和提取</li>
+<li>合并文章所有特征作为模型训练或者预测的初始特征</li>
+<li>文章特征存储到HBASE</li>
+</ul>
+<p>读取相关文章画像</p>
+<pre><code>ctr.spark.sql(&quot;use article&quot;)
+article_profile = ctr.spark.sql(&quot;select * from article_profile&quot;)
+</code></pre>
+<p>进行文章相关特征处理和提取</p>
+<pre><code>def article_profile_to_feature(row):
+    try:
+        weights = sorted(row.keywords.values())[:10]
+    except Exception as e:
+        weights = [0.0] * 10
+    return row.article_id, row.channel_id, weights
+article_profile = article_profile.rdd.map(article_profile_to_feature).toDF(['article_id', 'channel_id', 'weights'])
+
+article_profile.show()
+</code></pre>
+<p>格式如下：</p>
+<pre><code>article_id  channel_id  weights
+                        []
+</code></pre>
+<p>再把文章向量join进来</p>
+<pre><code>article_vector = ctr.spark.sql(&quot;select * from article_vector&quot;)
+article_feature = article_profile.join(article_vector, on=['article_id'], how='inner')
+def feature_to_vector(row):
+    from pyspark.ml.linalg import Vectors
+    return row.article_id, row.channel_id, Vectors.dense(row.weights), Vectors.dense(row.articlevector)
+article_feature = article_feature.rdd.map(feature_to_vector).toDF(['article_id', 'channel_id', 'weights', 'articlevector'])
+</code></pre>
+<p>指定上面特征进行合并（atricle_id,channel_id, weights, articlevector）</p>
+<pre><code># 保存特征数据
+cols2 = ['article_id', 'channel_id', 'weights', 'articlevector']
+# 做特征的指定指定合并
+article_feature_two = VectorAssembler().setInputCols(cols2[1:4]).setOutputCol(&quot;features&quot;).transform(article_feature)
+</code></pre>
+<p>最终结果格式（可给LR使用）：</p>
+<pre><code>article_id  channel_id  weights articlevector   features
+
+# 格式样式说明
+article_id: n
+channel_id: n
+weights:    []
+articlevector:  []
+features:   []          
+# features就是我们最终合并成一个list的结果，它和 channel_id 用于给 lr 使用
+</code></pre>
+<p>保存到特征数据库HBASE中:</p>
+<pre><code># 保存到特征数据库中
+def save_article_feature_to_hbase(partition):
+    import happybase
+    pool = happybase.ConnectionPool(size=10, host='hadoop-master')
+    with pool.connection() as conn:
+        table = conn.table('ctr_feature_article')
+        for row in partition:
+            table.put('{}'.format(row.article_id).encode(),
+                    {'article:{}'.format(row.article_id).encode(): str(row.features).encode()})
+
+article_feature_two.foreachPartition(save_article_feature_to_hbase)
+</code></pre>
+<h1 id="离线特征中心定时更新">离线特征中心定时更新</h1>
+<p>添加update.py更新程序</p>
+<pre><code>def update_ctr_feature():
+    &quot;&quot;&quot;
+    定时更新用户、文章特征
+    :return:
+    &quot;&quot;&quot;
+    fp = FeaturePlatform()
+    fp.update_user_ctr_feature_to_hbase()
+    fp.update_article_ctr_feature_to_hbase()
+</code></pre>
+<p>添加apscheduler定时运行</p>
+<pre><code># 添加定时更新用户文章特征结果的程序，每个4小时更新一次
+scheduler.add_job(update_ctr_feature, trigger='interval', hours=4)
+</code></pre>
+<p>完整代码：</p>
+<pre><code>import os
+import sys
+# 如果当前代码文件运行测试需要加入修改路径，否则后面的导包出现问题
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+from offline import SparkSessionBase
+# from offline.utils import textrank, segmentation
+import happybase
+import pyspark.sql.functions as F
+from datetime import datetime
+from datetime import timedelta
+import time
+import gc
+
+
+class FeaturePlatform(SparkSessionBase):
+    &quot;&quot;&quot;特征更新平台
+    &quot;&quot;&quot;
+    SPARK_APP_NAME = &quot;featureCenter&quot;
+    ENABLE_HIVE_SUPPORT = True
+
+    def __init__(self):
+        # _create_spark_session
+        # _create_spark_hbase用户spark sql 操作hive对hbase的外部表
+        self.spark = self._create_spark_hbase()
+
+    def update_user_ctr_feature_to_hbase(self):
+        &quot;&quot;&quot;
+        :return:
+        &quot;&quot;&quot;
+        clr.spark.sql(&quot;use profile&quot;)
+
+        user_profile_hbase = self.spark.sql(
+            &quot;select user_id, information.birthday, information.gender, article_partial, env from user_profile_hbase&quot;)
+
+        # 特征工程处理
+        # 抛弃获取值少的特征
+        user_profile_hbase = user_profile_hbase.drop('env', 'birthday', 'gender')
+
+        def get_user_id(row):
+            return int(row.user_id.split(&quot;:&quot;)[1]), row.article_partial
+
+        user_profile_hbase_temp = user_profile_hbase.rdd.map(get_user_id)
+
+        from pyspark.sql.types import *
+
+        _schema = StructType([
+            StructField(&quot;user_id&quot;, LongType()),
+            StructField(&quot;weights&quot;, MapType(StringType(), DoubleType()))
+        ])
+
+        user_profile_hbase_schema = self.spark.createDataFrame(user_profile_hbase_temp, schema=_schema)
+
+        def frature_preprocess(row):
+
+            from pyspark.ml.linalg import Vectors
+
+            channel_weights = []
+            for i in range(1, 26):
+                try:
+                    _res = sorted([row.weights[key] for key
+                                in row.weights.keys() if key.split(':')[0] == str(i)])[:10]
+                    channel_weights.append(_res)
+                except:
+                    channel_weights.append([])
+
+            return row.user_id, channel_weights
+
+        res = user_profile_hbase_schema.rdd.map(frature_preprocess).collect()
+
+        # 批量插入Hbase数据库中
+        pool = happybase.ConnectionPool(size=10, host='hadoop-master', port=9090)
+        with pool.connection() as conn:
+            ctr_feature = conn.table('ctr_feature_user')
+            with ctr_feature.batch(transaction=True) as b:
+                for i in range(len(res)):
+                    for j in range(25):
+                        b.put(&quot;{}&quot;.format(res[i][0]).encode(),
+                            {&quot;channel:{}&quot;.format(j + 1).encode(): str(res[i][1][j]).encode()})
+            conn.close()
+
+    def update_article_ctr_feature_to_hbase(self):
+        &quot;&quot;&quot;
+        :return:
+        &quot;&quot;&quot;
+        # 文章特征中心
+        self.spark.sql(&quot;use article&quot;)
+        article_profile = self.spark.sql(&quot;select * from article_profile&quot;)
+
+        def article_profile_to_feature(row):
+            try:
+                weights = sorted(row.keywords.values())[:10]
+            except Exception as e:
+                weights = [0.0] * 10
+            return row.article_id, row.channel_id, weights
+
+        article_profile = article_profile.rdd.map(article_profile_to_feature).toDF(
+            ['article_id', 'channel_id', 'weights'])
+
+        article_vector = self.spark.sql(&quot;select * from article_vector&quot;)
+        article_feature = article_profile.join(article_vector, on=['article_id'], how='inner')
+
+        def feature_to_vector(row):
+            from pyspark.ml.linalg import Vectors
+            return row.article_id, row.channel_id, Vectors.dense(row.weights), Vectors.dense(row.articlevector)
+
+        article_feature = article_feature.rdd.map(feature_to_vector).toDF(
+            ['article_id', 'channel_id', 'weights', 'articlevector'])
+
+        # 保存特征数据
+        cols2 = ['article_id', 'channel_id', 'weights', 'articlevector']
+        # 做特征的指定指定合并
+        article_feature_two = VectorAssembler().setInputCols(cols2[1:4]).setOutputCol(&quot;features&quot;).transform(
+            article_feature)
+
+        # 保存到特征数据库中
+        def save_article_feature_to_hbase(partition):
+            import happybase
+            pool = happybase.ConnectionPool(size=10, host='hadoop-master')
+            with pool.connection() as conn:
+                table = conn.table('ctr_feature_article')
+                for row in partition:
+                    table.put('{}'.format(row.article_id).encode(),
+                            {'article:{}'.format(row.article_id).encode(): str(row.features).encode()})
+
+        article_feature_two.foreachPartition(save_article_feature_to_hbase)
+</code></pre>
+<h1 id="离线总结">离线总结</h1>
+<p>至此，离线部分已全部完成，包括如下内容</p>
+<ul>
+<li>
+<p>文章画像</p>
+<ul>
+<li>文章信息拼接</li>
+<li>文章分词</li>
+<li>对分词结果TF-IDF</li>
+<li>对分词结果TextRank （作为关键词，带权重）</li>
+<li>将TF-IDF和TextRank结果交集，（作为 主题词）</li>
+<li>对分词结果Word2Vec得到词向量</li>
+<li>把文章的所有词向量的均值，（作为文章向量）</li>
+<li>LSH计算相似文章，得到所有文章相似文章向量（为下面内容召回打下基础）</li>
+</ul>
+</li>
+<li>
+<p>用户画像</p>
+<ul>
+<li>对用户行为表的埋点日志的Json格式转到Hive的Map</li>
+<li>对用户行为的map格式 explode爆炸处理</li>
+<li>对用户与文章画像合并处理</li>
+<li>根据用户对文章的喜好程度（行为权重打分）把文章画像的标签取TopK打在用户身上</li>
+<li>最终得到用户的每个uid, channel的特征标签+权重</li>
+</ul>
+</li>
+<li>
+<p>用户召回</p>
+<ul>
+<li>模型ALS（模型结果自动推荐TopK个，及权重）</li>
+<li>内容召回（文章相似的文章的TopK个）</li>
+<li>召回的Item推荐用户</li>
+</ul>
+</li>
+<li>
+<p>根据用户/文章画像抽取各自的特征组成特征中心平台</p>
+<ul>
+<li>用户画像抽取用户特征，使用VectorAssembler拼进一个列表中，供后续实时排序等使用。</li>
+<li>文章画像抽取文章特征，使用VectorAssembler拼进一个列表中，供后续实时排序等使用。</li>
+</ul>
+</li>
+</ul>
 
                 </div>
                 <div class="clear"></div>
@@ -1001,13 +1373,13 @@ roc_auc_score(arr[:, 0], arr[:, 1])
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-28">2021-02-28</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/">RS =&gt; RS复习</a>
+                        <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/">IDE =&gt; My Sublime（PY）</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -1016,13 +1388,13 @@ roc_auc_score(arr[:, 0], arr[:, 1])
                   
                   
                   <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-25">2021-02-25</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/go-greater-fu-xi/">GO =&gt; Golang复习（未完待续）</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -1031,17 +1403,37 @@ roc_auc_score(arr[:, 0], arr[:, 1])
                   
                   
                   <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-22">2021-02-22</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">PR =&gt; Cheat.sh</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
                   
                   
                   
@@ -1207,15 +1599,15 @@ roc_auc_score(arr[:, 0], arr[:, 1])
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-3 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-4 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
                       <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-5 ctag-1L4lr0i2f" aria-label="">Docker</a>
                     
@@ -1265,7 +1657,7 @@ roc_auc_score(arr[:, 0], arr[:, 1])
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 80 篇文章
+          ©2019 共 90 篇文章
           <br/>
 
         </p>

@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-03-02T03:19:52.217Z</updated>
+    <updated>2021-03-06T05:18:13.125Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
@@ -10,73 +10,364 @@
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Cython_lin</rights>
     <entry>
-        <title type="html"><![CDATA[RS => RS复习]]></title>
-        <id>https://cythonlin.github.io/post/rs-greater-fu-xi/</id>
-        <link href="https://cythonlin.github.io/post/rs-greater-fu-xi/">
+        <title type="html"><![CDATA[IDE => My Sublime（PY）]]></title>
+        <id>https://cythonlin.github.io/post/ide-greater-my-sublimepy/</id>
+        <link href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/">
         </link>
-        <updated>2021-02-28T15:09:32.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="常用高级语句">常用高级语句</h1>
-<h2 id="列表爆炸">列表爆炸：</h2>
-<p>mysql</p>
-<pre><code>SELECT xxx FROM xxx
-LATERAL VIEW explode(某列表) 
+        <updated>2021-03-03T07:17:59.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="fc">FC</h1>
+<pre><code>#00FFFF
+0,255,255
 </code></pre>
-<p>pyspark</p>
-<pre><code>df.withColumn(&quot;某新列&quot;, F.explode(&quot;某列表&quot;))
+<h1 id="package-control">package control</h1>
+<h2 id="package-control报错">package control报错</h2>
+<p>😒No module named 'package_control'<br>
+进入preferences &gt;settings： 删除列表中的 &quot;0_package_control_loader&quot; 即可。<br>
+最终保留内容为：</p>
+<pre><code>[
+	&quot;0_package_control_loader&quot;,
+	&quot;Vintage&quot;
+],
 </code></pre>
-<h1 id="用户行为">用户行为</h1>
-<p>曝光 exposure<br>
-点击 clicked<br>
-分享 shared<br>
-收藏 collected<br>
-阅时 read_time<br>
-......</p>
-<h1 id="用户画像标签权重算法">用户画像标签权重算法</h1>
-<h2 id="公式">公式</h2>
-<pre><code>用户标签权重 = 行为对应每个关键词（标签）权重分数之和 * 时间衰减系数
+<h1 id="主题">主题</h1>
+<h2 id="首先安装一个包管理插件">首先安装一个包管理插件</h2>
+<p>因为Sublime Text3 一些配置被压缩了，通过这个插件可以直接查看内部设置</p>
+<pre><code>PackageResourceViewer
 </code></pre>
-<h2 id="行为权重分数">行为权重分数</h2>
-<pre><code>action                      score
-阅时&lt;1000                     1
-阅时&gt;=1000                    2
-收藏                          2
-分享                          3
-点击                          5
+<p>安装后， ctrl+shift+p，输入 prv (记住这个后续修改侧边栏之类的会用到)</p>
+<h2 id="安装">安装</h2>
+<p>ctrl+shift+P<br>
+material theme</p>
+<pre><code># 安装后再次 ctrl+shift+p
+    # 激活： 输入ma （material-theme-darker）
+    # 配置： 输入mc （配置color scheme: 选 material-theme）
 </code></pre>
-<p>行为权重对应相加（一般都是True 或 False），故用乘法查位</p>
-<pre><code>sum_score = shraed * 3 + collected * 2 + ..............
+<p>mc 的 tabs 的如下选项勾上（后3个）：</p>
+<ul>
+<li>material_theme_small_tab</li>
+<li>material_theme_tabs_autowidth</li>
+<li>material_theme_tabs_separator</li>
+</ul>
+<p>mc 的 sidebar 的如下选项 勾上（第4个和第5个）：</p>
+<ul>
+<li>material_theme_compact_sidebar</li>
+<li>material_theme_disable_fileicons</li>
+</ul>
+<h2 id="修改代码区字体类型和字体大小">修改代码区字体类型和字体大小</h2>
+<p>preference -&gt; settings</p>
+<pre><code>&quot;font_face&quot;: &quot;Courier New&quot;,
+&quot;font_size&quot;: 14,
 </code></pre>
-<h2 id="时间衰减">时间衰减</h2>
-<p>note:  log无论是math.log 还是 np.log，还是AI，通通都是 e为底</p>
-<pre><code>1 / ( log(t)+1 )   # t为 当前时间与，行为发生时间的差值
+<h2 id="修改侧边栏后者顶部tab等配置">修改侧边栏，后者顶部tab等配置</h2>
+<p>由于st3的配置文件被压缩，所以我们上面安装PackageResourceViewer，就是为了打开压缩的配置</p>
+<ul>
+<li>输入 prvo （就是 PackageResourceViewer open resource）</li>
+<li>再输入  mt（就是 material theme ）</li>
+<li>再输入 mtst （就是 material-theme.sublime-theme ）</li>
+<li>此时你会看到打开了一个配置文件，接下来再配置文件修改即可👇</li>
+</ul>
+<h3 id="修改顶部tab">修改顶部tab</h3>
+<p>搜索字样：// Tab Labels， 找到 font.size<br>
+😶（一个有2个 // tab Labels， 找到有 font.size的才是）：</p>
+<pre><code>  &quot;fg&quot;: [255, 255, 255],
+  &quot;font.size&quot;: 19,
+  &quot;font.face&quot;: &quot;Courier New&quot;,
 </code></pre>
-<p>t:时间差值越大，衰减系数越小。</p>
-<pre><code>用户标签权重 = 行为权重分数之和 * 时间衰减系数
+<p>搜索字样：// Tab selected label color， 修改fg如下：</p>
+<pre><code>&quot;fg&quot;: [0,255,255, 255],
 </code></pre>
-<p>则，用户对应每个关键词（标签）权重被拉低，代码如下</p>
-<pre><code>from datetime import datetime, timedelta
-delta = datetime.now() - datetime.strptime(&quot;2019-3-3 08:08:08&quot;, &quot;%Y-%m-%d %H:%M:%S&quot;)
-timeweight = 1 / (np.log(delta.days+1) ) 
+<p>搜索字样：// Status bar labels  （感觉status bar占地方，就view =&gt; hide status bar）</p>
+<pre><code>&quot;color&quot;: [0, 255, 255, 100],
 </code></pre>
-<h1 id="用户画像存储">用户画像存储</h1>
-<h2 id="方案1">方案1：</h2>
-<pre><code>存到 hive，用 hbase 关联hive
+<p>搜索字样：tool_tip_label_control</p>
+<p>搜索字样：quick_panel_label （从上到下，第一个即可）</p>
+<pre><code>  &quot;font.size&quot;: 23,
+  &quot;font.face&quot;: &quot;Courier New&quot;,
 </code></pre>
-<p>出现的问题：删HBase，hive会出现 tablenotfound的异常</p>
-<h2 id="方案2">方案2：</h2>
-<pre><code>存到hbase, 用 hive 关联 hbase
+<p>搜索字样：quick_panel_path_label</p>
+<pre><code>  &quot;font.size&quot;: 18,
+  &quot;font.face&quot;: &quot;Courier New&quot;,
 </code></pre>
-<p>这样即使删除了hive，hbase自己也不会报错</p>
-<h2 id="存储过程">存储过程</h2>
-<p>Happybase操作见 <a href="https://www.cklin.top/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/">😊=&gt; 推荐系统</a></p>
+<p>搜索字样：quick_panel_score_label</p>
+<pre><code>  &quot;font.size&quot;: 18,
+  &quot;font.face&quot;: &quot;Courier New&quot;,
+</code></pre>
+<h3 id="修改侧边栏">修改侧边栏</h3>
+<p>找到 sidebar_label ， 并添加：</p>
+<pre><code>  &quot;font.bold&quot;: true,
+  &quot;color&quot;: [200, 125, 0, 200],
+  &quot;font.size&quot;: 18,
+</code></pre>
+<h1 id="添加编译环境">添加编译环境</h1>
+<h2 id="普通编译基本不用配ctrlb激活">普通编译（基本不用配，ctrl+b激活）</h2>
+<p>Tools =&gt; build system =&gt; new build system 输入如下内容 =&gt; 保存文件到目录</p>
+<pre><code>{
+    &quot;cmd&quot;: [&quot;python&quot;, &quot;-u&quot;, &quot;$file&quot;],
+    &quot;file_regex&quot;: &quot;^[ ]*File \&quot;(...*?)\&quot;, line ([0-9]*)&quot;,
+}
+</code></pre>
+<p>上面cmd内第一个参数写python.exe路径也可以<br>
+😊然后就可一选择并使用了： Tools =&gt; build system =&gt; python (ctrl+b)</p>
+<h2 id="删除编译的打印错误路径日志">删除编译的打印错误路径日志</h2>
+<p>上面已经安装过了，这里就不再安装了，直接面板输入 prvo =&gt; 输入default =&gt; 输入 exec.py<br>
+搜索字样：if &quot;PATH&quot; in merged_env:<br>
+😎注释如下信息：</p>
+<pre><code># if shell_cmd:
+#     self.debug_text += &quot;[shell_cmd: &quot; + shell_cmd + &quot;]\n&quot;
+# else:
+#     self.debug_text += &quot;[cmd: &quot; + str(cmd) + &quot;]\n&quot;
+# self.debug_text += &quot;[dir: &quot; + str(os.getcwd()) + &quot;]\n&quot;
+# if &quot;PATH&quot; in merged_env:
+#     self.debug_text += &quot;[path: &quot; + str(merged_env[&quot;PATH&quot;]) + &quot;]&quot;
+# else:
+#     self.debug_text += &quot;[path: &quot; + str(os.environ[&quot;PATH&quot;]) + &quot;]&quot;
+</code></pre>
+<h1 id="keys">Keys</h1>
+<p>preference =&gt; key bindings</p>
+<h2 id="显示隐藏-工具菜单">显示隐藏 工具菜单</h2>
+<pre><code>{&quot;keys&quot;: [&quot;ctrl+m&quot;], &quot;command&quot;: &quot;toggle_menu&quot;},
+</code></pre>
+<h2 id="取消编译">取消编译</h2>
+<pre><code>{ &quot;keys&quot;: [&quot;ctrl+shift+c&quot;], &quot;command&quot;: &quot;cancel_build&quot; }
+</code></pre>
+<h2 id="显示隐藏侧边栏">显示/隐藏侧边栏</h2>
+<pre><code>{ &quot;keys&quot;: [&quot;ctrl+k&quot;], &quot;command&quot;: &quot;toggle_side_bar&quot; },
+</code></pre>
+<h2 id="代码块折叠展开默认的即可">代码块折叠/展开(默认的即可)</h2>
+<pre><code>默认为  ctrl + shift + [  ]
+</code></pre>
+<h2 id="各种搜索快捷键">各种搜索快捷键</h2>
+<p>😄代码搜索（最好用）：</p>
+<pre><code>ctrl + p
+
+有几种用法：
+1. 直接输入内容，表示查找文件名
+2. @函数名，表示查找函数名。eg  @write_file
+3. :数字n ，表示跳转到第n行。 eg  :65
+4. #变量名， 表示查找变量名。eg   #name
+</code></pre>
+<p>文本搜索</p>
+<pre><code>ctrl + f
+</code></pre>
+<p>多文件搜索<br>
+😶注意：也许pycharm不需要关闭繁体也能用，但是sublime必须关繁体切换才能用此key</p>
+<pre><code>ctrl + shift + f
+</code></pre>
+<p>替换(默认的即可)</p>
+<pre><code>ctrl + H
+</code></pre>
+<h2 id="选择括号内的内容默认即可">选择括号内的内容(默认即可)</h2>
+<pre><code>ctrl + shift + m
+</code></pre>
+<h2 id="切换标签页">切换标签页</h2>
+<pre><code>ctrl + page up / page down
+或者 alt + 1  alt + 2   .............
+后者 ctrl + tab
+</code></pre>
+<h2 id="创建新标签页新文件">创建新标签页/新文件</h2>
+<pre><code>ctrl + n
+</code></pre>
+<h2 id="创建新sublime窗口">创建新sublime窗口</h2>
+<pre><code>ctrl + shift + n
+</code></pre>
+<h2 id="窗口并排">窗口并排</h2>
+<pre><code>alt + shift + 1     // 1排
+alt + shift + 2     // 2排
+alt + shift + 3     // 3排
+alt + shift + 4     // 4排
+</code></pre>
+<h1 id="plugins">Plugins</h1>
+<h2 id="语言插件不建议使用">语言插件（不建议使用）</h2>
+<pre><code>localizeMenu
+</code></pre>
+<h2 id="路径提示">路径提示</h2>
+<pre><code>autofilename		# 文件路径提示
+</code></pre>
+<h2 id="侧边栏选项增强">侧边栏选项增强</h2>
+<pre><code>sidebarenhancements
+</code></pre>
+<p>快捷键配置：</p>
+<pre><code>{ &quot;keys&quot;: [&quot;delete&quot;], &quot;command&quot;: &quot;side_bar_delete&quot; },
+{ &quot;keys&quot;: [&quot;f2&quot;], &quot;command&quot;: &quot;side_bar_rename&quot; },
+{ &quot;keys&quot;: [&quot;ctrl+shift+x&quot;], &quot;command&quot;: &quot;side_bar_move&quot; },
+
+// { &quot;keys&quot;: [&quot;ctrl+shift+c&quot;], &quot;command&quot;: &quot;side_bar_copy&quot; },
+// { &quot;keys&quot;: [&quot;ctrl+shift+v&quot;], &quot;command&quot;: &quot;side_bar_paste&quot; },
+</code></pre>
+<h2 id=""></h2>
+<pre><code>alignment
+</code></pre>
+<h2 id="anaconda">Anaconda</h2>
+<p>package settings -&gt; anaconda -&gt; settings user<br>
+😊加入下面的配置，可以起到语法格式化的作用（保存ctrl+s后自动格式化）</p>
+<pre><code>{
+    &quot;python_interpreter&quot;: &quot;D:/python391/python.exe&quot;,
+    &quot;auto_formatting&quot;: true,
+    &quot;autoformat_ignore&quot;:
+        [
+            &quot;E309&quot;,
+            &quot;E501&quot;
+        ],
+    &quot;pep8_ignore&quot;:
+        [
+            &quot;E309&quot;,
+            &quot;E501&quot;
+        ],
+    &quot;anaconda_linting&quot;:false,
+        
+    &quot;anaconda_linter_underlines&quot;: false,
+    &quot;anaconda_linter_mark_style&quot;: &quot;None&quot;,
+    &quot;display_signatures&quot;: false,   // 这是函数内部帮助文档提示，我不需要，设false
+    // &quot;disable_anaconda_completion&quot;: true  //不能打开它, 打开它anaconda就没有意义了
+    // &quot;swallow_startup_errors&quot;: true    // 若anaconda报错，则打开它，否则不用
+}
+</code></pre>
+<p>代码跳转快捷键为默认 ctrl + alt + g</p>
+<h2 id="sublimerepl">sublimeREPL</h2>
+<pre><code>直接搜 sublimeREPL 安装
+
+tools =&gt; sublimeREPL
+</code></pre>
+<h2 id="terminal插件">Terminal插件:</h2>
+<p>😶打开当前文件所在Terminal<br>
+preference =&gt; package settings =&gt; Terminal =&gt; Setting Users<br>
+我的是Windows Terminal</p>
+<pre><code>{
+
+&quot;keys&quot;: [&quot;ctrl+shift+t&quot;],
+&quot;terminal&quot;: &quot;C:/Users/lin/AppData/Local/Microsoft/WindowsApps/wt.exe&quot;,
+&quot;parameters&quot;: [&quot;-d&quot;, &quot;.&quot;]
+}
+</code></pre>
+<p><a href="https://github.com/wbond/sublime_terminal">=&gt; terminal官档，也有其他OS版配置</a></p>
+<h1 id="vs-code">VS code</h1>
+<h2 id="倒叙说明">倒叙说明</h2>
+<p>VSC频繁宕掉，已卸载😀，还是Pycharm+Sulime+Jupyter+Miniconda了</p>
+<h2 id="中文语言">中文语言</h2>
+<pre><code>ctrl + shift + p
+输入 language display， 点击，左侧选择安装中文语言
+</code></pre>
+<h2 id="配置默认终端">配置默认终端</h2>
+<p>修改控制台字体(不然PS7 和 WSL 的ZSH图标显示不出来)</p>
+<pre><code>右下角 ⚙ 配置
+     =&gt; 搜索 terminal font
+          =&gt; 将 terminal font family 写入=&gt;  Hack NF
+</code></pre>
+<p>修改默认Terminal</p>
+<pre><code>😀 ctrl +~    调出控制台
+下拉菜单选择， 配置默认终端， 选择PS7即可。
+然后关闭 终端
+重新 按  ctrl +~  ， 再次打开终端即为 PS7
+</code></pre>
+<h2 id="快捷键">快捷键</h2>
+<p>调出控制台</p>
+<pre><code>ctrl + ~
+</code></pre>
+<p>打开命令面板（和 sublime差不多）</p>
+<pre><code>ctrl + shift + p
+</code></pre>
+<h2 id="插件">插件</h2>
+<p>python:</p>
+<pre><code>vs右侧有，会推荐给你语言插件，直接点python即可
+</code></pre>
+<p>pylint（语法高亮提示）:</p>
+<pre><code>新建py文件运行，他会自动提示你安装pylint
+</code></pre>
+<p>Python snippets（不建议用）</p>
+<pre><code>代码块补全
+</code></pre>
+<p>sublime keymap and settings importer</p>
+<pre><code>sublime式
+</code></pre>
+<p>remote WSL</p>
+<pre><code>可以打开WSL环境的Vscode
+</code></pre>
+<p>remote SSH</p>
+<pre><code>ssh
+</code></pre>
+<p>remote containers</p>
+<pre><code>docker
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 9]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-9/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-9/">
+        </link>
+        <updated>2021-03-03T07:17:35.000Z</updated>
+        <content type="html"><![CDATA[<p>RS =&gt; 9</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 8]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-8/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-8/">
+        </link>
+        <updated>2021-03-03T07:17:23.000Z</updated>
+        <content type="html"><![CDATA[<p>RS =&gt; 8</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 7]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-7/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-7/">
+        </link>
+        <updated>2021-03-03T07:17:07.000Z</updated>
+        <content type="html"><![CDATA[<p>RS =&gt; 7</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 6]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-6/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-6/">
+        </link>
+        <updated>2021-03-03T07:16:52.000Z</updated>
+        <content type="html"><![CDATA[<p>RS =&gt; 6</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 5]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-5/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-5/">
+        </link>
+        <updated>2021-03-03T07:16:35.000Z</updated>
+        <content type="html"><![CDATA[<p>RS =&gt; 5</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 4]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-4/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-4/">
+        </link>
+        <updated>2021-03-03T07:16:02.000Z</updated>
+        <content type="html"><![CDATA[<p>ING..........</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 3]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-3/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-3/">
+        </link>
+        <updated>2021-03-03T07:15:39.000Z</updated>
+        <content type="html"><![CDATA[<p>ING..........</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[RS => 2]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater-2/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater-2/">
+        </link>
+        <updated>2021-03-03T07:15:16.000Z</updated>
+        <content type="html"><![CDATA[<p>ing.......</p>
 ]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[GO => Golang复习（未完待续）]]></title>
-        <id>https://cythonlin.github.io/post/go-greater-fu-xi/</id>
-        <link href="https://cythonlin.github.io/post/go-greater-fu-xi/">
+        <id>https://cythonlin.github.io/post/rs-greater/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater/">
         </link>
-        <updated>2021-02-25T11:06:16.000Z</updated>
+        <updated>2021-03-03T07:10:37.000Z</updated>
         <content type="html"><![CDATA[<h1 id="env">ENV</h1>
 <h3 id="goroot-默认go安装根目录即可">GOROOT: 默认go安装根目录即可</h3>
 <pre><code>D:\code\go
@@ -275,1433 +566,6 @@ fmt.Println(slice1)
 <h2 id="new">new</h2>
 <pre><code>name := new(string) // new出来的就地址
 *name = &quot;zhangsan&quot;</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => Cheat.sh]]></title>
-        <id>https://cythonlin.github.io/post/ide-greater-cheatsh/</id>
-        <link href="https://cythonlin.github.io/post/ide-greater-cheatsh/">
-        </link>
-        <updated>2021-02-22T03:48:10.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="回忆">回忆</h1>
-<p>由于Scoop对cheat.sh支持不友好，我就又把WSL2加了进来<br>
-<a href="https://www.cklin.top/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">=&gt; WSL2+ZSH</a><br>
-同时也更新了最新的一次 WT的配置文件，如下：</p>
-<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
-    // For documentation on these settings, see: https://aka.ms/terminal-documentation
-
-    {
-        // 官方设置指南?
-        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
-
-        // 一些globals设置
-        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
-        // &quot;initialRows&quot;: 25,
-        // &quot;initialCols&quot;: 100,
-        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
-
-        // 设置默认终端
-        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
-        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
-
-        &quot;profiles&quot;: {
-
-            &quot;defaults&quot;: {
-                // Put settings here that you want to apply to all profiles
-                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
-                &quot;useAcrylic&quot;: true,
-                &quot;acrylicOpacity&quot;: 0.55,
-                &quot;cursorShape&quot;: &quot;vintage&quot;,
-                &quot;cursorHeight&quot;: 60,
-                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
-                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
-                &quot;fontSize&quot;: 18
-            },
-
-            &quot;list&quot;: [
-                {
-                    &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;UBT&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;,
-        &quot;startingDirectory&quot;: &quot;d:&quot;
-                },
-                {
-                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;CON&quot;,
-                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;
-                },
-                {
-                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;PS7&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
-                },
-                {
-                    // Make changes here to the cmd.exe profile
-                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
-                    &quot;name&quot;: &quot;cmd&quot;,
-                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-                },
-    {
-                    // Make changes here to the powershell.exe profile
-                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-                    &quot;name&quot;: &quot;PS5&quot;,
-                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-                },
-                // {	
-    //                 // Make changes here to the powershell.exe profile
-    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
-    //                 &quot;name&quot;: &quot;PWSH&quot;,
-    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
-    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
-    //                 &quot;hidden&quot;: false
-    //             },
-
-                {
-                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;AWS&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
-                }
-                // {
-    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-    //                 &quot;hidden&quot;: false,
-    //                 &quot;name&quot;: &quot;ssh&quot;,
-    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
-    //             }
-
-            ]
-        },
-
-        // Add custom color schemes to this array
-        &quot;schemes&quot;: [
-    {
-    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
-    &quot;black&quot;: &quot;#000000&quot;,
-    &quot;red&quot;: &quot;#ff7092&quot;,
-    &quot;green&quot;: &quot;#00fbac&quot;,
-    &quot;yellow&quot;: &quot;#fffa6a&quot;,
-    &quot;blue&quot;: &quot;#00bfff&quot;,
-    &quot;purple&quot;: &quot;#df95ff&quot;,
-    &quot;cyan&quot;: &quot;#86cbfe&quot;,
-    &quot;white&quot;: &quot;#ffffff&quot;,
-    &quot;brightBlack&quot;: &quot;#000000&quot;,
-    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
-    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
-    &quot;brightYellow&quot;: &quot;#fff787&quot;,
-    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
-    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
-    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
-    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
-    &quot;background&quot;: &quot;#332a57&quot;,
-    &quot;foreground&quot;: &quot;#e5e5e5&quot;
-    }
-    ],
-
-        // Add any keybinding overrides to this array.
-        // To unbind a default keybinding, set the command to &quot;unbound&quot;
-        &quot;keybindings&quot;: [],
-        &quot;actions&quot;:
-        [
-            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
-            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
-            // To learn more about selection, visit https://aka.ms/terminal-selection
-            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
-            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
-
-            // Press Ctrl+Shift+F to open the search box
-            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
-            // settings
-            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
-            // Press Alt+Shift+D to open a new pane.
-            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
-            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
-            // To learn more about panes, visit https://aka.ms/terminal-panes
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
-            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
-        ]
-    }
-</code></pre>
-<h1 id="cheatsh">Cheat.sh</h1>
-<p><a href="https://github.com/chubin/cheat.sh">-&gt; cheat.sh</a><br>
-以下说的都是Cheat.sh的几种用法👇</p>
-<h1 id="for-curl可以用下面wsl代替">For Curl(可以用下面WSL代替)</h1>
-<p>类似如下语法：</p>
-<pre><code>curl cht.sh/python/string+time
-</code></pre>
-<h1 id="for-client最好用">For Client（最好用）</h1>
-<p>说明一下，只有 Curl原生的方式是需要路径符号规则的， 如 /,+ 都是必须的，比较难用。<br>
-下面的所有方式就很方便了，往下看吧👇</p>
-<h2 id="wsl命令行只能用wsl来运行cheatsh">WSL（命令行只能用WSL来运行cheat.sh）</h2>
-<p>（cheat支持ZSH，恰好前面配置了ZSH，下面说如何支持ZSH）<br>
-先安装依赖：</p>
-<pre><code>sudo apt install rlwrap 
-
-# 下面这条语句是为 stealth Q 模式准备的（因为没图形界面，所以下面2条语句已废）
-sudo apt install xsel
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
-</code></pre>
-<p>下载 cht.sh，应修改为全局命令</p>
-<pre><code>curl https://cht.sh/:cht.sh | sudo tee /usr/local/bin/cht.sh
-sudo chmod +x /usr/local/bin/cht.sh
-</code></pre>
-<p>👍正常命令行模式</p>
-<pre><code>cht.sh python string time
-</code></pre>
-<p>👍--shell 模式</p>
-<pre><code>cht.sh --shell
-
-cd python       # cd 就代表选择哪类语言，或者技术领域
-string time     # 看见了吧，这次直接输入语句就搞定，不需要 写什么 cht.sh python了😊
-
-Note: 如果查到了， q键 是退出文本， 输入 exit 是退出 --shell模式
-</code></pre>
-<p>👍支持ZSH(不然按tab找不到 cht.sh，加了下面的配置就有了)</p>
-<pre><code># 第二条命令curl ... 一次可能网有问题，注意有没有con't的提示，如果出错，那就再执行一次
-
-mkdir ~/.zsh.d
-curl https://cheat.sh/:zsh &gt; ~/.zsh.d/_cht                       
-echo 'fpath=(~/.zsh.d/ $fpath)' &gt;&gt; ~/.zshrc
-
-# 然后重新登录/重新打开shell
-</code></pre>
-<p>👍Stealth mode （属于--shell 下面的一个参数， 进入--shell，用help命令可以查看所有参数）</p>
-<pre><code>研究了半天，很遗憾，Stealth mode模式，需要 server 的 GUI
-需要安装 VcXsrv， 那这个 Stealth mode 模式就算了
-</code></pre>
-<h2 id="powershell不可行">Powershell(不可行)</h2>
-<pre><code>scoop install cht
-</code></pre>
-<p>但是这种方式不太行，因为是scoop下载的是 cht.exe 而非 cht.sh<br>
-即使下到了cht.sh。 BusyBox是 dash，而非 bash，不支持执行.sh脚本<br>
-即使用了真的bash（git bash, gow 这些工具，也缺依赖）并且不是在powershell运行。<br>
-所以我还是放弃了工具化的方式， 还是用WSL了</p>
-<h1 id="for-pycharm也可以">For Pycharm（也可以）</h1>
-<h2 id="plugins">Plugins</h2>
-<pre><code>cheat.sh code snippets
-</code></pre>
-<h2 id="方式1使用面板">方式1：使用面板</h2>
-<p>调出面板快捷键 alt + p</p>
-<pre><code>alt + p
-</code></pre>
-<p>在面板中输入语句测试：</p>
-<pre><code>string time
-
-和
-
-time string 
-</code></pre>
-<p>两个单词顺序是不同的，但是却有不同的语句块</p>
-<h2 id="方式2直接在写代码">方式2：直接在写代码</h2>
-<p>代码中直接写：</p>
-<pre><code>string time
-</code></pre>
-<p>选中此代码</p>
-<pre><code>string time
-</code></pre>
-<p>按组合键复制生成的代码块</p>
-<pre><code>alt + c
-</code></pre>
-<p>然后全部松手再复制生成的代码块(直接一个单s键即可)</p>
-<pre><code>s
-</code></pre>
-<h1 id="for-sublime">For Sublime</h1>
-<p>sublime这方面配置文档欠缺，缺快捷键</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => Powershell 7]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-powershell-7/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-powershell-7/">
-        </link>
-        <updated>2021-02-18T04:43:21.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="ps7-主要新增功能">PS7 主要新增功能</h1>
-<pre><code>&amp; 后台
-&amp;&amp; || 管道
-</code></pre>
-<h1 id="找到ps5配置文件">找到PS5配置文件</h1>
-<pre><code># 列出PS5配置文件
-locate PowerShell_profile.ps1
-
-# 打开配置文件
-sublime C:\Users\lin\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
-</code></pre>
-<h2 id="修改ps5配置为如下内容">修改PS5配置为如下内容</h2>
-<p>主要就是 iex 和 irm 两条别名命令添加回来，下面要用到</p>
-<pre><code>Get-Alias | ForEach-Object { 
-    if ($_.Name -ne &quot;cd&quot; -and $_.Name -ne &quot;start&quot; -and $_.Name -ne &quot;iex&quot; -and $_.Name -ne &quot;irm&quot;)
-    {
-        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
-    }
-} 
-
-Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
-
-Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
-Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
-Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
-Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
-Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
-Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
-Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
-Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
-Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-Write-Color -Text  &quot;                                                                                  &quot; 
-
-
-function new_clear{
-    Clear-Host
-    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
-    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
-    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
-    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
-    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
-    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
-    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
-    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
-    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-    Write-Color -Text  &quot;                                                                                  &quot; 
-}
-
-Set-Alias clear new_clear
-Set-Alias cls clear
-</code></pre>
-<h1 id="下载ps7安装包">下载PS7安装包</h1>
-<pre><code>iex &quot;&amp; { $(irm https://aka.ms/install-powershell.ps1) } -UseMSI&quot;
-</code></pre>
-<h1 id="新建ps7配置文件">新建PS7配置文件</h1>
-<p>注：管理员身份运行</p>
-<pre><code>cd &quot;C:/Program Files/PowerShell/7&quot;
-notepad profile.ps1
-</code></pre>
-<p>把上面PS5一模一样的内容复制进来</p>
-<pre><code>略
-</code></pre>
-<p>保存，退出</p>
-<h1 id="使用ps7命令行重新安装颜色字体">使用PS7命令行重新安装颜色字体</h1>
-<pre><code>Install-Module -Name PSWriteColor -Scope CurrentUser
-</code></pre>
-<h1 id="重新修改terminal-配置文件">重新修改Terminal 配置文件</h1>
-<pre><code># 列出配置文件
-locate settings.json | grep -i windowsterminal
-
-# 打开配置文件
-sublime C:\Users\lin\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json
-</code></pre>
-<h2 id="将settingsjson重新粘入如下内容">将settings.json重新粘入如下内容</h2>
-<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
-    // For documentation on these settings, see: https://aka.ms/terminal-documentation
-
-    {
-        // 官方设置指南?
-        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
-
-        // 一些globals设置
-        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
-        // &quot;initialRows&quot;: 25,
-        // &quot;initialCols&quot;: 100,
-        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
-
-        // 设置默认终端
-        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
-        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
-
-        &quot;profiles&quot;: {
-
-            &quot;defaults&quot;: {
-                // Put settings here that you want to apply to all profiles
-                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
-                &quot;useAcrylic&quot;: true,
-                &quot;acrylicOpacity&quot;: 0.55,
-                &quot;cursorShape&quot;: &quot;vintage&quot;,
-                &quot;cursorHeight&quot;: 60,
-                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
-                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
-                &quot;fontSize&quot;: 18
-            },
-
-            &quot;list&quot;: [{
-                    // Make changes here to the powershell.exe profile
-                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-                    &quot;name&quot;: &quot;PS5&quot;,
-                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-                },
-                // {	
-    //                 // Make changes here to the powershell.exe profile
-    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
-    //                 &quot;name&quot;: &quot;PWSH&quot;,
-    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
-    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
-    //                 &quot;hidden&quot;: false
-    //             },
-                {
-                    // Make changes here to the cmd.exe profile
-                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
-                    &quot;name&quot;: &quot;cmd&quot;,
-                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-
-                },
-                {
-                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;Azure Cloud Shell&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
-                },
-                // {
-                //     &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
-                //     &quot;hidden&quot;: false,
-                //     &quot;name&quot;: &quot;Ubuntu-20.04&quot;,
-                //     &quot;startingDirectory&quot;: &quot;d:&quot;,
-                //     &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;
-                // },
-                // {
-    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-    //                 &quot;hidden&quot;: false,
-    //                 &quot;name&quot;: &quot;ssh&quot;,
-    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
-    //             },
-                {
-                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;Conda&quot;,
-                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;
-                },
-                {
-                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;PS7&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
-                }
-
-            ]
-        },
-
-        // Add custom color schemes to this array
-        &quot;schemes&quot;: [
-    {
-    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
-    &quot;black&quot;: &quot;#000000&quot;,
-    &quot;red&quot;: &quot;#ff7092&quot;,
-    &quot;green&quot;: &quot;#00fbac&quot;,
-    &quot;yellow&quot;: &quot;#fffa6a&quot;,
-    &quot;blue&quot;: &quot;#00bfff&quot;,
-    &quot;purple&quot;: &quot;#df95ff&quot;,
-    &quot;cyan&quot;: &quot;#86cbfe&quot;,
-    &quot;white&quot;: &quot;#ffffff&quot;,
-    &quot;brightBlack&quot;: &quot;#000000&quot;,
-    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
-    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
-    &quot;brightYellow&quot;: &quot;#fff787&quot;,
-    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
-    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
-    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
-    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
-    &quot;background&quot;: &quot;#332a57&quot;,
-    &quot;foreground&quot;: &quot;#e5e5e5&quot;
-    }
-    ],
-
-        // Add any keybinding overrides to this array.
-        // To unbind a default keybinding, set the command to &quot;unbound&quot;
-        &quot;keybindings&quot;: [],
-        &quot;actions&quot;:
-        [
-            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
-            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
-            // To learn more about selection, visit https://aka.ms/terminal-selection
-            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
-            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
-
-            // Press Ctrl+Shift+F to open the search box
-            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
-            // settings
-            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
-            // Press Alt+Shift+D to open a new pane.
-            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
-            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
-            // To learn more about panes, visit https://aka.ms/terminal-panes
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
-            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
-        ]
-    }
-</code></pre>
-<h2 id="本次-settingsjson主要对-terminal做了如下修改">本次 settings.json主要对 Terminal做了如下修改</h2>
-<ol>
-<li>窗口开启为全屏 -&gt; launchMode</li>
-<li>加入PS7</li>
-<li>默认终端设为PS7 -&gt; defaultProfile</li>
-<li>Powershell5 改名为 PS5</li>
-</ol>
-<h1 id="加了一些后台便捷功能整体profileps1文件如下">加了一些后台便捷功能，整体profile.ps1文件如下：</h1>
-<p>注：这里加了 gsudo的配置，因此需要，先安装 gsudo</p>
-<pre><code>Get-Alias | ForEach-Object { 
-    if ($_.Name -ne &quot;cd&quot; `
-    -and $_.Name -ne &quot;start&quot; `
-    -and $_.Name -ne &quot;iex&quot; `
-    -and $_.Name -ne &quot;irm&quot; `
-    -and $_.Name -ne &quot;select&quot; `
-    ) `
-    {
-        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
-    }
-} 
-
-Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
-
-Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
-Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
-Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
-Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
-Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
-Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
-Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
-Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
-Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-Write-Color -Text  &quot;                                                                                  &quot; 
-
-
-function new_clear{
-    Clear-Host
-    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
-    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
-    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
-    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
-    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
-    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
-    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
-    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
-    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-    Write-Color -Text  &quot;                                                                                  &quot; 
-}
-
-function rjobs{
-    get-job | remove-job -force
-}
-
-function stops{
-    get-job | stop-job
-}
-
-function stop{
-    stop-job @args
-}
-
-function fg{
-    wait-job @args
-}
-
-Set-Alias jobs job
-
-
-function rjob{
-    remove-job @args 
-}
-
-Set-Alias clear new_clear
-Set-Alias cls clear
-Set-Alias sudo gsudo
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => Oh-my-Posh3+Banner]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-oh-my-posh3/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-oh-my-posh3/">
-        </link>
-        <updated>2021-02-12T06:17:48.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="选用兼容字体">选用兼容字体</h1>
-<h2 id="安装字体">安装字体</h2>
-<p>这里用Nerd字体，可以做到兼容<br>
-=&gt; <a href="https://www.nerdfonts.com/font-downloads">Nerd官网，随便挑一个下载</a><br>
-我这里选的  Hack， <a href="https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/Hack.zip">=&gt;下载包地址</a><br>
-下载zip解压， 把所有字体选中， 右键 （为所有用户安装）。</p>
-<h2 id="给windows-terminal设置默认字体">给Windows Terminal设置默认字体</h2>
-<p>ctrl + ' 调出配置文件 或者 用sublime更方便操作</p>
-<pre><code>// 查出文件所在位置
-locate settings.json | grep -i terminal           
-sublime 文件
-</code></pre>
-<p>搜索关键词 fontFace所在行, 修改为：</p>
-<pre><code>&quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
-</code></pre>
-<h1 id="oh-my-posh3">Oh my Posh3</h1>
-<h2 id="安装">安装</h2>
-<p>方式1：</p>
-<pre><code>scoop install https://github.com/JanDeDobbeleer/oh-my-posh3/releases/latest/download/oh-my-posh.json
-</code></pre>
-<p>方式2：</p>
-<pre><code>scoop install oh-my-posh3
-</code></pre>
-<h2 id="更新">更新</h2>
-<pre><code>scoop update oh-my-posh
-</code></pre>
-<h2 id="生成配置文件">生成配置文件</h2>
-<pre><code>Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;$(scoop prefix oh-my-posh)/themes/jandedobbeleer.omp.json&quot;)
-</code></pre>
-<h2 id="查看自带配置文件位置">查看自带配置文件位置</h2>
-<pre><code>locate jandedobbeleer.omp.json
-</code></pre>
-<h2 id="把原配置文件copy一份给home目录名为linompjson">把原配置文件copy一份给home目录，名为lin.omp.json</h2>
-<pre><code>cp C:\Users\lin\scoop\apps\oh-my-posh\3.85.2\themes\jandedobbeleer.omp.json C:\Users\lin\lin.omp.json
-</code></pre>
-<h2 id="使用自己的配置文件并把它写入到ps配置文件中">使用自己的配置文件，并把它写入到ps配置文件中</h2>
-<pre><code>Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
-</code></pre>
-<h2 id="打开linompjsoncopy入如下内容">打开lin.omp.json，copy入如下内容</h2>
-<pre><code>{
-&quot;$schema&quot;: &quot;https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh3/main/themes/schema.json&quot;,
-&quot;blocks&quot;: [
-    {
-    &quot;type&quot;: &quot;prompt&quot;,
-    &quot;alignment&quot;: &quot;left&quot;,
-    &quot;segments&quot;: [
-        {
-        &quot;type&quot;: &quot;session&quot;,
-        &quot;style&quot;: &quot;powerline&quot;,
-        &quot;foreground&quot;: &quot;#000000&quot;,
-        &quot;background&quot;: &quot;#00FFFF&quot;,
-        &quot;trailing_diamond&quot;: &quot;\uE0B0&quot;
-        },
-        {
-        &quot;type&quot;: &quot;path&quot;,
-        &quot;style&quot;: &quot;powerline&quot;,
-        &quot;leading_diamond&quot;: &quot;\uE0B0&quot;,
-        &quot;trailing_diamond&quot;: &quot;\uE0B0&quot;,
-        &quot;powerline_symbol&quot;: &quot;\uE0B0&quot;,
-        &quot;foreground&quot;: &quot;#000000&quot;,
-        &quot;background&quot;: &quot;#00FF00&quot;,
-        &quot;properties&quot;: {
-            &quot;prefix&quot;: &quot; \uE5FF &quot;,
-            &quot;style&quot;: &quot;folder&quot;
-        }
-        },
-        {
-        &quot;type&quot;: &quot;git&quot;,
-        &quot;style&quot;: &quot;powerline&quot;,
-        &quot;powerline_symbol&quot;: &quot;\uE0B0&quot;,
-        &quot;foreground&quot;: &quot;#193549&quot;,
-        &quot;background&quot;: &quot;#fffb38&quot;,
-        &quot;properties&quot;: {
-            &quot;display_stash_count&quot;: true,
-            &quot;display_upstream_icon&quot;: true
-        }
-        },
-        {
-        &quot;type&quot;: &quot;root&quot;,
-        &quot;style&quot;: &quot;powerline&quot;,
-        &quot;powerline_symbol&quot;: &quot;\uE0B0&quot;,
-        &quot;foreground&quot;: &quot;#193549&quot;,
-        &quot;background&quot;: &quot;#ffff66&quot;
-        },
-        {
-        &quot;type&quot;: &quot;exit&quot;,
-        &quot;style&quot;: &quot;powerline&quot;,
-        &quot;foreground&quot;: &quot;#ffffff&quot;,
-        &quot;background&quot;: &quot;#0000FF&quot;,
-        &quot;leading_diamond&quot;: &quot;\uE0B0&quot;,
-        &quot;trailing_diamond&quot;: &quot;\uE0B0&quot;,
-        &quot;powerline_symbol&quot;: &quot;\uE0B0&quot;,
-        &quot;properties&quot;: {
-            &quot;display_exit_code&quot;: false,
-            &quot;always_enabled&quot;: true,
-            &quot;error_color&quot;: &quot;#FF0000&quot;,
-            &quot;color_background&quot;: true,
-            &quot;success_icon&quot;:&quot;😄&quot;,
-            &quot;error_icon&quot;: &quot;😭&quot;
-        }
-        }
-    ]
-    }
-],
-&quot;final_space&quot;: true
-}
-</code></pre>
-<h1 id="terminal-banner">Terminal Banner</h1>
-<h2 id="安装色彩模块">安装色彩模块</h2>
-<pre><code>Install-Module -Name PSWriteColor -Scope CurrentUser
-</code></pre>
-<p>颜色单词，为下面 -Color 准备</p>
-<pre><code>Black
-DarkBlue,
-DarkCyan,
-DarkRed,
-DarkMagenta,
-Gray,
-DarkGray,
-Blue, 
-Green,
-Cyan,
-Red,
-Magenta,
-YellowWhite
-</code></pre>
-<h2 id="去此网站把文本转ascii-art">去此网站把文本转ASCII Art</h2>
-<p>=&gt; <a href="http://patorjk.com/software/taag/#p=display&amp;f=Larry%203D&amp;t=cython%20lin">这里我选用的是 ASCII Shadow </a><br>
-示例0： 遗憾的是，只有这个示例0能用，下面在PS中不能用，不过以后可能用得到</p>
-<pre><code>               __    __                           ___
-              /\ \__/\ \                         /\_ \    __
-   __   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___
- /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\
-/\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \ \ \/\ \/\ \     \_\ \_\ \ \/\ \/\ \
-\ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\
- \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/
-            /\___/
-            \/__/                                                 
-</code></pre>
-<p>示例1：</p>
-<pre><code>██████╗ ██╗   ██╗████████╗██╗  ██╗ ██████╗ ███╗   ██╗
-██╔══██╗╚██╗ ██╔╝╚══██╔══╝██║  ██║██╔═══██╗████╗  ██║
-██████╔╝ ╚████╔╝    ██║   ███████║██║   ██║██╔██╗ ██║
-██╔═══╝   ╚██╔╝     ██║   ██╔══██║██║   ██║██║╚██╗██║
-██║        ██║      ██║   ██║  ██║╚██████╔╝██║ ╚████║
-╚═╝        ╚═╝      ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
-</code></pre>
-<p>示例2：</p>
-<pre><code>██╗     ██╗███╗   ██╗
-██║     ██║████╗  ██║
-██║     ██║██╔██╗ ██║
-██║     ██║██║╚██╗██║
-███████╗██║██║ ╚████║
-</code></pre>
-<p>示例3：</p>
-<pre><code> ██████╗██╗   ██╗████████╗██╗  ██╗ ██████╗ ███╗   ██╗    ██╗     ██╗███╗   ██╗
-██╔════╝╚██╗ ██╔╝╚══██╔══╝██║  ██║██╔═══██╗████╗  ██║    ██║     ██║████╗  ██║
-██║      ╚████╔╝    ██║   ███████║██║   ██║██╔██╗ ██║    ██║     ██║██╔██╗ ██║
-██║       ╚██╔╝     ██║   ██╔══██║██║   ██║██║╚██╗██║    ██║     ██║██║╚██╗██║
-╚██████╗   ██║      ██║   ██║  ██║╚██████╔╝██║ ╚████║    ███████╗██║██║ ╚████║
-</code></pre>
-<h2 id="写入ps配置文件">写入PS配置文件</h2>
-<p>sublime C:\Users\lin\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1</p>
-<pre><code>Get-Alias | ForEach-Object { 
-    if ($_.Name -ne &quot;cd&quot;)
-    {
-        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
-    }
-} 
-
-Invoke-Expression (oh-my-posh --init --shell pwsh --config &quot;C:\Users\lin\lin.omp.json&quot;)
-
-Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
-Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
-Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
-Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
-Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
-Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
-Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
-Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
-Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-Write-Color -Text  &quot;                                                                                  &quot; 
-
-
-function new_clear{
-    Clear-Host
-    Write-Color -Text  &quot;                         __    __                           ___                   &quot; -Color Cyan
-    Write-Color -Text  &quot;                        /\ \__/\ \                         /\_ \    __            &quot; -Color Cyan
-    Write-Color -Text  &quot;            ___   __  __\ \ ,_\ \ \___     ___     ___     \//\ \  /\_\    ___    &quot; -Color red
-    Write-Color -Text  &quot;           /'___\/\ \/\ \\ \ \/\ \  _ \\  / __\\ /' _ \\     \ \ \ \/\ \ /' _ \\  &quot; -Color yellow
-    Write-Color -Text  &quot;          /\ \__/\ \ \_\ \\ \ \_\ \ \ \ \/\ \\  \/\ \/\ \     \_\ \_\ \ \/\ \/\ \ &quot; -Color green
-    Write-Color -Text  &quot;          \ \____\\/\____ \\ \__\\ \_\ \_\ \____/\ \_\ \_\    /\____\\ \_\ \_\ \_\&quot; -Color blue
-    Write-Color -Text  &quot;           \/____/ \\___// \\/__/ \/_/\/_/\/___/  \/_/\/_/    \/____/ \/_/\/_/\/_/&quot; -Color Magenta
-    Write-Color -Text  &quot;                      /\___/                                                      &quot; -Color Cyan
-    Write-Color -Text  &quot;                      \/__/                                                       &quot; -Color Cyan
-    Write-Color -Text  &quot;                                                                                  &quot; 
-}
-
-Set-Alias clear new_clear
-Set-Alias cls clear
-</code></pre>
-<h2 id="banner-另一种解决思路">Banner 另一种解决思路</h2>
-<pre><code>scoop install figlet
-
-figlet &quot;Cython lin&quot;
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => Terminal 应用]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-terminal-ying-yong/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-terminal-ying-yong/">
-        </link>
-        <updated>2021-02-06T15:32:32.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="readme">README</h1>
-<p>以后若发现 Windows应用程序或功能 可用Terminal命令代替且便捷实现，则记载于此。</p>
-<h1 id="everything-命令行-es">Everything 命令行 - ES</h1>
-<p>下载地址： <a href="https://www.voidtools.com/zh-cn/downloads/#cli">ES点此下载</a></p>
-<h2 id="意图">意图</h2>
-<p>虽然 Everything图形界面工具已经很出色了。但我依然忘不掉 Linux 的 locate 命令<br>
-故有意将 Everything的命令行工具 es 替代 locate</p>
-<h2 id="使用方式">使用方式</h2>
-<ol>
-<li>下载zip</li>
-<li>解压</li>
-<li>将 es.exe 改名为 locate.exe (Linux的locate命令使用习惯，若无此习惯，则跳过此步)</li>
-<li>将此解压路径加入到环境变量</li>
-<li>locate xxx</li>
-</ol>
-<h2 id="es-常用语法参数">ES 常用语法参数</h2>
-<p>我看了看 <a href="https://www.voidtools.com/zh-cn/support/everything/command_line_interface/">ES文档</a>，抽取了一些个人认为好用的参数。</p>
-<pre><code>-r：正则
--s：以全路径排序（每级路径都会排序， 举个例子就和多级分组排序原理差不多）
--size：文件大小
--dm：修改日期
--highlight：关键词高亮
-</code></pre>
-<p>解释的很清楚了，这里拿正则举一个例子， 因为es匹配原则是包含原则。<br>
-只要含有，就会列举出来，很宽柔。这里我们写一个严格匹配的正则：</p>
-<pre><code>locate -r ^test.py$
-</code></pre>
-<p>保存配置到文件（ es.exe 同目录下 es.ini）中，一劳永逸： -save-settings</p>
-<pre><code>locate -size -dm -sizecolor 0x0d -dmcolor 0x0b -s  -highlight -save-settings
-</code></pre>
-<p>清除配置：-clear-settings</p>
-<pre><code>locate -clear-settings 
-</code></pre>
-<h2 id="个人认为-es-命令行的一些优势">个人认为 ES 命令行的一些优势</h2>
-<ol>
-<li>everything的图形界面一些高级功能都在工具栏，我是几乎不用。感觉麻烦。不如命令来的简洁。</li>
-<li>正如前几篇文章所讲，把PS打造成 Sim-Linux， 所以我可以使用 grep 等命令。</li>
-<li>这样我就可以使用 ES搜索命令 + grep 等做 多关键词 精细查找（everything图形高级功能应该也有）</li>
-</ol>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => Alias & Linux瑞士军刀]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-del-alias-and-linux-rui-shi-jun-dao/">
-        </link>
-        <updated>2021-02-04T16:08:51.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="介绍">介绍</h1>
-<h2 id="前文">前文</h2>
-<p>前面文章介绍了Windows Terminal 以及 WSL2<br>
-二者各有用途，但是用了一段时间发现，都不太方便 &quot;Sim-Bash&quot;<br>
-因为 Windows Terminal 的底层调用其实还是 PowerShell的命令。。<br>
-只不过 只是PowerShell（下面用简称PS来介绍）的命令全部都做了一层Alias操作。<br>
-此Alias有具体的语法，与Linux不一样的，但是意思差不多，就是给命令起别名。</p>
-<p>就是因为PS这个别名，使得我们用Scoop安装的Linux同名命令冲突，并且用不了。</p>
-<h2 id="同名命令介绍">同名命令介绍</h2>
-<p>比如 ls 这个命令， PS用的 其他命令（类似dir）起个ls 这个别名<br>
-使得使用 ls 就可以像 Linux的Bash那样简单。<br>
-但是！！！！</p>
-<pre><code>PS的命令参数 和  Bash的命令参数是不一样的。。。
-PS的 ls 命令 列举隐藏文件参数是 :   -h
-Bash的 ls 命令 列举隐藏文件参数是 :   -a
-</code></pre>
-<p>这就是 PS的命令不方便之处， ls只是个例子，还有很多其他命令有同样的问题。<br>
-Windows Terminal 就是用 PS “挂羊头卖狗肉” 罢了。。。</p>
-<h2 id="解决办法">解决办法</h2>
-<p>我唯一想到的就是，删除所有PS命令的别名，一切命令由Scoop重新下载（很简单，后面说军刀）<br>
-然后按照这个思路寻找，找到可用的解决办法：</p>
-<h3 id="创建windows-powershell-profile配置文件">创建Windows PowerShell profile配置文件:</h3>
-<pre><code>New-Item -Type file -Force $profile
-</code></pre>
-<p>创建的此文件默认位置为：（我的用户名是 lin ）</p>
-<pre><code>C:\Users\lin\Documents\WindowsPowerShell
-</code></pre>
-<p>写入如下代码，文件是(Microsoft.PowerShell_profile.ps1)：</p>
-<pre><code>Get-Alias | ForEach-Object { 
-    if ($_.Name -ne &quot;cd&quot;)
-    {
-        Remove-Item -Path (&quot;Alias:\&quot; + $_.Name) -Force -ErrorAction &quot;SilentlyContinue&quot; 
-    }
-} 
-</code></pre>
-<p>此行命令意思就是清除所有PS 命令的别名。<br>
-（这个语句我学习加了一个条件 和 截获异常的语句）<br>
-如果不排除 cd 这个命令， 我们后续安装的模块是 没有cd这个安装包的。<br>
-因为 cd 是 LinuxBash 内建命令。 Windows无法安装， 即使我们安装了Bash, 也没有 cd。<br>
-所以，cd我们只能用ps自带的cd, 这是没办法的事情，  其余的命令别名就可以全删了。</p>
-<p>至此，重新代开 Terminal。</p>
-<h3 id="遇到的问题">遇到的问题</h3>
-<p>那就是每次打开新的Terminal 都会加载 上面Windows PowerShell profile这个配置文件里面的命令。可能是有缓存之类的信息，所以会发生文件不存在（就是类似空文件异常）<br>
-于是，查PowerShell的异常处理语句如上代码后追加 -ErrorAction &quot;SilentlyContinue 即可。</p>
-<h1 id="scoop-linux瑞士军刀-busybox">Scoop + Linux瑞士军刀-busybox</h1>
-<p><a href="https://www.cklin.top/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">-&gt;Scoop的安装教程见这里寻找</a></p>
-<p>既然上文已删除了所有PS别名，那我们就需要下载我们要用的各种 Linux命令了， 比如 ls ps kill<br>
-各种常用 Linux命令。 不需要一个一个去手动 Scoop install 工具包， 只需一句：</p>
-<pre><code>scoop install busybox
-</code></pre>
-<p>如此一来，我们就把 Windows Terminal 的各种蹩脚别名的PS命令 替换成了 Linux Bash命令！</p>
-<h1 id="结束语">结束语</h1>
-<p>我并非吐槽PS命令，因为它可能有它专门的用途。<br>
-而是我更熟悉于 Linux 的 Bash 命令而已。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => MusicBee & VST]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-musicbee-and-winamp-and-vst/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-musicbee-and-winamp-and-vst/">
-        </link>
-        <updated>2021-01-29T04:58:49.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="musicbee">MusicBee</h1>
-<h3 id="musicbee-皮肤">MusicBee 皮肤</h3>
-<pre><code>Dark -&gt; Bee78
-</code></pre>
-<h3 id="musicbee-音质配置">MusicBee 音质配置</h3>
-<p>首先要设置一下扬声器属性</p>
-<pre><code>右键播放下面的 “扬声器” 属性
--&gt; 高级 (把下面2个选项都 打上 √)
-    -&gt; 允许应用程序独占控制该设备 
-    -&gt; 给与独占模式应用程序优先
-</code></pre>
-<p>然后配置MusicBee</p>
-<pre><code>首选项
-    -&gt; 播放器
-        -&gt; 输出
-            -&gt; 选择 WSAAPI (Shared)     ！！！！！！！这个至关重要，必须是 Shared
-            -&gt; 使用32位输出+立体声混音至5.1+重新采样到 192K（这几个作用不太明显）
-</code></pre>
-<p>然后调控音量（比较重要）：</p>
-<pre><code>MusicBee 的 内部音量 调到最低（但是不要调没）。
-Windows扬声器音量调高。
-</code></pre>
-<h1 id="musicbee安装vst插槽">MusicBee安装VST插槽</h1>
-<p>注：MusicBee不能直接安装VST插件， 需要官网安装一个VST插槽。用此插槽才可以安装其他VST插件<br>
-<a href="https://getmusicbee.com/addons/plugins/16/vst-effects-support/">VST插槽下载地址</a></p>
-<h3 id="安装插槽">安装插槽</h3>
-<pre><code>Preference -&gt; Plugins -&gt; Add Plugins -&gt; 插槽下载的位置
-</code></pre>
-<h1 id="使用vst插槽安装vst插件">使用VST插槽安装VST插件</h1>
-<h2 id="正常dll文件安装方式">正常DLL文件安装方式</h2>
-<p><a href="https://freevstplugins.net/?s=NT+Pitch">VST插件下载地址</a><br>
-注：MusicBee对VST插件支持很不友好，看了一大堆选了几个适合我这种初级选手能用的：</p>
-<pre><code>3D_Panner_2.0
-wL_niceNwide
-Ceres (1)
-cs12-156
-</code></pre>
-<p>下载后直接解压，将解压文件夹直接放到 music的plugins目录下即可（需重启MusicBee）</p>
-<h2 id="痛苦安装方式只用通过这种方式才能安装到pitch-shift类插件">痛苦安装方式（只用通过这种方式才能安装到Pitch Shift类插件）</h2>
-<p>这里提到一个超级老牌player -&gt;  Winamp...   ，现在应该没人用了。 或者都用Foobar2000了。<br>
-Winamp 我看论坛都是 2000年左右的评论。。。可知它的插件也特别旧了。  但是它的插件特别多。<br>
-可惜大多数放在 MusicBee上不好用或者崩溃。但没办法，还得用。</p>
-<h3 id="为什么这里要提到winamp">为什么这里要提到Winamp</h3>
-<p>因为MusicBee有个选项（从Winamp导入插件）<br>
-而 Winamp的插件大多数都是 EXE格式的， 需要识别 Winamp的安装路径，并且安装到Winamp路径下。<br>
-（其实EXE安装完也就是 DLL文件， 只不过它只能是这种方式。）<br>
-所以 Winamp 只是个过渡的工具人。。。</p>
-<h3 id="winamp插件地址">Winamp插件地址</h3>
-<p><a href="https://winampheritage.com/plugins/DSP-Effect-5">Winamp插件</a><br>
-拾到可用的插件 take it easy 可以改变 Pitch<br>
-但是试过一段时间很遗憾，会让 MusicBee 宕掉。</p>
-<h1 id="最后一根救命稻草-pitchshifterv101">最后一根救命稻草 pitchShifter.V1.01</h1>
-<p><a href="https://github.com/kawaCat/pitchShifter-Vst/releases">pitchShifter地址</a><br>
-这个就用不到 Winmap了， 直接移动到 MusicBee 的 Plugins中即可</p>
-<h1 id="总结">总结</h1>
-<p>找的很辛苦，普通的VST插件很好找， PITCH shift 这种的真的难找。<br>
-即使找到了，MusicBee有些也各种不支持，不兼容，宕掉。</p>
-<h2 id="最终插件合集">最终插件合集：</h2>
-<pre><code>3D_Panner_2.0
-wL_niceNwide
-Ceres (1)
-cs12-156
-
-pitchShifter       （灵魂）
-</code></pre>
-<p>为何我如此执着音乐的变调，因为对于我来说，每一个Key都是一首新音乐！</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => U&P]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-uandp/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-uandp/">
-        </link>
-        <updated>2021-01-19T08:45:11.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="google">Google</h1>
-<pre><code>96@
-</code></pre>
-<h1 id="github">Github</h1>
-<pre><code>Cy(无-)
-ha-
-http://cythonlin.github.io/
-</code></pre>
-<h1 id="52download">52download</h1>
-<pre><code>Cy
-13
-</code></pre>
-<h1 id="vultr">Vultr</h1>
-<pre><code>Cy
-</code></pre>
-<h1 id="kaggle">Kaggle</h1>
-<pre><code>cy
-</code></pre>
-<h1 id="microsoft">MicroSoft</h1>
-<pre><code>96@ / si
-</code></pre>
-<h1 id="nvidia">Nvidia</h1>
-<pre><code>96@
-</code></pre>
-<h1 id="anaconda">Anaconda</h1>
-<pre><code>ha_
-</code></pre>
-<h1 id="七牛">七牛</h1>
-<pre><code>96@
-</code></pre>
-<h1 id="ynote">YNote</h1>
-<pre><code>96@
-</code></pre>
-<h1 id="coding-pages">Coding Pages</h1>
-<pre><code>96@ / Jxxxxxxxxxxxxxx.       （末尾多个英文标点 句号）
-https://cythonlin.coding.net
-</code></pre>
-<h1 id="postman">Postman</h1>
-<pre><code>96@
-</code></pre>
-<h1 id="bd">BD</h1>
-<pre><code>18/13
-</code></pre>
-<h1 id="docker">Docker</h1>
-<pre><code>ha
-</code></pre>
-<h1 id="极算">极算</h1>
-<pre><code>18
-</code></pre>
-<h1 id="neo4j">Neo4j</h1>
-<pre><code>neo4j / zxc
-</code></pre>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[PR => Terminal+WSL+ZSH+Docker]]></title>
-        <id>https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/</id>
-        <link href="https://cythonlin.github.io/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">
-        </link>
-        <updated>2021-01-18T09:41:15.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="快捷键">快捷键</h1>
-<p>搜索功能</p>
-<pre><code>ctrl + shift + p
-</code></pre>
-<p>搜索文本</p>
-<pre><code>ctrl + shift + f
-</code></pre>
-<p>編輯配置文件</p>
-<pre><code>ctrl + '       (回車旁邊的符號 ')
-</code></pre>
-<p>橫向拆分窗口（下面action中，自定義配置）</p>
-<pre><code>ctrl + +號
-</code></pre>
-<p>垂直拆分窗口（下面actrion中，自定義配置）</p>
-<pre><code>ctrl + -號
-</code></pre>
-<p>關閉拆分的窗口（下面action中，自定義配置）</p>
-<pre><code>ctrl + w
-</code></pre>
-<p>配置文件（ctrl + ' 后，全部内容整體替換即可）</p>
-<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
-    // For documentation on these settings, see: https://aka.ms/terminal-documentation
-
-    {
-        // 官方设置指南?
-        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
-
-        // 一些globals设置
-        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
-        &quot;initialRows&quot;: 25,
-        &quot;initialCols&quot;: 100,
-
-        // 设置默认终端
-        &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
-
-
-        &quot;profiles&quot;: {
-
-            &quot;defaults&quot;: {
-                // Put settings here that you want to apply to all profiles
-                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
-                &quot;useAcrylic&quot;: true,
-                &quot;acrylicOpacity&quot;: 0.55,
-                &quot;cursorShape&quot;: &quot;vintage&quot;,
-                &quot;cursorHeight&quot;: 60,
-                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
-                &quot;fontFace&quot;: &quot;YaHei Consolas Hybrid&quot;,
-                &quot;fontSize&quot;: 18
-            },
-
-            &quot;list&quot;: [{
-                    // Make changes here to the powershell.exe profile
-                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-                    &quot;name&quot;: &quot;PS&quot;,
-                    &quot;commandline&quot;: &quot;powershell.exe /nologo&quot;,   // /nologo 表示删除 banner
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-                },
-                {
-                    // Make changes here to the cmd.exe profile
-                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
-                    &quot;name&quot;: &quot;cmd&quot;,
-                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-
-                },
-                {
-                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;Azure Cloud Shell&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
-                },
-                {
-                    &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;Ubuntu-20.04&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;
-                },
-                // {
-    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-    //                 &quot;hidden&quot;: false,
-    //                 &quot;name&quot;: &quot;ssh&quot;,
-    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
-    //             },
-                {
-                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;Conda&quot;,
-                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;
-                },
-            ]
-        },
-
-        // Add custom color schemes to this array
-        &quot;schemes&quot;: [
-    {
-    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
-    &quot;black&quot;: &quot;#000000&quot;,
-    &quot;red&quot;: &quot;#ff7092&quot;,
-    &quot;green&quot;: &quot;#00fbac&quot;,
-    &quot;yellow&quot;: &quot;#fffa6a&quot;,
-    &quot;blue&quot;: &quot;#00bfff&quot;,
-    &quot;purple&quot;: &quot;#df95ff&quot;,
-    &quot;cyan&quot;: &quot;#86cbfe&quot;,
-    &quot;white&quot;: &quot;#ffffff&quot;,
-    &quot;brightBlack&quot;: &quot;#000000&quot;,
-    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
-    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
-    &quot;brightYellow&quot;: &quot;#fff787&quot;,
-    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
-    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
-    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
-    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
-    &quot;background&quot;: &quot;#332a57&quot;,
-    &quot;foreground&quot;: &quot;#e5e5e5&quot;
-    }
-    ],
-
-        // Add any keybinding overrides to this array.
-        // To unbind a default keybinding, set the command to &quot;unbound&quot;
-        &quot;keybindings&quot;: [],
-        &quot;actions&quot;:
-        [
-            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
-            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
-            // To learn more about selection, visit https://aka.ms/terminal-selection
-            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
-            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
-
-            // Press Ctrl+Shift+F to open the search box
-            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
-            // settings
-            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
-            // Press Alt+Shift+D to open a new pane.
-            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
-            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
-            // To learn more about panes, visit https://aka.ms/terminal-panes
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
-            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
-        ]
-    }
-</code></pre>
-<h1 id="安装scoop并非sqoop">安装Scoop(并非Sqoop...)</h1>
-<h2 id="作用">作用</h2>
-<pre><code>主要用在 单个纯 Windows Terminal  去安装 Linux工具使用。
-但我发现 Win Terminal 的一些基础命令 还是没Linux好用（比如 ls无选项看不到隐藏文件）
-
-所以我最后选择了 Win Terminal + WSL2 并用
-所以Scoop这项就可以不用了
-</code></pre>
-<h2 id="流程">流程</h2>
-<p>因为用Powershell命令，会访问到raw.githubusercontent.com，所以先修改DNS</p>
-<pre><code>C:\Windows\System32\drivers\etc
-    199.232.68.133 raw.githubusercontent.com
-ipconfig /flushdns
-</code></pre>
-<p>用Powershell命令正式安装Scoop:</p>
-<pre><code>Set-ExecutionPolicy RemoteSigned -scope CurrentUser
-Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-</code></pre>
-<h2 id="更新可能会出现的bug">更新可能会出现的BUG</h2>
-<p>安装应该是没问题的，不过以后使用的过程中可能会遇到更新的BUG。</p>
-<pre><code>cd C:/Users/lin/scoop/apps/
-</code></pre>
-<p>删除这个目录下的 scoop目录</p>
-<pre><code>rm -rf scoop
-</code></pre>
-<p>然后重新安装 scoop(注意，删除的这个scoop是scoop内部的文件夹)</p>
-<pre><code>Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
-</code></pre>
-<h2 id="给scoop添加软件库bucket">给scoop添加软件库(bucket)</h2>
-<p>列出可用的软件库(这种软件库会把一些带有GUI的软件放在里面)：</p>
-<pre><code>scoop bucket known
-</code></pre>
-<p>添加软件库(这个是官方的)</p>
-<pre><code>scoop bucket add extras
-</code></pre>
-<p>安装 deluge(下载torrent用的)</p>
-<pre><code>scoop install deluge
-</code></pre>
-<h2 id="添加自定义软件库">添加自定义软件库</h2>
-<p><a href="https://github.com/lukesampson/scoop/wiki/Buckets#creating-your-own-bucket">-&gt;官方教程</a></p>
-<h2 id="加速-scoop的下载">加速 Scoop的下载</h2>
-<pre><code>scoop install aria2
-</code></pre>
-<p>Scoop 使用 Git 更新它自身，所以安一个Git 是需要的。</p>
-<pre><code>scoop install git
-</code></pre>
-<p>卸载语法</p>
-<pre><code>scoop uninstall  xxxx
-</code></pre>
-<h1 id="三方桌面程序">三方桌面程序</h1>
-<p>Winstep Xtreme 17.0+ (含 workshelf + NextStart)</p>
-<h3 id="卸载nextstart">卸载NextStart</h3>
-<ol>
-<li>
-<p>everything搜删 nextstart</p>
-</li>
-<li>
-<p>注册表<br>
-HKEY_CURRENT_USER-&gt;<br>
-SOFTWARE-&gt;<br>
-WinSTEP2000-&gt;</p>
-<p>把这里面的 Nextstart 和 Shared 整体删除<br>
-并且把 workshelf里面的  METARCode 项的值 删掉</p>
-</li>
-</ol>
-<h1 id="三方-file-explorer">三方 File Explorer</h1>
-<p>RX 文件管理器</p>
-<h1 id="wsl2附着在选项卡">WSL2(附着在选项卡)</h1>
-<ol>
-<li>
-<p>启用WSL(用PowerShell替代手动启用),（可稍后重启，继续下面）</p>
-<pre><code> dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-</code></pre>
-</li>
-<li>
-<p>启用虚拟机功能（这部结束后，需要重启）</p>
-<pre><code> dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-</code></pre>
-</li>
-<li>
-<p>下载 X64 WSL2 更新包，并双击安装<br>
-<a href="https://docs.microsoft.com/zh-cn/windows/wsl/install-win10#step-4---download-the-linux-kernel-update-package">WSL2更新包地址</a></p>
-</li>
-<li>
-<p>将WSL2设置为默认版本</p>
-<pre><code> wsl --set-default-version 2
-</code></pre>
-</li>
-<li>
-<p>MIcrosoft Store 安装 Ubuntu20 LTS</p>
-</li>
-<li>
-<p>可以在 Windows Terminal 选项卡打开，也可直接打开Ubuntu</p>
-</li>
-<li>
-<p>Win Terminal 输入 wsl 即可进入 Ubuntu,</p>
-</li>
-<li>
-<p>换源</p>
-<pre><code>cp -a /etc/apt/sources.list /etc/apt/sources.list.bak
-
- sudo sed -i &quot;s@http://.*archive.ubuntu.com@http://mirrors.huaweicloud.com@g&quot; /etc/apt/sources.list
- sudo sed -i &quot;s@http://.*security.ubuntu.com@http://mirrors.huaweicloud.com@g&quot; /etc/apt/sources.list
- 
- sudo apt-get update
-</code></pre>
-</li>
-</ol>
-<h2 id="查看wsl版本信息与运行状态">查看WSL版本信息与运行状态</h2>
-<pre><code>wsl -l -v
-</code></pre>
-<h1 id="zshoh-my-zsh">ZSH+Oh-my-zsh</h1>
-<h2 id="zsh">ZSH</h2>
-<p>安装ZSH</p>
-<pre><code>sudo apt install zsh
-</code></pre>
-<p>查看版本：</p>
-<pre><code>zsh --version
-</code></pre>
-<p>将ZSH设为默认shell:</p>
-<pre><code>chsh -s $(which zsh)
-</code></pre>
-<p>退出当前用户lin，重新登录，并查看当前所用shell：</p>
-<pre><code>echo $SHELL
-</code></pre>
-<h2 id="oh-my-zsh">Oh-my-zsh</h2>
-<p>为普通用户安装oh-my-zsh：</p>
-<pre><code>sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)&quot; &quot;&quot; --unattended
-
-vi .zshrc (注意：下面这句话必须要加入到头部，我加到了第一行， it works😉)
-    ZSH_DISABLE_COMPFIX=true
-source .zshrc
-</code></pre>
-<p>为root用户安装oh-my-zsh:</p>
-<pre><code># 说明， 我们把下面所有设置都写在lin用户的 .zshrc中
-# 然后我们下面会创建一个软连接由 root用户的zsh配置指向 lin用户的zsh配置文件
-# 这样做的目的就是 虽然 oh-my-zsh需要装2次，但是加软连接就可以把配置文件共享了
-
-sudo -s
-sudo passwd root
-
-sh -c &quot;$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)&quot; &quot;&quot; --unattended
-
-rm -rf /root/.oh-my-zsh
-rm -rf /root/.zshrc
-
-ln -s /home/lin/.oh-my-zsh   /root/.oh-my-zsh
-ln -s /home/lin/.zshrc     /root/.zshrc
-</code></pre>
-<p>设置主题：打开oh-my-zsh配置文件：</p>
-<pre><code>vi ~/.zshrc
-</code></pre>
-<p>修改如下：</p>
-<pre><code>ZSH_THEME=&quot;agnoster&quot;
-</code></pre>
-<p>激活：</p>
-<pre><code>source ~/.zshrc
-</code></pre>
-<h2 id="给win已有的sublime设置环境变量">给win已有的Sublime设置环境变量</h2>
-<p>vi ~/.zshrc</p>
-<pre><code>export PATH=&quot;$PATH:/mnt/d/ide/Sublime/sublime.exe&quot;
-alias sublime=sublime.exe
-</code></pre>
-<p>激活ZSH配置文件：</p>
-<pre><code>source ~/.zshrc
-</code></pre>
-<p>本来想直接用 PS 的 locate，后来发现搜不到WSL里面的内容<br>
-没办法，只好用 mlocate了😉</p>
-<pre><code>sudo apt-get install mlocate
-
-updatedb        # 手动更新搜索数据库（退出Shell，下次登录之前也会自动更新）
-</code></pre>
-<h2 id="zsh插件">ZSH插件</h2>
-<p>👍zsh-syntax-highlighting语法高亮(执行错误自动变红)</p>
-<pre><code># 安装
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-
-# 配置：.zshrc中加入如下配置（设置完 然后 source 一下）
-# 向后面追加  plugins=()    空格或者换行分隔
-plugins = (
-    git 
-    zsh-syntax-highlighting
-)  
-</code></pre>
-<p>👍autojump目录快速跳转（按 j 键盘跳转，不用cd，支持多级跳转，模糊匹配）</p>
-<pre><code># 安装
-sudo apt-get install autojump
-# 配置，同上
-</code></pre>
-<p>autojump其实是维护一个目录数据库来达到跳转的目的，你也可以自己修改数据库</p>
-<pre><code># 在数据库中添加一个目录
-autojump -a [dir]
-
-# 提升当前目录的权重
-autojump -i [value]
-
-# 降低当前目录的权重
-autojump -d [value]
-
-# 显示数据库中的统计数据
-autojump -s
-
-# 清除数据库中的目录
-autojump --purge
-</code></pre>
-<p>举个例子，我用的WSL2，切换CDE盘让我感到难受，所以我可以升权<br>
-下面的3条命令，root用户和lin用户都要执行一次</p>
-<pre><code>cd /mnt/c &amp;&amp; autojump -a /mnt/c &amp;&amp; autojump -i 100
-cd /mnt/d &amp;&amp; autojump -a /mnt/d &amp;&amp; autojump -i 100
-cd /mnt/e &amp;&amp; autojump -a /mnt/e &amp;&amp; autojump -i 100
-</code></pre>
-<p>然后就可以通过，如下来切换盘符了：</p>
-<pre><code>j c
-j d
-j e
-</code></pre>
-<p>👍zsh-autosuggestion语法补全（按 -&gt;方向键补全）</p>
-<pre><code># 安装
-git clone git://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
-
-# 配置同上，向 plugins=() 中追加  zsh-autosuggestions
-</code></pre>
-<h2 id="总结上述插件最终安装-和-zshrc配置">总结上述插件最终安装 和  .zshrc配置：</h2>
-<p>安装</p>
-<pre><code>sudo apt-get install autojump
-git clone git://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-</code></pre>
-<p>设置</p>
-<pre><code>plugins=(
-    git
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-    autojump
-)    
-</code></pre>
-<h2 id="卸载-oh-my-zsh">卸载 oh-my-zsh</h2>
-<pre><code>uninstall_oh_my_zsh
-</code></pre>
-<h2 id="如何在powershell中打开-ubuntu">如何在Powershell中打开 Ubuntu</h2>
-<p>命令为：</p>
-<pre><code>wsl 
-</code></pre>
-<p>NOTE：wsl和从 WT的右上角选择Ubuntu是一个效果<br>
-特别注意：不要用bash命令了，因为我们WSL已经把Bash换成了ZSH</p>
-<h1 id="docker">Docker</h1>
-<h2 id="方式1直接用wsl2的虚拟机安装docker">方式1：直接用WSL2的虚拟机安装Docker</h2>
-<pre><code>curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-</code></pre>
-<p>此过程中会出现 sleep 20， 并推荐你使用方式2，但是我偏不想使用方式2<br>
-所以，只需等20秒，便可成功通过方式1来安装<br>
-Note: 此期间不要按Ctrl +  C,  否则会退出方式1的安装</p>
-<h2 id="方式2docker-desktop-for-windows">方式2：Docker Desktop for windows</h2>
-<pre><code>https://www.docker.com/products/docker-desktop
-</code></pre>
-<h2 id="查看docker服务">查看Docker服务</h2>
-<pre><code>sudo service docker start
-sudo service docker status
-sudo service docker stop
-</code></pre>
-<h2 id="使用docker">使用Docker</h2>
-<pre><code>sudo docker run hello-world
-</code></pre>
-<h2 id="docker语法个人笔记">Docker语法个人笔记</h2>
-<p><a href="https://www.cklin.top/post/py-greater-docker-yu-fa-quan-mian-hui-yi/">=&gt; Docker语法</a></p>
 ]]></content>
     </entry>
 </feed>

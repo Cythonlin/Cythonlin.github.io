@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>PR =&gt; Cheat.sh | Cython_lin</title>
+<title>RS =&gt; 推荐系统（五）实时推荐+ABTest+推荐中心 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,12 +15,22 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="回忆
-由于Scoop对cheat.sh支持不友好，我就又把WSL2加了进来
-=&gt; WSL2+ZSH
-同时也更新了最新的一次 WT的配置文件，如下：
-    // To view the default settings, hold &..." />
-    <meta name="keywords" content="PR,IDE" />
+    <meta name="description" content="业务流程
+
+后端发送推荐请求，实时推荐系统拿到请求参数
+
+grpc对接
+
+
+对用户做ABTest分流
+
+ABTest实验中心，用于进行分流任务，方便测试调整不同的模型上线
+
+
+推荐中心服务
+
+根据用户在ABTest分配的不同的算法进行召回服..." />
+    <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -75,7 +85,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614655186961" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -90,7 +100,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-22"><i class="fa fa-calendar"></i><span class="lately">8 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-22"><i class="fa fa-calendar"></i><span class="lately">12 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ide-greater-cheatsh/"> </span>
@@ -101,12 +111,10 @@
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-0 ctag-sKPdrpV6Y" aria-label="">PR</a>
-                    
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
               </div>
-              <h1 class="title ularge white bold">PR =&gt; Cheat.sh</h1>
+              <h1 class="title ularge white bold">RS =&gt; 推荐系统（五）实时推荐+ABTest+推荐中心</h1>
             </div>
           </div>
         </div>  
@@ -116,242 +124,1518 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="回忆">回忆</h1>
-<p>由于Scoop对cheat.sh支持不友好，我就又把WSL2加了进来<br>
-<a href="https://www.cklin.top/post/pr-greater-windows-terminal-ge-xing-hua-pei-zhi/">=&gt; WSL2+ZSH</a><br>
-同时也更新了最新的一次 WT的配置文件，如下：</p>
-<pre><code>    // To view the default settings, hold &quot;alt&quot; while clicking on the &quot;Settings&quot; button.
-    // For documentation on these settings, see: https://aka.ms/terminal-documentation
+                  <h1 id="业务流程">业务流程</h1>
+<ul>
+<li>后端发送推荐请求，实时推荐系统拿到请求参数
+<ul>
+<li>grpc对接</li>
+</ul>
+</li>
+<li>对用户做ABTest分流
+<ul>
+<li>ABTest实验中心，用于进行分流任务，方便测试调整不同的模型上线</li>
+</ul>
+</li>
+<li>推荐中心服务
+<ul>
+<li>根据用户在ABTest分配的不同的算法进行召回服务和排序服务读取返回结果</li>
+</ul>
+</li>
+<li>返回推荐结果和埋点参数封装</li>
+</ul>
+<h1 id="grpc接口对接介绍">grpc接口对接介绍</h1>
+<h2 id="推荐接口对接">推荐接口对接</h2>
+<p>请求参数：</p>
+<ul>
+<li>feed流推荐：
+<ul>
+<li>用户ID</li>
+<li>频道ID</li>
+<li>推荐文章数量</li>
+<li>请求推荐时间戳</li>
+</ul>
+</li>
+<li>相似文章获取：文章ID，推荐文章数量
+<ul>
+<li>文章ID</li>
+<li>推荐文章数量（猜你喜欢，非主推荐）</li>
+</ul>
+</li>
+</ul>
+<p>返回参数：</p>
+<ul>
+<li>
+<p>feed流推荐：曝光参数，每篇文章的所有行为参数，上一条时间戳</p>
+<pre><code>  # 埋点参数参考：
+  # {
+  #     &quot;param&quot;: '{&quot;action&quot;: &quot;exposure&quot;, &quot;userId&quot;: 1, &quot;articleId&quot;: [1,2,3,4],  &quot;algorithmCombine&quot;: &quot;c1&quot;}',
+  #     &quot;recommends&quot;: [
+  #         {&quot;article_id&quot;: 1, &quot;param&quot;: {&quot;click&quot;: &quot;{&quot;action&quot;: &quot;click&quot;, &quot;userId&quot;: &quot;1&quot;, &quot;articleId&quot;: 1, &quot;algorithmCombine&quot;: 'c1'}&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;,&quot;read&quot;:&quot;&quot;}},
+  #         {&quot;article_id&quot;: 2, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, &quot;read&quot;:&quot;&quot;}},
+  #         {&quot;article_id&quot;: 3, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, &quot;read&quot;:&quot;&quot;}},
+  #         {&quot;article_id&quot;: 4, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, &quot;read&quot;:&quot;&quot;}}
+  #     ]
+  #     &quot;timestamp&quot;: 1546391572
+  # }
+</code></pre>
+</li>
+</ul>
+<h2 id="对接通信方式-grpc">对接通信方式-GRPC</h2>
+<p>GRPC优点：</p>
+<ul>
+<li>gRPC是由Google公司开源的高性能RPC框架。</li>
+<li>gRPC支持多语言</li>
+<li>gRPC原生使用C、Java、Go进行了三种实现，而C语言实现的版本进行封装后又支持C++、C#、Node、ObjC、 Python、Ruby、PHP等开发语言</li>
+<li>gRPC支持多平台</li>
+<li>支持的平台包括：Linux、Android、iOS、MacOS、Windows</li>
+<li>gRPC的消息协议使用Google自家开源的Protocol Buffers协议机制（proto3） 序列化</li>
+<li>gRPC的传输使用HTTP/2标准，支持双向流和连接多路复用</li>
+</ul>
+<h2 id="使用方法">使用方法</h2>
+<ul>
+<li>使用Protocol Buffers（proto3）的IDL接口定义语言定义接口服务，编写在文本文件（以.proto为后缀名）中。</li>
+<li>使用protobuf编译器生成服务器和客户端使用的stub代码</li>
+</ul>
+<h2 id="代码结构">代码结构</h2>
+<ul>
+<li>
+<p>文件名后缀: .proto</p>
+</li>
+<li>
+<p>版本声明：Protocol Buffers文档的第一行非注释行，为版本申明，不填写的话默认为版本2。</p>
+<pre><code>  syntax = &quot;proto3&quot;;
+  或者
+  syntax = &quot;proto2&quot;;
+</code></pre>
+</li>
+<li>
+<p>消息类型：Protocol Buffers使用message定义消息数据。在Protocol Buffers中使用的数据都是通过message消息数据封装基本类型数据或其他消息数据，对应Python中的类。</p>
+<pre><code>  message SearchRequest {
+      string query = 1;
+      int32 page_number = 2;
+      int32 result_per_page = 3;
+  }
+  # string: 数据类型
+  # query: 数据别名
+  # 1: 字段编号
+</code></pre>
+</li>
+<li>
+<p>字段编号：在使用消息类型后不应更改。 请注意，1到15范围内的字段编号需要一个字节进行编码，包括字段编号和字段类型。16到2047范围内的字段编号占用两个字节</p>
+<pre><code>  # singular：格式良好的消息可以包含该字段中的零个或一个（但不超过一个）。
 
-    {
-        // 官方设置指南?
-        &quot;$schema&quot;: &quot;https://aka.ms/terminal-profiles-schema&quot;,
+  # repeated：此字段可以在格式良好的消息中重复任意次数（包括零）。将保留重复值的顺序。对应Python的列表
+  message Result {
+      string url = 1;
+      string title = 2;
+      repeated string snippets = 3;
+  }
+</code></pre>
+</li>
+<li>
+<p>安装protobuf编译器和grpc库</p>
+<pre><code>  pip install grpcio-tools
+</code></pre>
+</li>
+<li>
+<p>编译生成代码</p>
+<pre><code>  python -m grpc_tools.protoc -I. --python_out=.. --grpc_python_out=.. itcast.proto
+</code></pre>
+<ul>
+<li>-I表示搜索proto文件中被导入文件的目录</li>
+<li>--python_out表示保存生成Python文件的目录，生成的文件中包含接口定义中的数据类型</li>
+<li>--grpc_python_out表示保存生成Python文件的目录，生成的文件中包含接口定义中的服务类型</li>
+</ul>
+</li>
+</ul>
+<h1 id="推荐接口protoco协议定义实例">推荐接口protoco协议定义实例</h1>
+<h3 id="创建abtest目录将相关接口代码放入user_recoproto协议文件">创建abtest目录，将相关接口代码放入user_reco.proto协议文件</h3>
+<ul>
+<li>用户刷新feed流接口
+<ul>
+<li>user_recommend(User) returns (Track)</li>
+</ul>
+</li>
+<li>文章相似(猜你喜欢)接口
+<ul>
+<li>
+<p>article_recommend(Article) returns(Similar)</p>
+<pre><code>  syntax = &quot;proto3&quot;;
 
-        // 一些globals设置
-        &quot;theme&quot;: &quot;dark&quot;, // 窗口主题
-        // &quot;initialRows&quot;: 25,
-        // &quot;initialCols&quot;: 100,
-        &quot;launchMode&quot;: &quot;maximized&quot;,  // 全屏
+  message User {
 
-        // 设置默认终端
-        // &quot;defaultProfile&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-        // &quot;defaultProfile&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa610}1&quot;,
-        &quot;defaultProfile&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
+      string user_id = 1;
+      int32 channel_id = 2;
+      int32 article_num = 3;
+      int64 time_stamp = 4;
+  }
+  // int32 ---&gt; int64 article_id
+  message Article {
 
-        &quot;profiles&quot;: {
+      int64 article_id = 1;
+      int32 article_num = 2;
 
-            &quot;defaults&quot;: {
-                // Put settings here that you want to apply to all profiles
-                &quot;colorScheme&quot;: &quot;Seafoam Pastel&quot;,
-                &quot;useAcrylic&quot;: true,
-                &quot;acrylicOpacity&quot;: 0.55,
-                &quot;cursorShape&quot;: &quot;vintage&quot;,
-                &quot;cursorHeight&quot;: 60,
-                &quot;cursorColor&quot;: &quot;#B00C11&quot;,
-                &quot;fontFace&quot;: &quot;Hack Nerd Font&quot;,
-                &quot;fontSize&quot;: 18
+  }
+
+  message param2 {
+      string click = 1;
+      string collect = 2;
+      string share = 3;
+      string read = 4;
+  }
+
+  message param1 {
+      int64 article_id = 1;
+      param2 params = 2;
+  }
+
+  message Track {
+      string exposure = 1;
+      repeated param1 recommends = 2;
+      int64 time_stamp = 3;
+  }
+
+  message Similar {
+      repeated int64 article_id = 1;
+  }
+
+  service UserRecommend {
+      // feed recommend
+      rpc user_recommend(User) returns (Track) {}
+      rpc article_recommend(Article) returns(Similar) {}
+  }
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
+<p>通过命令生成2个py文件（客户端，服务端）</p>
+<pre><code>python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=.  user_reco.proto
+</code></pre>
+<p>👍一个文件名叫做：user_reco_pb2.py  （主要功能是定义消息体）<br>
+👍另一个文件名叫做：user_reco_pb2_grpc.py（功能是定义服务，返回上面的消息体）</p>
+<h1 id="grpc服务编写服务器端">Grpc服务编写（服务器端）</h1>
+<p>创建routing.py文件，写入服务端代码：</p>
+<pre><code>import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+from concurrent import futures
+from abtest import user_reco_pb2
+from abtest import user_reco_pb2_grpc
+from setting.default import DefaultConfig
+import grpc
+import time
+import json
+</code></pre>
+<p>需要添加grpc服务配置：</p>
+<pre><code># rpc
+RPC_SERVER = '192.168.19.137:9999'
+</code></pre>
+<p>完整代码(相当于django和flask的类视图)：</p>
+<pre><code># 基于用户推荐的rpc服务推荐
+# 定义指定的rpc服务输入输出参数格式proto
+class UserRecommendServicer(user_reco_pb2_grpc.UserRecommendServicer):
+    &quot;&quot;&quot;
+    对用户进行技术文章推荐
+    &quot;&quot;&quot;
+    # 这个方法就是 GRPC生成的，复写即可
+    def user_recommend(self, request, context):
+        &quot;&quot;&quot;
+        用户feed流推荐
+        :param request:
+        :param context:
+        :return:
+        &quot;&quot;&quot;
+        # 选择C4组合
+        user_id = request.user_id
+        channel_id = request.channel_id
+        article_num = request.article_num
+        time_stamp = request.time_stamp
+
+        # 解析参数，并进行推荐中心推荐(暂时使用假数据替代)
+        class Temp(object):
+            user_id = -10
+            algo = 'test'
+            time_stamp = -10
+
+        tp = Temp()
+        tp.user_id = user_id
+        tp.time_stamp = time_stamp
+        _track = add_track([], tp)
+
+        # 解析返回参数到rpc结果参数
+        # 参数如下
+        # [       {&quot;article_id&quot;: 1, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, 'detentionTime':''}},
+        #         {&quot;article_id&quot;: 2, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, 'detentionTime':''}},
+        #         {&quot;article_id&quot;: 3, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, 'detentionTime':''}},
+        #         {&quot;article_id&quot;: 4, &quot;param&quot;: {&quot;click&quot;: &quot;&quot;, &quot;collect&quot;: &quot;&quot;, &quot;share&quot;: &quot;&quot;, 'detentionTime':''}}
+        #     ]
+        # 第二个rpc参数
+        _param1 = []
+        for _ in _track['recommends']:
+            # param的封装
+            _params = user_reco_pb2.param2(click=_['param']['click'],
+                                        collect=_['param']['collect'],
+                                        share=_['param']['share'],
+                                        read=_['param']['read'])
+            _p2 = user_reco_pb2.param1(article_id=_['article_id'], params=_params)
+            _param1.append(_p2)
+        # param
+        return user_reco_pb2.Track(exposure=_track['param'], recommends=_param1, time_stamp=_track['timestamp'])
+
+#    def article_recommend(self, request, context):
+#        &quot;&quot;&quot;
+#       文章相似推荐
+#       :param request:
+#       :param context:
+#       :return:
+#       &quot;&quot;&quot;
+#       # 获取web参数
+#       article_id = request.article_id
+#       article_num = request.article_num
+#
+#        # 进行文章相似推荐,调用推荐中心的文章相似
+#       _article_list = article_reco_list(article_id, article_num, 105)
+#
+#       # rpc参数封装
+#       return user_reco_pb2.Similar(article_id=_article_list)
+
+
+def serve():
+
+    # 多线程服务器
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+
+    # 注册本地服务（server里面只修改此类即可UserRecommendServicer）
+    # 此类是我们自定义的，并且继承自， 用 grpc命令行生成的文件里的类
+    user_reco_pb2_grpc.add_UserRecommendServicer_to_server(UserRecommendServicer(), server)
+    # 监听端口
+    server.add_insecure_port(DefaultConfig.RPC_SERVER)
+
+    # 开始接收请求进行服务
+    server.start()
+    # 使用 ctrl+c 可以退出服务
+    _ONE_DAY_IN_SECONDS = 60 * 60 * 24
+    try:
+        while True:
+            time.sleep(_ONE_DAY_IN_SECONDS)
+    except KeyboardInterrupt:
+        server.stop(0)
+
+
+if __name__ == '__main__':
+    # 测试grpc服务
+    serve()
+</code></pre>
+<p>埋点参数的接口封装：</p>
+<pre><code>class Temp(object):
+    user_id = '1115629498121846784'
+    algo = 'test'
+    time_stamp = int(time.time() * 1000)
+_track = add_track([], Temp())
+</code></pre>
+<p>web后台请求传入的时间戳是time.time(),Out[3]: int(1558128143.8735564) * 1000的大小</p>
+<pre><code>def add_track(res, temp):
+    &quot;&quot;&quot;
+    封装埋点参数
+    :param res: 推荐文章id列表
+    :param cb: 合并参数
+    :param rpc_param: rpc参数
+    :return: 埋点参数
+        文章列表参数
+        单文章参数
+    &quot;&quot;&quot;
+    # 添加埋点参数
+    track = {}
+
+    # 准备曝光参数
+    # 全部字符串形式提供，在hive端不会解析问题
+    _exposure = {&quot;action&quot;: &quot;exposure&quot;, &quot;userId&quot;: temp.user_id, &quot;articleId&quot;: json.dumps(res),
+                &quot;algorithmCombine&quot;: temp.algo}
+
+    track['param'] = json.dumps(_exposure)
+    track['recommends'] = []
+
+    # 准备其它点击参数
+    for _id in res:
+        # 构造字典
+        _dic = {}
+        _dic['article_id'] = _id
+        _dic['param'] = {}
+
+        # 准备click参数
+        _p = {&quot;action&quot;: &quot;click&quot;, &quot;userId&quot;: temp.user_id, &quot;articleId&quot;: str(_id),
+            &quot;algorithmCombine&quot;: temp.algo}
+
+        _dic['param']['click'] = json.dumps(_p)
+        # 准备collect参数
+        _p[&quot;action&quot;] = 'collect'
+        _dic['param']['collect'] = json.dumps(_p)
+        # 准备share参数
+        _p[&quot;action&quot;] = 'share'
+        _dic['param']['share'] = json.dumps(_p)
+        # 准备detentionTime参数
+        _p[&quot;action&quot;] = 'read'
+        _dic['param']['read'] = json.dumps(_p)
+
+        track['recommends'].append(_dic)
+
+    track['timestamp'] = temp.time_stamp
+    return track
+</code></pre>
+<h1 id="客户端测试代码">客户端测试代码</h1>
+<p>测试客户端</p>
+<pre><code>import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+from abtest import user_reco_pb2_grpc
+from abtest import user_reco_pb2
+import grpc
+from setting.default import DefaultConfig
+import time
+
+
+def test():
+    article_dict = {}
+    # 构造传入数据
+
+    req_article = user_reco_pb2.User()
+    req_article.user_id = '1115629498121846784'
+    req_article.channel_id = 18
+    req_article.article_num = 10
+    req_article.time_stamp = int(time.time() * 1000)
+    # req_article.time_stamp = 1555573069870
+
+    with grpc.insecure_channel(DefaultConfig.RPC_SERVER) as rpc_cli:
+        print('''''')
+        try:
+            stub = user_reco_pb2_grpc.UserRecommendStub(rpc_cli)
+            resp = stub.user_recommend(req_article)
+        except Exception as e:
+            print(e)
+            article_dict['param'] = []
+        else:
+
+            # 解析返回结果参数
+            article_dict['exposure_param'] = resp.exposure
+
+            reco_arts = resp.recommends
+
+            reco_art_param = []
+            reco_list = []
+            for art in reco_arts:
+                reco_art_param.append({
+                    'artcle_id': art.article_id,
+                    'params': {
+                        'click': art.params.click,
+                        'collect': art.params.collect,
+                        'share': art.params.share,
+                        'read': art.params.read
+                    }
+                })
+
+                reco_list.append(art.article_id)
+            article_dict['param'] = reco_art_param
+
+            # 文章列表以及参数（曝光参数 以及 每篇文章的点击等参数）
+            print(reco_list, article_dict)
+
+if __name__ == '__main__':
+    test()
+</code></pre>
+<h1 id="abtest">ABtest</h1>
+<p>ABtest有几个重要的功能:</p>
+<ul>
+<li>一个是ABTest实时分流服务，根据用户设备信息、用户信息进行ab分流。</li>
+<li>实时效果分析统计，将分流后程序点击、浏览等通过hive、hadoop程序统计后，在统计平台上进行展示。</li>
+<li>用图表数据分析用户活跃度、点击率</li>
+</ul>
+<h2 id="流量切分参数配置">流量切分参数配置</h2>
+<p>A/B测试的流量切分是在Rank Server端完成的。我们根据用户ID将流量切分为多个桶（Bucket），每个桶对应一种排序策略，桶内流量将使用相应的策略进行排序。使用ID进行流量切分，是为了保证用户体验的一致性。</p>
+<pre><code>from collections import namedtuple
+
+# abtest参数信息
+# ABTest参数
+param = namedtuple('RecommendAlgorithm', ['COMBINE',
+                                        'RECALL',
+                                        'SORT',
+                                        'CHANNEL',
+                                        'BYPASS']
+                )
+
+RAParam = param(
+    COMBINE={
+        'Algo-1': (1, [100, 101, 102, 103, 104], []),  # 首页推荐，所有召回结果读取+LR排序
+        'Algo-2': (2, [100, 101, 102, 103, 104], [])  # 首页推荐，所有召回结果读取 排序
+    },
+    RECALL={
+        100: ('cb_recall', 'als'),  # 离线模型ALS召回，recall:user:1115629498121 column=als:18
+        101: ('cb_recall', 'content'),  # 离线word2vec的画像内容召回 'recall:user:5', 'content:1'
+        102: ('cb_recall', 'online'),  # 在线word2vec的画像召回 'recall:user:1', 'online:1'
+        103: 'new_article',  # 新文章召回 redis当中    ch:18:new
+        104: 'popular_article',  # 基于用户协同召回结果 ch:18:hot
+        105: ('article_similar', 'similar')  # 文章相似推荐结果 '1' 'similar:2'
+    },
+    SORT={
+        200: 'LR',
+    },
+    CHANNEL=25,
+    BYPASS=[
+            {
+                &quot;Bucket&quot;: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd'],
+                &quot;Strategy&quot;: &quot;Algo-1&quot;
             },
-
-            &quot;list&quot;: [
-                {
-                    &quot;guid&quot;: &quot;{07b52e3e-de2c-5db4-bd2d-ba144ed6c273}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;UBT&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;,
-        &quot;startingDirectory&quot;: &quot;d:&quot;
-                },
-                {
-                    &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;CON&quot;,
-                    &quot;commandline&quot;: &quot;%windir%//System32//cmd.exe \&quot;\/K\&quot; D:/miniconda/Scripts/activate.bat D:/miniconda&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;
-                },
-                {
-                    &quot;guid&quot;: &quot;{574e775e-4f2a-5b96-ac1e-a2962a402336}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;PS7&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.PowershellCore&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
-                },
-                {
-                    // Make changes here to the cmd.exe profile
-                    &quot;guid&quot;: &quot;{0caa0dad-35be-5f56-a8ff-afceeeaa6101}&quot;,
-                    &quot;name&quot;: &quot;cmd&quot;,
-                    &quot;commandline&quot;: &quot;cmd.exe&quot;,
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-                },
-    {
-                    // Make changes here to the powershell.exe profile
-                    &quot;guid&quot;: &quot;{61c54bbd-c2c6-5271-96e7-009a87ff44bf}&quot;,
-                    &quot;name&quot;: &quot;PS5&quot;,
-                    &quot;commandline&quot;: &quot;PowerShell.exe /nologo&quot;,   // /nologo 表示删除 banner
-                    &quot;startingDirectory&quot;: &quot;d:&quot;,
-                    &quot;hidden&quot;: false
-                },
-                // {	
-    //                 // Make changes here to the powershell.exe profile
-    //                 &quot;guid&quot;: &quot;{7c0b0203-de8d-490d-9183-a9e245a83be1}&quot;,
-    //                 &quot;name&quot;: &quot;PWSH&quot;,
-    //                 &quot;commandline&quot;: &quot;C://Program Files//PowerShell//7//pwsh.exe /nologo&quot;,   // /nologo 表示删除 banner
-    //                 &quot;startingDirectory&quot;: &quot;d:&quot;,
-    //                 &quot;hidden&quot;: false
-    //             },
-
-                {
-                    &quot;guid&quot;: &quot;{b453ae62-4e3d-5e58-b989-0a998ec441b8}&quot;,
-                    &quot;hidden&quot;: false,
-                    &quot;name&quot;: &quot;AWS&quot;,
-                    &quot;source&quot;: &quot;Windows.Terminal.Azure&quot;
-                }
-                // {
-    //                 &quot;guid&quot;: &quot;{e05f1426-9e28-4be3-8f2b-3e2b48eae4a8}&quot;,
-    //                 &quot;hidden&quot;: false,
-    //                 &quot;name&quot;: &quot;ssh&quot;,
-    //                 &quot;commandline&quot;: &quot;ssh root@127.0.0.1 -p 22&quot;
-    //             }
-
-            ]
-        },
-
-        // Add custom color schemes to this array
-        &quot;schemes&quot;: [
-    {
-    &quot;name&quot;: &quot;Seafoam Pastel&quot;,
-    &quot;black&quot;: &quot;#000000&quot;,
-    &quot;red&quot;: &quot;#ff7092&quot;,
-    &quot;green&quot;: &quot;#00fbac&quot;,
-    &quot;yellow&quot;: &quot;#fffa6a&quot;,
-    &quot;blue&quot;: &quot;#00bfff&quot;,
-    &quot;purple&quot;: &quot;#df95ff&quot;,
-    &quot;cyan&quot;: &quot;#86cbfe&quot;,
-    &quot;white&quot;: &quot;#ffffff&quot;,
-    &quot;brightBlack&quot;: &quot;#000000&quot;,
-    &quot;brightRed&quot;: &quot;#ff8aa4&quot;,
-    &quot;brightGreen&quot;: &quot;#21f6bc&quot;,
-    &quot;brightYellow&quot;: &quot;#fff787&quot;,
-    &quot;brightBlue&quot;: &quot;#1bccfd&quot;,
-    &quot;brightPurple&quot;: &quot;#e6aefe&quot;,
-    &quot;brightCyan&quot;: &quot;#99d6fc&quot;,
-    &quot;brightWhite&quot;: &quot;#ffffff&quot;,
-    &quot;background&quot;: &quot;#332a57&quot;,
-    &quot;foreground&quot;: &quot;#e5e5e5&quot;
-    }
-    ],
-
-        // Add any keybinding overrides to this array.
-        // To unbind a default keybinding, set the command to &quot;unbound&quot;
-        &quot;keybindings&quot;: [],
-        &quot;actions&quot;:
-        [
-            // Copy and paste are bound to Ctrl+Shift+C and Ctrl+Shift+V in your defaults.json.
-            // These two lines additionally bind them to Ctrl+C and Ctrl+V.
-            // To learn more about selection, visit https://aka.ms/terminal-selection
-            { &quot;command&quot;: {&quot;action&quot;: &quot;copy&quot;, &quot;singleLine&quot;: false }, &quot;keys&quot;: &quot;ctrl+c&quot; },
-            { &quot;command&quot;: &quot;paste&quot;, &quot;keys&quot;: &quot;ctrl+v&quot; },
-
-            // Press Ctrl+Shift+F to open the search box
-            { &quot;command&quot;: &quot;find&quot;, &quot;keys&quot;: &quot;ctrl+f&quot; },
-            // settings
-            { &quot;command&quot;: &quot;openSettings&quot;, &quot;keys&quot;: &quot;ctrl+'&quot; },
-            // Press Alt+Shift+D to open a new pane.
-            // - &quot;split&quot;: &quot;auto&quot; makes this pane open in the direction that provides the most surface area.
-            // - &quot;splitMode&quot;: &quot;duplicate&quot; makes the new pane use the focused pane's profile.
-            // To learn more about panes, visit https://aka.ms/terminal-panes
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;auto&quot;, &quot;splitMode&quot;: &quot;duplicate&quot; }, &quot;keys&quot;: &quot;alt+shift+d&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;vertical&quot; }, &quot;keys&quot;: &quot;ctrl+plus&quot; },
-            { &quot;command&quot;: { &quot;action&quot;: &quot;splitPane&quot;, &quot;split&quot;: &quot;horizontal&quot; }, &quot;keys&quot;: &quot;ctrl+-&quot; },
-            { &quot;command&quot;: &quot;closePane&quot;, &quot;keys&quot;: &quot;ctrl+w&quot; }
+            {
+                &quot;BeginBucket&quot;: ['e', 'f'],
+                &quot;Strategy&quot;: &quot;Algo-2&quot;
+            }
         ]
-    }
+)
 </code></pre>
-<h1 id="cheatsh">Cheat.sh</h1>
-<p><a href="https://github.com/chubin/cheat.sh">-&gt; cheat.sh</a><br>
-以下说的都是Cheat.sh的几种用法👇</p>
-<h1 id="for-curl可以用下面wsl代替">For Curl(可以用下面WSL代替)</h1>
-<p>类似如下语法：</p>
-<pre><code>curl cht.sh/python/string+time
-</code></pre>
-<h1 id="for-client最好用">For Client（最好用）</h1>
-<p>说明一下，只有 Curl原生的方式是需要路径符号规则的， 如 /,+ 都是必须的，比较难用。<br>
-下面的所有方式就很方便了，往下看吧👇</p>
-<h2 id="wsl命令行只能用wsl来运行cheatsh">WSL（命令行只能用WSL来运行cheat.sh）</h2>
-<p>（cheat支持ZSH，恰好前面配置了ZSH，下面说如何支持ZSH）<br>
-先安装依赖：</p>
-<pre><code>sudo apt install rlwrap 
+<h2 id="实验中心流量切分">实验中心流量切分</h2>
+<ul>
+<li>哈希分桶，md5</li>
+<li>推荐刷新逻辑(通过时间戳区分主要逻辑)</li>
+</ul>
+<p>ABTest分流逻辑实现代码如下</p>
+<pre><code>import hashlib
+from setting.default import DefaultConfig, RAParam
 
-# 下面这条语句是为 stealth Q 模式准备的（因为没图形界面，所以下面2条语句已废）
-sudo apt install xsel
-export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0
-</code></pre>
-<p>下载 cht.sh，应修改为全局命令</p>
-<pre><code>curl https://cht.sh/:cht.sh | sudo tee /usr/local/bin/cht.sh
-sudo chmod +x /usr/local/bin/cht.sh
-</code></pre>
-<p>👍正常命令行模式</p>
-<pre><code>cht.sh python string time
-</code></pre>
-<p>👍--shell 模式</p>
-<pre><code>cht.sh --shell
+def feed_recommend(user_id, channel_id, article_num, time_stamp):
+    &quot;&quot;&quot;
+    1、根据web提供的参数，进行分流
+    2、找到对应的算法组合之后，去推荐中心调用不同的召回和排序服务
+    3、进行埋点参数封装
+    :param user_id:用户id
+    :param article_num:推荐文章个数
+    :return: track:埋点参数结果: 参考上面埋点参数组合
+    &quot;&quot;&quot;
 
-cd python       # cd 就代表选择哪类语言，或者技术领域
-string time     # 看见了吧，这次直接输入语句就搞定，不需要 写什么 cht.sh python了😊
+    #  产品前期推荐由于较少的点击行为，所以去做 用户冷启动 + 文章冷启动
+    # 用户冷启动：'推荐'频道：热门频道的召回+用户实时行为画像召回（在线的不保存画像）  'C2'组合
+    #            # 其它频道：热门召回 + 新文章召回   'C1'组合
+    # 定义返回参数的类
+    class TempParam(object):
+        user_id = -10
+        channel_id = -10
+        article_num = -10
+        time_stamp = -10
+        algo = &quot;&quot;
 
-Note: 如果查到了， q键 是退出文本， 输入 exit 是退出 --shell模式
-</code></pre>
-<p>👍支持ZSH(不然按tab找不到 cht.sh，加了下面的配置就有了)</p>
-<pre><code># 第二条命令curl ... 一次可能网有问题，注意有没有con't的提示，如果出错，那就再执行一次
+    temp = TempParam()
+    temp.user_id = user_id
+    temp.channel_id = channel_id
+    temp.article_num = article_num
+    # 请求的时间戳大小
+    temp.time_stamp = time_stamp
 
-mkdir ~/.zsh.d
-curl https://cheat.sh/:zsh &gt; ~/.zsh.d/_cht                       
-echo 'fpath=(~/.zsh.d/ $fpath)' &gt;&gt; ~/.zshrc
+    # 先读取缓存数据redis+待推荐hbase结果
+    # 如果有返回并加上埋点参数
+    # 并且写入hbase 当前推荐时间戳用户（登录和匿名）的历史推荐文章列表
 
-# 然后重新登录/重新打开shell
-</code></pre>
-<p>👍Stealth mode （属于--shell 下面的一个参数， 进入--shell，用help命令可以查看所有参数）</p>
-<pre><code>研究了半天，很遗憾，Stealth mode模式，需要 server 的 GUI
-需要安装 VcXsrv， 那这个 Stealth mode 模式就算了
-</code></pre>
-<h2 id="powershell不可行">Powershell(不可行)</h2>
-<pre><code>scoop install cht
-</code></pre>
-<p>但是这种方式不太行，因为是scoop下载的是 cht.exe 而非 cht.sh<br>
-即使下到了cht.sh。 BusyBox是 dash，而非 bash，不支持执行.sh脚本<br>
-即使用了真的bash（git bash, gow 这些工具，也缺依赖）并且不是在powershell运行。<br>
-所以我还是放弃了工具化的方式， 还是用WSL了</p>
-<h1 id="for-pycharm也可以">For Pycharm（也可以）</h1>
-<h2 id="plugins">Plugins</h2>
-<pre><code>cheat.sh code snippets
-</code></pre>
-<h2 id="方式1使用面板">方式1：使用面板</h2>
-<p>调出面板快捷键 alt + p</p>
-<pre><code>alt + p
-</code></pre>
-<p>在面板中输入语句测试：</p>
-<pre><code>string time
+    # 传入用户id为空的直接召回结果
+    if temp.user_id == &quot;&quot;:
+        temp.algo = &quot;&quot;
+        return add_track([], temp)
+    # 进行分桶实现分流，制定不同的实验策略
+    bucket = hashlib.md5(user_id.encode()).hexdigest()[:1]
+    if bucket in RAParam.BYPASS[0]['Bucket']:
+        temp.algo = RAParam.BYPASS[0]['Strategy']
+    else:
+        temp.algo = RAParam.BYPASS[1]['Strategy']
 
-和
+    # 推荐服务中心推荐结果(这里做测试)
+    track = add_track([], temp)
 
-time string 
+    return track
 </code></pre>
-<p>两个单词顺序是不同的，但是却有不同的语句块</p>
-<h2 id="方式2直接在写代码">方式2：直接在写代码</h2>
-<p>代码中直接写：</p>
-<pre><code>string time
+<h1 id="推荐中心逻辑">推荐中心逻辑</h1>
+<h2 id="推荐中心推荐存储设计">推荐中心推荐存储设计</h2>
+<p>HBASE 数据库表设计</p>
+<ul>
+<li>wait_recommend: 经过各种多路召回，排序之后的待推荐结果保存
+<ul>
+<li>只要刷新一次，没有缓存，才主动收集各种召回集合一起给wait_recommend写入，所以不用设置多个版本</li>
+</ul>
+</li>
+<li>history_recommend: 每次真正推荐出去给用户的历史推荐结果列表
+<ul>
+<li>按照频道存储用户的历史推荐结果</li>
+<li>需要保留多个版本，才需要建立版本信息</li>
+</ul>
+</li>
+</ul>
+<p>创建一个存储表（用来存储排序后推荐出去后， 剩余的Item）：</p>
+<pre><code>create 'wait_recommend', 'channel'
+
+put 'wait_recommend', 'reco:1', 'channel:18', [17283, 140357, 14668, 15182, 17999, 13648, 12884, 17302, 13846, 18135]
+put 'wait_recommend', 'reco:1', 'channel:0', [17283, 140357, 14668, 15182, 17999, 13648, 12884, 17302, 13846, 18135]
 </code></pre>
-<p>选中此代码</p>
-<pre><code>string time
+<p>创建一个历史hbase结果（用于存储推荐过的Item）：</p>
+<pre><code>create 'history_recommend', {NAME=&gt;'channel', TTL=&gt;7776000, VERSIONS=&gt;999999}   86400
+# 每次指定一个时间戳,可以达到不同版本的效果
+put 'history_recommend', 'reco:his:1', 'channel:18', [17283, 140357, 14668, 15182, 17999, 13648, 12884, 17302, 13846, 18135]
+
+
+# 修改的时候必须指定family名称
+hbase(main):084:0&gt; alter 'history_recommend',NAME =&gt; 'channel', TTL =&gt; '7776000'
+Updating all regions with the new schema...
+1/1 regions updated.
+Done.
+Took 2.0578 seconds
+
+alter 'history_recommend',NAME =&gt; 'channel', VERSIONS=&gt;999999, TTL=&gt;7776000
 </code></pre>
-<p>按组合键复制生成的代码块</p>
-<pre><code>alt + c
+<p>放入历史数据，存在时间戳，到时候取出历史数据就是每个用户的历史时间戳可以</p>
+<pre><code>get &quot;history_recommend&quot;, 'reco:his:1', {COLUMN=&gt;'channel:18',VERSIONS=&gt;1000, TIMESTAMP=&gt;1546242869000}
 </code></pre>
-<p>然后全部松手再复制生成的代码块(直接一个单s键即可)</p>
-<pre><code>s
+<p>👍这里与上次召回cb_recall以及history_recall有不同用处：</p>
+<ul>
+<li>history_recall:存放召回过的数据，用户过滤推荐初始的产生结果</li>
+<li>history_recommend:存放的是某个用户在某频道的真正推荐过的历史记录
+<ul>
+<li>同时过滤掉新文章和热门文章的推荐结果</li>
+</ul>
+</li>
+</ul>
+<h2 id="feed流-推荐中心逻辑">feed流 推荐中心逻辑</h2>
+<ul>
+<li>目的：根据ABTest分流之后的用户，进行制定算法的召回和排序读取</li>
+<li>步骤：
+<ul>
+<li>1、Hbase数据库工具封装介绍</li>
+<li>2、feed时间戳进行推荐逻辑判断</li>
+<li>2、读取召回结果(无实时排序)</li>
+</ul>
+</li>
+</ul>
+<p>创建特征中心类：</p>
+<pre><code>import os
+import sys
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+import hashlib
+from setting.default import RAParam
+from server.utils import HBaseUtils
+from server import pool
+from server import recall_service
+from datetime import datetime
+import logging
+import json
+
+logger = logging.getLogger('recommend')
+
+
+def add_track(res, temp):
+    &quot;&quot;&quot;
+    封装埋点参数
+    :param res: 推荐文章id列表
+    :param cb: 合并参数
+    :param rpc_param: rpc参数
+    :return: 埋点参数
+        文章列表参数
+        单文章参数
+    &quot;&quot;&quot;
+    # 添加埋点参数
+    track = {}
+
+    # 准备曝光参数
+    # 全部字符串形式提供，在hive端不会解析问题
+    _exposure = {&quot;action&quot;: &quot;exposure&quot;, &quot;userId&quot;: temp.user_id, &quot;articleId&quot;: json.dumps(res),
+                &quot;algorithmCombine&quot;: temp.algo}
+
+    track['param'] = json.dumps(_exposure)
+    track['recommends'] = []
+
+    # 准备其它点击参数
+    for _id in res:
+        # 构造字典
+        _dic = {}
+        _dic['article_id'] = _id
+        _dic['param'] = {}
+
+        # 准备click参数
+        _p = {&quot;action&quot;: &quot;click&quot;, &quot;userId&quot;: temp.user_id, &quot;articleId&quot;: str(_id),
+            &quot;algorithmCombine&quot;: temp.algo}
+
+        _dic['param']['click'] = json.dumps(_p)
+        # 准备collect参数
+        _p[&quot;action&quot;] = 'collect'
+        _dic['param']['collect'] = json.dumps(_p)
+        # 准备share参数
+        _p[&quot;action&quot;] = 'share'
+        _dic['param']['share'] = json.dumps(_p)
+        # 准备detentionTime参数
+        _p[&quot;action&quot;] = 'read'
+        _dic['param']['read'] = json.dumps(_p)
+
+        track['recommends'].append(_dic)
+
+    track['timestamp'] = temp.time_stamp
+    return track
+
+
+class RecoCenter(object):
+    &quot;&quot;&quot;推荐中心
+    &quot;&quot;&quot;
+    def __init__(self):
+        self.hbu = HBaseUtils(pool)
+        # self.recall_service = recall_service.ReadRecall()
 </code></pre>
-<h1 id="for-sublime">For Sublime</h1>
-<p>sublime这方面配置文档欠缺，缺快捷键</p>
+<p>并且添加了获取结果打印日志设置</p>
+<pre><code># 实施推荐日志
+# 离线处理更新打印日志
+trace_file_handler = logging.FileHandler(
+os.path.join(logging_file_dir, 'recommend.log')
+)
+trace_file_handler.setFormatter(logging.Formatter('%(message)s'))
+log_trace = logging.getLogger('recommend')
+log_trace.addHandler(trace_file_handler)
+log_trace.setLevel(logging.INFO)
+</code></pre>
+<h2 id="hbase读取存储等工具类封装">Hbase读取存储等工具类封装</h2>
+<ul>
+<li>get_table_row(self, table_name, key_format, column_format=None, include_timestamp=False):
+<ul>
+<li>获取具体表中的键、列族中的行数据</li>
+</ul>
+</li>
+<li>get_table_cells(self, table_name, key_format, column_format=None, timestamp=None, include_timestamp=False):
+<ul>
+<li>获取Hbase中多个版本数据</li>
+</ul>
+</li>
+<li>get_table_put(self, table_name, key_format, column_format, data, timestamp=None):
+<ul>
+<li>存储数据到Hbase当中</li>
+</ul>
+</li>
+<li>get_table_delete(self, table_name, key_format, column_format):
+<ul>
+<li>删除Hbase中的数据</li>
+</ul>
+</li>
+</ul>
+<p>封装代码如下：</p>
+<pre><code>class HBaseUtils(object):
+    &quot;&quot;&quot;HBase数据库读取工具类
+    &quot;&quot;&quot;
+    def __init__(self, connection):
+        self.pool = connection
+
+    def get_table_row(self, table_name, key_format, column_format=None, include_timestamp=False):
+        &quot;&quot;&quot;
+        获取HBase数据库中的行记录数据
+        :param table_name: 表名
+        :param key_format: key格式字符串, 如表的'user:reco:1', 类型为bytes
+        :param column_format: column, 列族字符串,如表的 column 'als:18',类型为bytes
+        :param include_timestamp: 是否包含时间戳
+        :return: 返回数据库结果data
+        &quot;&quot;&quot;
+        if not isinstance(key_format, bytes):
+            raise KeyError(&quot;key_format or column type error&quot;)
+
+        if not isinstance(table_name, str):
+            raise KeyError(&quot;table_name should str type&quot;)
+
+        with self.pool.connection() as conn:
+            table = conn.table(table_name)
+
+            if column_format:
+                data = table.row(row=key_format, columns=[column_format], include_timestamp=include_timestamp)
+            else:
+                data = table.row(row=key_format)
+            conn.close()
+
+        if column_format:
+            return data[column_format]
+        else:
+            # [(b'[141440]', 1555519429582)]
+            # {'[141440]'}
+            return data
+
+    def get_table_cells(self, table_name, key_format, column_format=None, timestamp=None, include_timestamp=False):
+        &quot;&quot;&quot;
+        获取HBase数据库中多个版本数据
+        :param table_name: 表名
+        :param key_format: key格式字符串, 如表的'user:reco:1', 类型为bytes
+        :param column_format: column, 列族字符串,如表的 column 'als:18',类型为bytes
+        :param timestamp: 指定小于该时间戳的数据
+        :param include_timestamp: 是否包含时间戳
+        :return: 返回数据库结果data
+        &quot;&quot;&quot;
+        if not isinstance(key_format, bytes) or not isinstance(column_format, bytes):
+            raise KeyError(&quot;key_format or column type error&quot;)
+
+        if not isinstance(table_name, str):
+            raise KeyError(&quot;table_name should str type&quot;)
+
+        with self.pool.connection() as conn:
+            table = conn.table(table_name)
+
+            data = table.cells(row=key_format, column=column_format, timestamp=timestamp,
+                            include_timestamp=include_timestamp)
+
+            conn.close()
+        # [(,), ()]
+        return data
+
+    def get_table_put(self, table_name, key_format, column_format, data, timestamp=None):
+        &quot;&quot;&quot;
+
+        :param table_name: 表名
+        :param key_format: key格式字符串, 如表的'user:reco:1', 类型为bytes
+        :param column_format: column, 列族字符串,如表的 column 'als:18',类型为bytes
+        :param data: 插入的数据
+        :param timestamp: 指定拆入数据的时间戳
+        :return: None
+        &quot;&quot;&quot;
+        if not isinstance(key_format, bytes) or not isinstance(column_format, bytes) or not isinstance(data, bytes):
+            raise KeyError(&quot;key_format or column or data type error&quot;)
+
+        if not isinstance(table_name, str):
+            raise KeyError(&quot;table_name should str type&quot;)
+
+        with self.pool.connection() as conn:
+            table = conn.table(table_name)
+
+            table.put(key_format, {column_format: data}, timestamp=timestamp)
+
+            conn.close()
+        return None
+
+    def get_table_delete(self, table_name, key_format, column_format):
+        &quot;&quot;&quot;
+        删除列族中的内容
+        :param table_name: 表名称
+        :param key_format: key
+        :param column_format: 列格式
+        :return:
+        &quot;&quot;&quot;
+        if not isinstance(key_format, bytes) or not isinstance(column_format, bytes):
+            raise KeyError(&quot;key_format or column type error&quot;)
+
+        if not isinstance(table_name, str):
+            raise KeyError(&quot;table_name should str type&quot;)
+        with self.pool.connection() as conn:
+            table = conn.table(table_name)
+            table.delete(row=key_format, columns=[column_format])
+            conn.close()
+        return None
+</code></pre>
+<h3 id="增加feed_recommend_logic函数进行时间戳逻辑判断">增加feed_recommend_logic函数，进行时间戳逻辑判断</h3>
+<h3 id="根据时间戳">根据时间戳</h3>
+<ul>
+<li>时间戳T小于HBASE历史推荐记录
+<ul>
+<li>则获取历史记录，返回该时间戳T上次的时间戳T-1</li>
+</ul>
+</li>
+<li>时间戳T大于HBASE历史推荐记录，则获取新推荐，则获取HBASE数据库中最近的一次时间戳
+<ul>
+<li>如果有缓存，从缓存中拿，并且写入推荐历史表中</li>
+<li>如果没有缓存，就进行一次指定算法组合的召回结果读取，排序，然后写入待推荐wait_recommend中，其中推荐出去的放入历史推荐表中</li>
+</ul>
+</li>
+</ul>
+<p>获取这个用户该频道的历史结果</p>
+<pre><code># 判断用请求的时间戳大小决定获取历史记录还是刷新推荐文章
+        try:
+            last_stamp = self.hbu.get_table_row('history_recommend', 'reco:his:{}'.format(temp.user_id).encode(),
+                                                'channel:{}'.format(temp.channel_id).encode(), include_timestamp=True)[
+                1]
+            logger.info(&quot;{} INFO get user_id:{} channel:{} history last_stamp&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+        except Exception as e:
+            logger.warning(&quot;{} WARN read history recommend exception:{}&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+            last_stamp = 0
+</code></pre>
+<p>如果历史时间戳最近的一次小于用户请求时候的时间戳（Hbase的时间戳是time.time() * 1000这个值的大小，与Web后台传入的一样类型，如果Web后台传入的不是此大小，注意修改）。<br>
+则返回推荐结果以及此次请求的上一次时间戳（用于用户获取历史记录）。</p>
+<pre><code>if last_stamp &lt; temp.time_stamp:
+            # 1、获取缓存
+            # res = redis_cache.get_reco_from_cache(temp, self.hbu)
+            #
+            # # 如果没有，然后走一遍算法推荐 召回+排序，同时写入到hbase待推荐结果列表
+            # if not res:
+            #     logger.info(&quot;{} INFO get user_id:{} channel:{} recall/sort data&quot;.
+            #                 format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+            #
+            #     res = self.user_reco_list(temp)
+
+            # 2、直接拿推荐结果
+            # res = self.user_reco_list(temp)
+
+            #temp.time_stamp = int(last_stamp)
+
+            track = add_track([], temp)
+</code></pre>
+<p>如果历史时间戳大于用户请求的这次时间戳，那么就是在获取历史记录，用户请求的历史时间戳是具体某个历史记录的时间戳T，Hbase当中不能够直接用T去获取，而需要去（T+N）&gt;T的时间戳获取，才能拿到包含T时间的结果，并且使用get_table_cells去获取。</p>
+<p>分以下情况考虑：</p>
+<ul>
+<li>1、如果没有历史数据，返回时间戳0以及结果空列表</li>
+<li>2、如果历史数据只有一条，返回这一条历史数据以及时间戳正好为请求时间戳，修改时间戳为0，表示后面请求以后就没有历史数据了(APP的行为就是翻历史记录停止了)</li>
+<li>3、如果历史数据多条，返回最近的第一条历史数据，然后返回之后第二条历史数据的时间戳</li>
+</ul>
+<p>接着上面的if，写代码：</p>
+<pre><code>else:
+
+    logger.info(&quot;{} INFO read user_id:{} channel:{} history recommend data&quot;.format(
+        datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+    try:
+        row = self.hbu.get_table_cells('history_recommend',
+                                        'reco:his:{}'.format(temp.user_id).encode(),
+                                        'channel:{}'.format(temp.channel_id).encode(),
+                                        timestamp=temp.time_stamp + 1,
+                                        include_timestamp=True)
+    except Exception as e:
+        logger.warning(&quot;{} WARN read history recommend exception:{}&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+        row = []
+        res = []
+
+    # 1、如果没有历史数据，返回时间戳0以及结果空列表
+    # 2、如果历史数据只有一条，返回这一条历史数据以及时间戳正好为请求时间戳，修改时间戳为0
+    # 3、如果历史数据多条，返回最近一条历史数据，然后返回
+    if not row:
+        temp.time_stamp = 0
+        res = []
+    elif len(row) == 1 and row[0][1] == temp.time_stamp:
+        res = eval(row[0][0])
+        temp.time_stamp = 0
+    elif len(row) &gt;= 2:
+        res = eval(row[0][0])
+        temp.time_stamp = int(row[1][1])
+
+    res = list(map(int, res))
+    logger.info(
+        &quot;{} INFO history:{}, {}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), res, temp.time_stamp))
+    track = add_track(res, temp)
+    # 曝光参数设置为空
+    track['param'] = ''
+
+return track
+</code></pre>
+<p>完整代码：</p>
+<pre><code>def feed_recommend_logic(self, temp):
+    &quot;&quot;&quot;推荐流业务逻辑
+    :param temp:ABTest传入的业务请求参数
+    &quot;&quot;&quot;
+
+    # 判断用请求的时间戳大小决定获取历史记录还是刷新推荐文章
+    try:
+        last_stamp = self.hbu.get_table_row('history_recommend', 'reco:his:{}'.format(temp.user_id).encode(),
+                                            'channel:{}'.format(temp.channel_id).encode(), include_timestamp=True)[1]
+        logger.info(&quot;{} INFO get user_id:{} channel:{} history last_stamp&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+    except Exception as e:
+        logger.warning(&quot;{} WARN read history recommend exception:{}&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+        last_stamp = 0
+
+    # 如果小于，走一遍正常的推荐流程，缓存或者召回排序
+    logger.info(&quot;{} INFO history last_stamp:{},temp.time_stamp:{}&quot;.
+                format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), last_stamp, temp.time_stamp))
+    if last_stamp &lt; temp.time_stamp:
+
+        # 获取
+        res = redis_cache.get_reco_from_cache(temp, self.hbu)
+
+        # 如果没有，然后走一遍算法推荐 召回+排序，同时写入到hbase待推荐结果列表
+        if not res:
+            logger.info(&quot;{} INFO get user_id:{} channel:{} recall/sort data&quot;.
+                        format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+            res = self.user_reco_list(temp)
+
+        temp.time_stamp = int(last_stamp)
+
+        track = add_track(res, temp)
+
+    else:
+
+        logger.info(&quot;{} INFO read user_id:{} channel:{} history recommend data&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+        try:
+            row = self.hbu.get_table_cells('history_recommend',
+                                      'reco:his:{}'.format(temp.user_id).encode(),
+                                      'channel:{}'.format(temp.channel_id).encode(),
+                                      timestamp=temp.time_stamp + 1,
+                                      include_timestamp=True)
+        except Exception as e:
+            logger.warning(&quot;{} WARN read history recommend exception:{}&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+            row = []
+            res = []
+
+        # 1、如果没有历史数据，返回时间戳0以及结果空列表
+        # 2、如果历史数据只有一条，返回这一条历史数据以及时间戳正好为请求时间戳，修改时间戳为0
+        # 3、如果历史数据多条，返回最近一条历史数据，然后返回
+        if not row:
+            temp.time_stamp = 0
+            res = []
+        elif len(row) == 1 and row[0][1] == temp.time_stamp:
+            res = eval(row[0][0])
+            temp.time_stamp = 0
+        elif len(row) &gt;= 2:
+            res = eval(row[0][0])
+            temp.time_stamp = int(row[1][1])
+
+        res = list(map(int, res))
+        logger.info(
+            &quot;{} INFO history:{}, {}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), res, temp.time_stamp))
+        track = add_track(res, temp)
+        # 曝光参数设置为空
+        track['param'] = ''
+    return track
+</code></pre>
+<h2 id="修改abtest中的推荐调用">修改ABTest中的推荐调用</h2>
+<pre><code>from server.reco_center import RecoCenter
+
+# 推荐
+track = RecoCenter().feed_recommend_logic(temp)
+</code></pre>
+<h1 id="推荐中心时间戳获取逻辑测试">推荐中心时间戳获取逻辑测试</h1>
+<p>获取多版本历史记录：</p>
+<pre><code>hbase(main):045:0&gt; get 'history_recommend', 'reco:his:1115629498121846784', {COLUMN=&gt;'channel:18', VERSIONS=&gt;999999}
+COLUMN                     CELL                                                                        
+channel:18                timestamp=1559148615353, value=[15140, 16421, 19494, 14381, 17966]          
+channel:18                timestamp=1558236647437, value=[18904, 14300, 44412, 18238, 18103, 43986, 44
+                        339, 17454, 14899, 18335]                                                   
+channel:18                timestamp=1558236629309, value=[43997, 14299, 17632, 17120]                 
+channel:18                timestamp=1558236535794, value=[44657, 15085, 18156, 44654, 19052, 44652, 18
+                        795, 17385, 44137, 17889]
+</code></pre>
+<h1 id="召回集读取与推荐中心对接">召回集读取与推荐中心对接</h1>
+<ul>
+<li>添加一个server的目录
+<ul>
+<li>召回读取服务</li>
+<li>添加一个召回集的结果读取服务recall_service.py</li>
+</ul>
+</li>
+</ul>
+<h2 id="多路召回结果读取">多路召回结果读取</h2>
+<ul>
+<li>目的：读取离线和在线存储的召回结果
+<ul>
+<li>hbase的存储：cb_recall, als, content, online</li>
+</ul>
+</li>
+<li>步骤：
+<ul>
+<li>1、初始化redis,hbase相关工具</li>
+<li>2、在线画像召回，离线画像召回，离线协同召回数据的读取</li>
+<li>3、redis新文章和热门文章结果读取</li>
+<li>4、相似文章读取接口</li>
+</ul>
+</li>
+</ul>
+<p>初始化redis,hbase相关工具</p>
+<pre><code>import os
+import sys
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+
+from server import redis_client
+from server import pool
+import logging
+from datetime import datetime
+from server.utils import HBaseUtils
+
+logger = logging.getLogger('recommend')
+
+
+class ReadRecall(object):
+    &quot;&quot;&quot;读取召回集的结果
+    &quot;&quot;&quot;
+    def __init__(self):
+        self.client = redis_client
+        self.hbu = HBaseUtils(pool)
+</code></pre>
+<p>在init文件中添加相关初始化数据库变量</p>
+<pre><code>import redis
+import happybase
+from setting.default import DefaultConfig
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+
+
+pool = happybase.ConnectionPool(size=10, host=&quot;hadoop-master&quot;, port=9090)
+
+# 加上decode_responses=True，写入的键值对中的value为str类型，不加这个参数写入的则为字节类型。
+redis_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
+                                port=DefaultConfig.REDIS_PORT,
+                                db=10,
+                                decode_responses=True)
+</code></pre>
+<h3 id="在线画像召回离线画像召回离线协同召回数据的读取">在线画像召回，离线画像召回，离线协同召回数据的读取</h3>
+<p>读取用户的指定列族的召回数据，并且读取之后要删除原来的推荐召回结果'cb_recall'</p>
+<pre><code>def read_hbase_recall_data(self, table_name, key_format, column_format):
+    &quot;&quot;&quot;
+    读取cb_recall当中的推荐数据
+    读取的时候可以选择列族进行读取als, online, content
+
+    :return:
+    &quot;&quot;&quot;
+    recall_list = []
+    try:
+        data = self.hbu.get_table_cells(table_name, key_format, column_format)
+
+        # data是多个版本的推荐结果[[],[],[],]
+        for _ in data:
+            recall_list = list(set(recall_list).union(set(eval(_))))
+
+        # self.hbu.get_table_delete(table_name, key_format, column_format)
+    except Exception as e:
+        logger.warning(&quot;{} WARN read {} recall exception:{}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                                                 table_name, e))
+    return recall_list
+</code></pre>
+<p>测试：</p>
+<pre><code>if __name__ == '__main__':
+    rr = ReadRecall()
+    # 召回结果的读取封装
+    print(rr.read_hbase_recall_data('cb_recall', b'recall:user:1114864874141253632', b'als:18'))
+</code></pre>
+<h3 id="redis新文章和热门文章结果读取">redis新文章和热门文章结果读取</h3>
+<pre><code>def read_redis_new_article(self, channel_id):
+    &quot;&quot;&quot;
+    读取新闻章召回结果
+    :param channel_id: 提供频道
+    :return:
+    &quot;&quot;&quot;
+    logger.warning(&quot;{} WARN read channel {} redis new article&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                                             channel_id))
+    _key = &quot;ch:{}:new&quot;.format(channel_id)
+    try:
+        res = self.client.zrevrange(_key, 0, -1)
+    except Exception as e:
+        logger.warning(&quot;{} WARN read new article exception:{}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+        res = []
+
+    return list(map(int, res))
+</code></pre>
+<p>热门文章读取:热门文章记录了很多，可以选取前K个:</p>
+<pre><code>def read_redis_hot_article(self, channel_id):
+    &quot;&quot;&quot;
+    读取新闻章召回结果
+    :param channel_id: 提供频道
+    :return:
+    &quot;&quot;&quot;
+    logger.warning(&quot;{} WARN read channel {} redis hot article&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), channel_id))
+    _key = &quot;ch:{}:hot&quot;.format(channel_id)
+    try:
+        res = self.client.zrevrange(_key, 0, -1)
+
+    except Exception as e:
+        logger.warning(&quot;{} WARN read new article exception:{}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+        res = []
+
+    # 由于每个频道的热门文章有很多，因为保留文章点击次数
+    res = list(map(int, res))
+    if len(res) &gt; self.hot_num:
+        res = res[:self.hot_num]
+    return res
+</code></pre>
+<p>测试：</p>
+<pre><code>print(rr.read_redis_new_article(18))
+print(rr.read_redis_hot_article(18))
+</code></pre>
+<h3 id="相似文章读取接口">相似文章读取接口</h3>
+<p>会有接口获取固定的文章数量(用在APP中的猜你喜欢接口)</p>
+<pre><code>def read_hbase_article_similar(self, table_name, key_format, article_num):
+    &quot;&quot;&quot;获取文章相似结果
+    :param article_id: 文章id
+    :param article_num: 文章数量
+    :return:
+    &quot;&quot;&quot;
+    # 第一种表结构方式测试：
+    # create 'article_similar', 'similar'
+    # put 'article_similar', '1', 'similar:1', 0.2
+    # put 'article_similar', '1', 'similar:2', 0.34
+    try:
+        _dic = self.hbu.get_table_row(table_name, key_format)
+
+        res = []
+        _srt = sorted(_dic.items(), key=lambda obj: obj[1], reverse=True)
+        if len(_srt) &gt; article_num:
+            _srt = _srt[:article_num]
+        for _ in _srt:
+            res.append(int(_[0].decode().split(':')[1]))
+    except Exception as e:
+        logger.error(
+            &quot;{} ERROR read similar article exception: {}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+        res = []
+    return res
+</code></pre>
+<p>测试：</p>
+<pre><code>print(rr.read_hbase_article_similar('article_similar', b'116644', 10))
+</code></pre>
+<h2 id="完整代码">完整代码</h2>
+<pre><code>import os
+import sys
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(BASE_DIR))
+
+from server import redis_client
+from server import pool
+import logging
+from datetime import datetime
+from server.utils import HBaseUtils
+
+logger = logging.getLogger('recommend')
+
+
+class ReadRecall(object):
+    &quot;&quot;&quot;读取召回集的结果
+    &quot;&quot;&quot;
+    def __init__(self):
+        self.client = redis_client
+        self.hbu = HBaseUtils(pool)
+
+    def read_hbase_recall_data(self, table_name, key_format, column_format):
+        &quot;&quot;&quot;获取指定用户的对应频道的召回结果,在线画像召回，离线画像召回，离线协同召回
+        :return:
+        &quot;&quot;&quot;
+        # 获取family对应的值
+        # 数据库中的键都是bytes类型，所以需要进行编码相加
+        # 读取召回结果多个版本合并
+        recall_list = []
+        try:
+
+            data = self.hbu.get_table_cells(table_name, key_format, column_format)
+            for _ in data:
+                recall_list = list(set(recall_list).union(set(eval(_))))
+
+            # 读取所有这个用户的在线推荐的版本，清空该频道的数据
+            # self.hbu.get_table_delete(table_name, key_format, column_format)
+        except Exception as e:
+            logger.warning(
+                &quot;{} WARN read recall data exception:{}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+        return recall_list
+
+    def read_redis_new_data(self, channel_id):
+        &quot;&quot;&quot;获取redis新文章结果
+        :param channel_id:
+        :return:
+        &quot;&quot;&quot;
+        # format结果
+        logger.info(&quot;{} INFO read channel:{} new recommend data&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), channel_id))
+        _key = &quot;ch:{}:new&quot;.format(channel_id)
+        try:
+            res = self.client.zrevrange(_key, 0, -1)
+        except redis.exceptions.ResponseError as e:
+            logger.warning(&quot;{} WARN read new article exception:{}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+            res = []
+        return list(map(int, res))
+
+    def read_redis_hot_data(self, channel_id):
+        &quot;&quot;&quot;获取redis热门文章结果
+        :param channel_id:
+        :return:
+        &quot;&quot;&quot;
+        # format结果
+        logger.info(&quot;{} INFO read channel:{} hot recommend data&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), channel_id))
+        _key = &quot;ch:{}:hot&quot;.format(channel_id)
+        try:
+            _res = self.client.zrevrange(_key, 0, -1)
+        except redis.exceptions.ResponseError as e:
+            logger.warning(&quot;{} WARN read hot article exception:{}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+            _res = []
+        # 每次返回前50热门文章
+        res = list(map(int, _res))
+        if len(res) &gt; 50:
+            res = res[:50]
+        return res
+
+    def read_hbase_article_similar(self, table_name, key_format, article_num):
+        &quot;&quot;&quot;获取文章相似结果
+        :param article_id: 文章id
+        :param article_num: 文章数量
+        :return:
+        &quot;&quot;&quot;
+        # 第一种表结构方式测试：
+        # create 'article_similar', 'similar'
+        # put 'article_similar', '1', 'similar:1', 0.2
+        # put 'article_similar', '1', 'similar:2', 0.34
+        try:
+            _dic = self.hbu.get_table_row(table_name, key_format)
+
+            res = []
+            _srt = sorted(_dic.items(), key=lambda obj: obj[1], reverse=True)
+            if len(_srt) &gt; article_num:
+                _srt = _srt[:article_num]
+            for _ in _srt:
+                res.append(int(_[0].decode().split(':')[1]))
+        except Exception as e:
+            logger.error(&quot;{} ERROR read similar article exception: {}&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), e))
+            res = []
+        return res
+
+
+if __name__ == '__main__':
+
+    rr = ReadRecall()
+    print(rr.read_hbase_article_similar('article_similar', b'13342', 10))
+    print(rr.read_hbase_recall_data('cb_recall', b'recall:user:1115629498121846784', b'als:18'))
+
+    # rr = ReadRecall()
+    # print(rr.read_redis_new_data(18))
+</code></pre>
+<h1 id="推荐中心-获取多路召回结果过滤历史推荐记录逻辑">推荐中心---获取多路召回结果，过滤历史推荐记录逻辑</h1>
+<ul>
+<li>目的：
+<ul>
+<li>在推荐中加入召回文章结果以及过滤逻辑</li>
+<li>把之前的推荐中心的业务中的 （召回）用刚做好的召回集填补上（并且）</li>
+</ul>
+</li>
+<li>步骤：
+<ul>
+<li>1、循环算法组合参数，遍历不同召回结果进行过滤</li>
+<li>2、过滤当前该请求频道推荐历史结果，需要过滤0频道推荐结果，防止出现推荐频道与25个频道有重复推荐</li>
+<li>3、过滤之后，推荐出去指定个数的文章列表，写入历史记录，剩下多的写入待推荐结果</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-循环算法组合参数遍历不同召回结果进行过滤">1. 循环算法组合参数，遍历不同召回结果进行过滤</h2>
+<p>定义一个user_reco_list函数中实现读取用户的召回结果，</p>
+<pre><code># 所有合并的结果
+        reco_set = []
+        # -  1、循环算法组合参数，遍历不同召回结果合并，18
+        for _num in RAParam.COMBINE[temp.algo][1]:
+            if _num == 103:
+                # 读取新文章的结果，temp.channel_id
+                _res = self.recall_service.read_redis_new_article(temp.channel_id)
+                reco_set = list(set(reco_set).union(set(_res)))
+            elif _num == 104:
+                # 读取热门文章的数据
+                _res = self.recall_service.read_redis_hot_article(temp.channel_id)
+                reco_set = list(set(reco_set).union(set(_res)))
+            else:
+                # 读取具体编号的对应表cb_recall,对应召回算法的召回结果als, content, online
+                _res = self.recall_service.\
+                    read_hbase_recall_data(RAParam.RECALL[_num][0],
+                                        'recall:user:{}'.format(temp.user_id).encode(),
+                                        '{}:{}'.format(RAParam.RECALL[_num][1], temp.channel_id).encode())
+                reco_set = list(set(reco_set).union(set(_res)))
+</code></pre>
+<h2 id="2-过滤当前该请求频道推荐历史结果">2. 过滤当前该请求频道推荐历史结果</h2>
+<p>如果不是0频道需要过滤0频道推荐结果，防止出现， 比如Python频道和0频道相同的推荐结果</p>
+<pre><code># - 2、过滤，该请求频道(18)的历史推荐记录过滤），推荐频道0频道
+# - 0：APP  推荐(循环所有的频道召回结果)，0 频道也有历史记录
+# temp.channel_id频道这个用户历史记录进行过滤
+history_list = []
+
+try:
+    data = self.hbu.get_table_cells('history_recommend',
+                                    'reco:his:{}'.format(temp.user_id).encode(),
+                                    'channel:{}'.format(temp.channel_id).encode())
+    for _ in data:
+        history_list = list(set(history_list).union(set(eval(_))))
+
+    logger.info(&quot;{} INFO read user_id:{} channel_id:{} history data&quot;.format(
+        datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+except Exception as e:
+    # 打印日志
+    logger.warning(
+        &quot;{} WARN filter history article exception:{}&quot;.format(datetime.now().
+                                                                strftime('%Y-%m-%d %H:%M:%S'), e))
+# 获取0频道的结果
+try:
+    data = self.hbu.get_table_cells('history_recommend',
+                                    'reco:his:{}'.format(temp.user_id).encode(),
+                                    'channel:{}'.format(0).encode())
+    for _ in data:
+        history_list = list(set(history_list).union(set(eval(_))))
+    logger.info(&quot;{} INFO filter user_id:{} channel:{} history data&quot;.format(
+        datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, 0))
+
+except Exception as e:
+    logger.warning(
+        &quot;{} WARN filter history article exception:{}&quot;.format(datetime.now().
+                                                                strftime('%Y-%m-%d %H:%M:%S'), e))
+
+reco_set = list(set(reco_set).difference(set(history_list)))
+</code></pre>
+<h2 id="3-过滤后推荐出去指定个数的文章列表">3. 过滤后，推荐出去指定个数的文章列表</h2>
+<p>写入历史记录，剩下多的写入待推荐结果</p>
+<pre><code># - 4、返回结果：
+if not reco_set:
+    return reco_set
+else:
+    # - 如果有数据，小于需要推荐文章的数量N之后，放入历史推荐记录中history_recommend，返回结果给用
+    if len(reco_set) &lt;= temp.article_num:
+        res = reco_set
+    else:
+        #   - 如果有，350篇，取出N个，进行返回推荐，放入历史记录history_recommend
+        #     - (350- N)个文章，放入wait_recommend
+        res = reco_set[:temp.article_num]
+
+        logger.info(
+            &quot;{} INFO put user_id:{} channel:{} wait data&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+        # 放入剩下多余的数据到wait_recommend当中
+        self.hbu.get_table_put('wait_recommend',
+                                'reco:{}'.format(temp.user_id).encode(),
+                                'channel:{}'.format(temp.channel_id).encode(),
+                                str(reco_set[temp.article_num:]).encode(),
+                                timestamp=temp.time_stamp)
+
+    # 放入历史记录
+    self.hbu.get_table_put('history_recommend',
+                            'reco:his:{}'.format(temp.user_id).encode(),
+                            'channel:{}'.format(temp.channel_id).encode(),
+                            str(res).encode(),
+                            timestamp=temp.time_stamp)
+    # 放入历史记录日志
+    logger.info(
+        &quot;{} INFO store recall/sorted user_id:{} channel:{} history_recommend data&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+    return res
+</code></pre>
+<h2 id="修改调用读取召回数据的部分">修改调用读取召回数据的部分</h2>
+<pre><code># 2、不开启缓存
+res = self.user_reco_list(temp)
+temp.time_stamp = int(last_stamp)
+track = add_track(res, temp)
+</code></pre>
+<h2 id="运行grpc服务之后测试结果">运行grpc服务之后，测试结果</h2>
+<pre><code>hbase(main):007:0&gt; get &quot;history_recommend&quot;, 'reco:his:1115629498121846784', {COLUMN=&gt;'channel:18',VERSIONS=&gt;1000}
+COLUMN                     CELL                                                                        
+channel:18                timestamp=1558189615378, value=[13890, 14915, 13891, 15429, 15944, 44371, 18
+                        005, 15196, 13410, 13672]                                                   
+channel:18                timestamp=1558189317342, value=[17966, 17454, 14125, 16174, 14899, 44339, 16
+                        437, 18743, 44090, 18238]                                                   
+channel:18                timestamp=1558143073173, value=[19200, 17665, 16151, 16411, 19233, 13090, 15
+                        140, 16421, 19494, 14381]
+</code></pre>
+<p>待推荐表中有</p>
+<pre><code>hbase(main):008:0&gt; scan 'wait_recommend'
+ROW                        COLUMN+CELL                                                                 
+reco:1115629498121846784  column=channel:18, timestamp=1558189615378, value=[44137, 18795, 19052, 4465
+                        2, 44654, 44657, 14961, 17522, 43894, 44412, 16000, 14208, 44419, 17802, 142
+                        23, 18836, 140956, 18335, 13728, 14498, 44451, 44456, 18609, 18353, 44468, 1
+                        8103, 135869, 16062, 14015, 13757, 13249, 44483, 17605, 14021, 15309, 18127,
+                            43983, 44754, 43986, 19413, 14805, 18904, 44761, 17114, 13272, 14810, 18907
+                        , 13022, 14300, 17120, 17632, 14299, 43997, 17889, 17385, 18156, 15085, 1329
+                        5, 44020, 14839, 44024, 14585, 18172, 44541]
+</code></pre>
+<h2 id="完整代码-2">完整代码</h2>
+<pre><code>def user_reco_list(self, temp):
+    &quot;&quot;&quot;
+    获取用户的召回结果进行推荐
+    :param temp:
+    :return:
+    &quot;&quot;&quot;
+    reco_set = []
+    # 1、循环算法组合参数，遍历不同召回结果进行过滤
+    for _num in RAParam.COMBINE[temp.algo][1]:
+        # 进行每个召回结果的读取100,101,102,103,104
+        if _num == 103:
+            # 新文章召回读取
+            _res = self.recall_service.read_redis_new_article(temp.channel_id)
+            reco_set = list(set(reco_set).union(set(_res)))
+        elif _num == 104:
+            # 热门文章召回读取
+            _res = self.recall_service.read_redis_hot_article(temp.channel_id)
+            reco_set = list(set(reco_set).union(set(_res)))
+        else:
+            _res = self.recall_service.\
+                read_hbase_recall_data(RAParam.RECALL[_num][0],
+                                       'recall:user:{}'.format(temp.user_id).encode(),
+                                       '{}:{}'.format(RAParam.RECALL[_num][1], temp.channel_id).encode())
+            # 进行合并某个协同过滤召回的结果
+            reco_set = list(set(reco_set).union(set(_res)))
+
+    # reco_set都是新推荐的结果，进行过滤
+    history_list = []
+    try:
+        data = self.hbu.get_table_cells('history_recommend',
+                                        'reco:his:{}'.format(temp.user_id).encode(),
+                                        'channel:{}'.format(temp.channel_id).encode())
+        for _ in data:
+            history_list = list(set(history_list).union(set(eval(_))))
+
+        logger.info(&quot;{} INFO filter user_id:{} channel:{} history data&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+    except Exception as e:
+        logger.warning(
+            &quot;{} WARN filter history article exception:{}&quot;.format(datetime.now().
+                                                                 strftime('%Y-%m-%d %H:%M:%S'), e))
+
+    # 如果0号频道有历史记录，也需要过滤
+
+    try:
+        data = self.hbu.get_table_cells('history_recommend',
+                                        'reco:his:{}'.format(temp.user_id).encode(),
+                                        'channel:{}'.format(0).encode())
+        for _ in data:
+            history_list = list(set(history_list).union(set(eval(_))))
+
+        logger.info(&quot;{} INFO filter user_id:{} channel:{} history data&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, 0))
+    except Exception as e:
+        logger.warning(
+            &quot;{} WARN filter history article exception:{}&quot;.format(datetime.now().
+                                                                 strftime('%Y-%m-%d %H:%M:%S'), e))
+
+    # 过滤操作 reco_set 与history_list进行过滤
+    reco_set = list(set(reco_set).difference(set(history_list)))
+
+    # 排序代码逻辑
+    # _sort_num = RAParam.COMBINE[temp.algo][2][0]
+    # reco_set = sort_dict[RAParam.SORT[_sort_num]](reco_set, temp, self.hbu)
+
+    # 如果没有内容，直接返回
+    if not reco_set:
+        return reco_set
+    else:
+
+        # 类型进行转换
+        reco_set = list(map(int, reco_set))
+
+        # 跟后端需要推荐的文章数量进行比对 article_num
+        # article_num &gt; reco_set
+        if len(reco_set) &lt;= temp.article_num:
+            res = reco_set
+        else:
+            # 之取出推荐出去的内容
+            res = reco_set[:temp.article_num]
+            # 剩下的推荐结果放入wait_recommend等待下次帅新的时候直接推荐
+            self.hbu.get_table_put('wait_recommend',
+                                   'reco:{}'.format(temp.user_id).encode(),
+                                   'channel:{}'.format(temp.channel_id).encode(),
+                                   str(reco_set[temp.article_num:]).encode(),
+                                   timestamp=temp.time_stamp)
+            logger.info(
+                &quot;{} INFO put user_id:{} channel:{} wait data&quot;.format(
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+        # 放入历史记录表当中
+        self.hbu.get_table_put('history_recommend',
+                               'reco:his:{}'.format(temp.user_id).encode(),
+                               'channel:{}'.format(temp.channel_id).encode(),
+                               str(res).encode(),
+                               timestamp=temp.time_stamp)
+        # 放入历史记录日志
+        logger.info(
+            &quot;{} INFO store recall/sorted user_id:{} channel:{} history_recommend data&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+        return res</code></pre>
 
                 </div>
                 <div class="clear"></div>
@@ -366,7 +1650,7 @@ time string
                  <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-02-25">2021-02-25</time>
-                  <h4 class="title white no-margin">GO =&gt; Golang复习（未完待续）</h4>
+                  <h4 class="title white no-margin">RS =&gt; 推荐系统（六）推荐缓存服务</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
@@ -380,7 +1664,7 @@ time string
                  <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-02-18">2021-02-18</time>
-                  <h4 class="title white no-margin">PR =&gt; Powershell 7</h4>
+                  <h4 class="title white no-margin">PR =&gt; Pshell7+cheat.sh</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
@@ -414,13 +1698,13 @@ time string
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-28">2021-02-28</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/">RS =&gt; RS复习</a>
+                        <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/">IDE =&gt; My Sublime（PY）</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -429,13 +1713,13 @@ time string
                   
                   
                   <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-25">2021-02-25</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/go-greater-fu-xi/">GO =&gt; Golang复习（未完待续）</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -444,17 +1728,37 @@ time string
                   
                   
                   <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-22">2021-02-22</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">PR =&gt; Cheat.sh</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
                   
                   
                   
@@ -620,15 +1924,15 @@ time string
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-3 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-4 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
                       <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-5 ctag-1L4lr0i2f" aria-label="">Docker</a>
                     
@@ -678,7 +1982,7 @@ time string
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 80 篇文章
+          ©2019 共 90 篇文章
           <br/>
 
         </p>

@@ -18,10 +18,10 @@
     <meta name="description" content="Python环境
 miniconda创建虚拟环境：
 conda create -n reco_sys python=3.6.7
+
 激活/退出 虚拟环境：
 conda activate spider-venv
-conda deactivate
-..." />
+conda deactivate..." />
     <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -77,7 +77,7 @@ conda deactivate
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1614655186961" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -117,67 +117,84 @@ conda deactivate
               <section class="post-content">
                 <div class="text">
                   <h1 id="python环境">Python环境</h1>
-<p>miniconda创建虚拟环境：<br>
-conda create -n reco_sys python=3.6.7<br>
-激活/退出 虚拟环境：<br>
-conda activate spider-venv<br>
-conda deactivate<br>
-2个slave需要安装依赖：<br>
-yum -y install gcc<br>
-安装模块：<br>
-pip install redis supervisor apscheduler chardet jieba jupyter numpy pandas scipy scikit-learn pyspark findspark happybase pyhdfs -i https://pypi.douban.com/simple</p>
+<p>miniconda创建虚拟环境：</p>
+<pre><code>conda create -n reco_sys python=3.6.7
+</code></pre>
+<p>激活/退出 虚拟环境：</p>
+<pre><code>conda activate spider-venv
+conda deactivate
+</code></pre>
+<p>2个slave需要安装依赖：</p>
+<pre><code>yum -y install gcc
+</code></pre>
+<p>安装模块：</p>
+<pre><code>pip install redis supervisor apscheduler chardet jieba jupyter numpy pandas scipy scikit-learn pyspark findspark happybase pyhdfs -i https://pypi.douban.com/simple
+</code></pre>
 <h1 id="大数据环境">大数据环境</h1>
 <h3 id="lambda环境启动脚本配置">Lambda环境启动脚本配置</h3>
-<p>禁用+关闭防火墙：<br>
-systemctl disable firewalld.service<br>
-systemctl stop firewalld.service<br>
-同步系统时间（不这样做 hbase可能启动失败）（3台都运行命令）：<br>
-yum install ntpdate -y<br>
-ntpdate 0.cn.pool.ntp.org</p>
-<p>创建综合启动脚本<br>
-vi start.sh<br>
-/root/bigdata/hadoop/sbin/start-all.sh<br>
-start-hbase.sh<br>
-/root/bigdata/spark/sbin/start-all.sh</p>
-<pre><code>vi stop.sh
+<p>禁用+关闭防火墙：</p>
+<pre><code>systemctl disable firewalld.service
+systemctl stop firewalld.service
+</code></pre>
+<p>同步系统时间（不这样做 hbase可能启动失败）（3台都运行命令）：</p>
+<pre><code>yum install ntpdate -y
+ntpdate 0.cn.pool.ntp.org
+</code></pre>
+<p>创建综合启动脚本</p>
+<pre><code>vi start.sh
+    /root/bigdata/hadoop/sbin/start-all.sh
+    start-hbase.sh
+    /root/bigdata/spark/sbin/start-all.sh  
+    
+vi stop.sh
     /root/bigdata/spark/sbin/stop-all.sh 
     stop-hbase.sh
     /root/bigdata/hadoop/sbin/stop-all.sh
 </code></pre>
-<p>开启<br>
-/root/scripts/start.sh<br>
-停止<br>
-/root/scripts/stop.sh</p>
+<p>开启</p>
+<pre><code>/root/scripts/start.sh
+</code></pre>
+<p>停止</p>
+<pre><code>/root/scripts/stop.sh
+</code></pre>
 <h3 id="ui地址查log也可">UI地址（查log也可）：</h3>
-<p>Hadoop UI:<br>
-http://192.168.19.137:8088<br>
-YARN UI：<br>
-http://192.168.19.137:50070<br>
-Hbase UI:<br>
-http://192.168.19.137:16010<br>
-Spark UI：<br>
-http://192.168.19.137:8080/</p>
+<p>Hadoop UI:</p>
+<pre><code>http://192.168.19.137:8088
+</code></pre>
+<p>YARN UI：</p>
+<pre><code>http://192.168.19.137:50070
+</code></pre>
+<p>Hbase UI:</p>
+<pre><code>http://192.168.19.137:16010
+</code></pre>
+<p>Spark UI：</p>
+<pre><code>http://192.168.19.137:8080/
+</code></pre>
 <h3 id="数据库运行">数据库运行：</h3>
-<p>MySQL启动：<br>
-systemctl start docker<br>
-docker start mysql<br>
-Hive元数据服务开启:<br>
-nohup hive --service metastore &amp;</p>
+<p>MySQL启动：</p>
+<pre><code>systemctl start docker
+docker start mysql
+</code></pre>
+<p>Hive元数据服务开启:</p>
+<pre><code>nohup hive --service metastore &amp;
+</code></pre>
 <h3 id="spark相关问题">spark相关问题</h3>
-<p>spark on yarn 启动巨慢，解决办法：<br>
-hadoop fs -mkdir -p /system/spark-lib<br>
-hadoop fs -put /root/bigdata/spark-2.2.2-bin-hadoop2.7/jars/* /system/spark-lib<br>
-hadoop fs -chmod -R 755 /system/spark-lib<br>
-cd $SPARK_HOME/conf<br>
-cp spark-defaults.conf.template spark-defaults.conf<br>
-vi spark-defaults.conf<br>
-spark.yarn.jars    hdfs://192.168.19.137:9000//system/spark-lib/*</p>
-<pre><code>如果用的是 jupyter, 记得重启 jupyter服务
+<p>spark on yarn 启动巨慢，解决办法：</p>
+<pre><code>hadoop fs -mkdir -p /system/spark-lib
+hadoop fs -put /root/bigdata/spark-2.2.2-bin-hadoop2.7/jars/* /system/spark-lib
+hadoop fs -chmod -R 755 /system/spark-lib
+cd $SPARK_HOME/conf
+cp spark-defaults.conf.template spark-defaults.conf
+vi spark-defaults.conf
+    spark.yarn.jars    hdfs://192.168.19.137:9000//system/spark-lib/*
+    
+如果用的是 jupyter, 记得重启 jupyter服务
 jupyter notebook --allow-root --ip 0.0.0.0
 </code></pre>
 <h3 id="hdfs-hive相关问题">HDFS-Hive相关问题</h3>
-<p>内部表修改为外部表：<br>
-alter table user_profile SET TBLPROPERTIES('EXTERNAL'='TRUE');</p>
+<p>内部表修改为外部表：</p>
+<pre><code>alter table user_profile SET TBLPROPERTIES('EXTERNAL'='TRUE');
+</code></pre>
 <h1 id="数据构成">数据构成</h1>
 <h3 id="数据库1-toutiao">数据库1： toutiao</h3>
 <pre><code>news_article_basic   # 文章标题
@@ -221,29 +238,39 @@ do
 done
 </code></pre>
 <h3 id="增量导入方式">增量导入方式</h3>
-<p>方式1： 通过指定递增的字段来导入（不推荐，因为某些字段的值不是递增的）<br>
-append：即通过指定一个递增的列，如：--incremental append --check-column num_iid --last-value 0<br>
-方式2：incremental： 时间戳<br>
---incremental lastmodified <br>
---check-column column <br>
---merge-key key <br>
---last-value '2012-02-01 11:0:00'</p>
-<pre><code>就是只导入check-column的列比'2012-02-01 11:0:00'更大（新）的数据,按照key合并
+<p>方式1： 通过指定递增的字段来导入（不推荐，因为某些字段的值不是递增的）</p>
+<pre><code>append：即通过指定一个递增的列，如：--incremental append --check-column num_iid --last-value 0
+</code></pre>
+<p>方式2：incremental： 时间戳</p>
+<pre><code>--incremental lastmodified \
+--check-column column \
+--merge-key key \
+--last-value '2012-02-01 11:0:00'
+
+就是只导入check-column的列比'2012-02-01 11:0:00'更大（新）的数据,按照key合并
 </code></pre>
 <h3 id="增量导入位置">增量导入位置</h3>
 <ol>
-<li>直接sqoop导入到hive(–incremental lastmodified 模式不支持导入 Hive )</li>
-<li>sqoop导入到hdfs，然后建立hive表关联<br>
---target-dir /user/hive/warehouse/toutiao.db/</li>
+<li>
+<p>直接sqoop导入到hive(–incremental lastmodified 模式不支持导入 Hive )</p>
+</li>
+<li>
+<p>sqoop导入到hdfs，然后建立hive表关联</p>
+<pre><code> --target-dir /user/hive/warehouse/toutiao.db/
+</code></pre>
+</li>
 </ol>
 <h3 id="sqoop导入到hdfshive表关联到hdfs填坑">sqoop导入到hdfs，hive表关联到hdfs填坑</h3>
-<p>现象：<br>
-查出一堆 null<br>
-原因：<br>
-sqoop 导出的 hdfs 分片数据，都是使用逗号 , 分割的。<br>
-由于 hive 默认的分隔符是 /u0001（Ctrl+A）,为了平滑迁移，需要在创建表格时指定数据的分割符号。<br>
-解决方式：<br>
-导入数据到hive中，需要在创建HIVE表加入 row format delimited fields terminated by ','</p>
+<p>现象：</p>
+<pre><code>查出一堆 null
+</code></pre>
+<p>原因：</p>
+<pre><code>sqoop 导出的 hdfs 分片数据，都是使用逗号 , 分割的。
+由于 hive 默认的分隔符是 /u0001（Ctrl+A）,为了平滑迁移，需要在创建表格时指定数据的分割符号。
+</code></pre>
+<p>解决方式：</p>
+<pre><code>导入数据到hive中，需要在创建HIVE表加入 row format delimited fields terminated by ','
+</code></pre>
 <h3 id="sqoop迁移到hdfs后hive创建表并指定关联位置实例">sqoop迁移到hdfs后，Hive创建表并指定关联位置实例</h3>
 <pre><code>create table user_profile(
 	user_id BIGINT comment &quot;userID&quot;,
@@ -252,11 +279,12 @@ COMMENT &quot;toutiao user profile&quot;
 row format delimited fields terminated by ','
 LOCATION '/user/hive/warehouse/toutiao.db/user_profile';
 </code></pre>
-<p>注：<br>
-5个表中，只有 news_article_content<br>
-（因为这个表奇怪字符太多，是全量导入的，hive不需要手动创建表，会自动创建的）<br>
-而这个表从 hdfs 拿到的数据是已经做过过滤的，所以不需要 加分隔符了，也就是不需要下面这行代码：<br>
-row format delimited fields terminated by ','</p>
+<p>注：</p>
+<pre><code>5个表中，只有 news_article_content
+（因为这个表奇怪字符太多，是全量导入的，hive不需要手动创建表，会自动创建的）
+而这个表从 hdfs 拿到的数据是已经做过过滤的，所以不需要 加分隔符了，也就是不需要下面这行代码：
+row format delimited fields terminated by ','
+</code></pre>
 <h1 id="flume日志收集到hive中">Flume日志收集到Hive中</h1>
 <h3 id="新建数据库">新建数据库</h3>
 <pre><code>create database if not exists profile comment &quot;use action&quot; location '/user/hive/warehouse/profile.db/';
@@ -272,32 +300,36 @@ PARTITIONED BY(dt STRING)
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
 LOCATION '/user/hive/warehouse/profile.db/user_action';
 </code></pre>
-<p>文档中：Hive建表，有个问题 map 需要指定数据类型:<br>
-param map&lt;string, string&gt; comment &quot;action parameter&quot;)</p>
-<pre><code>map 要向上面一样指定 &lt;string, string&gt; 才可以， 不然会报如下错误：
+<p>文档中：Hive建表，有个问题 map 需要指定数据类型:</p>
+<pre><code>param map&lt;string, string&gt; comment &quot;action parameter&quot;)
+
+map 要向上面一样指定 &lt;string, string&gt; 才可以， 不然会报如下错误：
 '''mismatched input 'comment' expecting &lt; near 'map' in map type'''
 </code></pre>
-<p>疑难参数解读：<br>
-PARTITIONED BY(dt STRING)：  hive按照 dt 字段分区<br>
-为什么要分区：<br>
-Hive适合处理大的文件内容量，少的文件数量。<br>
-Flume收集日志可能来一点日志就加到一个新文件中。<br>
-如此一来，文件零散的特别多。 Hive处理的会很慢。</p>
-<pre><code>		所以，Hive指定个分区，来把小文件们分成几大块（就是几个分区），这样处理会更快
+<p>疑难参数解读：</p>
+<pre><code>PARTITIONED BY(dt STRING)：  hive按照 dt 字段分区
+	为什么要分区：
+		Hive适合处理大的文件内容量，少的文件数量。
+		Flume收集日志可能来一点日志就加到一个新文件中。
+		如此一来，文件零散的特别多。 Hive处理的会很慢。
+		
+		所以，Hive指定个分区，来把小文件们分成几大块（就是几个分区），这样处理会更快
         
 ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'： 处理Json格式数据
 </code></pre>
-<p>数据导入步骤如下（虚代替Flume）（操作完成后是查不到数据的，需要关联，下面会解释）：<br>
-hadoop fs -put /root/data/backup/profile.db/user_action/*  /user/hive/warehouse/profile.db/user_action/</p>
-<pre><code># 删除: hadoop fs -rmr /user/hive/warehouse/profile.db/*
+<p>数据导入步骤如下（虚代替Flume）（操作完成后是查不到数据的，需要关联，下面会解释）：</p>
+<pre><code>hadoop fs -put /root/data/backup/profile.db/user_action/*  /user/hive/warehouse/profile.db/user_action/
+
+# 删除: hadoop fs -rmr /user/hive/warehouse/profile.db/*
 </code></pre>
 <h3 id="flume-收集配置">Flume 收集配置</h3>
 <p>进入flume/conf目录<br>
-创建一个collect _ click.conf的文件，写入flume的配置：<br>
-a1.sources = s1<br>
-a1.sinks = k1<br>
-a1.channels = c1</p>
-<pre><code>a1.sources.s1.channels= c1
+创建一个collect _ click.conf的文件，写入flume的配置：</p>
+<pre><code>a1.sources = s1
+a1.sinks = k1
+a1.channels = c1
+
+a1.sources.s1.channels= c1
 a1.sources.s1.type = exec
 a1.sources.s1.command = tail -F /root/logs/userClick.log
 a1.sources.s1.interceptors=i1 i2
@@ -322,70 +354,88 @@ a1.sinks.k1.hdfs.rollSize=10240
 a1.sinks.k1.hdfs.rollCount=0
 a1.sinks.k1.hdfs.idleTimeout=60
 </code></pre>
-<p>参数说明：<br>
-sources：为实时查看文件末尾，interceptors解析json文件<br>
-channels：指定内存存储，并且制定batchData的大小，PutList和TakeList的大小见参数，Channel总容量大小见参数<br>
-指定sink：形式直接到hdfs，以及路径，文件大小策略默认1024、event数量策略、文件闲置时间<br>
-开始收集：<br>
-/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1</p>
+<p>参数说明：</p>
+<pre><code>sources：为实时查看文件末尾，interceptors解析json文件
+channels：指定内存存储，并且制定batchData的大小，PutList和TakeList的大小见参数，Channel总容量大小见参数
+指定sink：形式直接到hdfs，以及路径，文件大小策略默认1024、event数量策略、文件闲置时间
+</code></pre>
+<p>开始收集：</p>
+<pre><code>/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1
+</code></pre>
 <h3 id="hive-关联分区">Hive 关联分区：</h3>
 <p>如果不关联分区，无论是 Flume收集到HDFS的分区数据，还是我们传进去HDFS模拟的分区数据 通过Hive是查不到的<br>
-关联分区如下操作：<br>
-alter table user_action add partition (dt='2018-12-11') location &quot;/user/hive/warehouse/profile.db/user_action/2018-12-11/&quot;</p>
+关联分区如下操作：</p>
+<pre><code>alter table user_action add partition (dt='2018-12-11') location &quot;/user/hive/warehouse/profile.db/user_action/2018-12-11/&quot;
+</code></pre>
 <h1 id="进程管理-supervisor">进程管理 Supervisor</h1>
 <h3 id="正常配置流程">正常配置流程</h3>
-<p>安装:<br>
-pip install supervisor<br>
-创建配置文件（当前目录执行，或者主目录执行都可，总配置文件就会生成到当前目录下）：<br>
-echo_supervisord_conf &gt; supervisord.conf<br>
-创建自定义配置文件目录：<br>
-mkdir /etc/supervisor<br>
-vim 打开编辑supervisord.conf文件，修改最后1行：<br>
-[include]<br>
-files = relative/directory/<em>.ini<br>
-为<br>
-[include]<br>
-files = /etc/supervisor/</em>.conf<br>
-将最开始生成的 supervisord.conf 复制到 /etc/ 下， 然后主文件就不用动了：<br>
-cp supervisord.conf /etc/<br>
-最后在  /etc/supervisor 这个目录中，自定义我们自己需要的 启动程序的配置文件模板，这里为 vi reco.conf：<br>
-见下面Flume案例</p>
+<p>安装:</p>
+<pre><code>pip install supervisor  
+</code></pre>
+<p>创建配置文件（当前目录执行，或者主目录执行都可，总配置文件就会生成到当前目录下）：</p>
+<pre><code>echo_supervisord_conf &gt; supervisord.conf
+</code></pre>
+<p>创建自定义配置文件目录：</p>
+<pre><code>mkdir /etc/supervisor
+</code></pre>
+<p>vim 打开编辑supervisord.conf文件，修改最后1行：</p>
+<pre><code>[include]
+files = relative/directory/*.ini
+</code></pre>
+<p>为</p>
+<pre><code>[include]
+files = /etc/supervisor/*.conf
+</code></pre>
+<p>将最开始生成的 supervisord.conf 复制到 /etc/ 下， 然后主文件就不用动了：</p>
+<pre><code>cp supervisord.conf /etc/
+</code></pre>
+<p>最后在  /etc/supervisor 这个目录中，自定义我们自己需要的 启动程序的配置文件模板，这里为 vi reco.conf：</p>
+<pre><code>见下面Flume案例
+</code></pre>
 <h3 id="flumesupervisor-配置案例">Flume+Supervisor 配置案例</h3>
 <p>flume启动需要相关hadoop,java环境，可以在shell脚本汇总添加:<br>
-先创建一个存放此shell脚本的目录：<br>
-mkdir /root/toutiao_project/scripts<br>
-打开文件:<br>
-vi /root/toutiao_project/scripts/collect_click.sh<br>
-并写入:<br>
-#!/usr/bin/env bash</p>
-<pre><code>export JAVA_HOME=/root/bigdata/jdk
+先创建一个存放此shell脚本的目录：</p>
+<pre><code>mkdir /root/toutiao_project/scripts
+</code></pre>
+<p>打开文件:</p>
+<pre><code>vi /root/toutiao_project/scripts/collect_click.sh
+</code></pre>
+<p>并写入:</p>
+<pre><code>#!/usr/bin/env bash
+
+export JAVA_HOME=/root/bigdata/jdk
 export HADOOP_HOME=/root/bigdata/hadoop
 export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin
 
 /root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1
 </code></pre>
-<p>并在	/etc/supervisor 的reco.conf添加:<br>
-[program:flume]<br>
-command=/bin/bash /root/toutiao_project/scripts/collect_click.sh<br>
-user=root<br>
-autorestart=true<br>
-redirect_stderr=true<br>
-stdout_logfile=/root/logs/collect.log<br>
-loglevel=info<br>
-stopsignal=KILL<br>
-stopasgroup=true<br>
-killasgroup=true</p>
-<p>启动 supervisor服务:<br>
-supervisord -c /etc/supervisord.conf<br>
-查看 supervisor是否运行：<br>
-ps aux | grep supervisord<br>
-管理 supervisor进程管理界面，输入命令：<br>
-supervisorctl<br>
-管理界面可通过如下 命令+进程名 来管理进程：<br>
-start flume<br>
-stop flume<br>
-restart flume</p>
-<pre><code>status		# 查看所有进程状态
+<p>并在	/etc/supervisor 的reco.conf添加:</p>
+<pre><code>[program:flume]
+command=/bin/bash /root/toutiao_project/scripts/collect_click.sh
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/root/logs/collect.log
+loglevel=info
+stopsignal=KILL
+stopasgroup=true
+killasgroup=true
+</code></pre>
+<p>启动 supervisor服务:</p>
+<pre><code>supervisord -c /etc/supervisord.conf
+</code></pre>
+<p>查看 supervisor是否运行：</p>
+<pre><code>ps aux | grep supervisord
+</code></pre>
+<p>管理 supervisor进程管理界面，输入命令：</p>
+<pre><code>supervisorctl
+</code></pre>
+<p>管理界面可通过如下 命令+进程名 来管理进程：</p>
+<pre><code>start flume
+stop flume
+restart flume
+
+status		# 查看所有进程状态
 update		# 重启配置文件修改过的程序
 </code></pre>
 
@@ -450,13 +500,13 @@ update		# 重启配置文件修改过的程序
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-28">2021-02-28</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/">RS =&gt; RS复习</a>
+                        <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/">IDE =&gt; My Sublime（PY）</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -465,13 +515,13 @@ update		# 重启配置文件修改过的程序
                   
                   
                   <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-25">2021-02-25</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/go-greater-fu-xi/">GO =&gt; Golang复习（未完待续）</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -480,17 +530,37 @@ update		# 重启配置文件修改过的程序
                   
                   
                   <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/" class="thumb hover-effect">
+                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
-                      <time datetime="2021-02-22">2021-02-22</time>
+                      <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/ide-greater-cheatsh/">PR =&gt; Cheat.sh</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
                   
                   
                   
@@ -656,15 +726,15 @@ update		# 重启配置文件修改过的程序
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
-                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-3 ctag-sKPdrpV6Y" aria-label="">PR</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-4 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
                       <a href="https://cythonlin.github.io/tag/1L4lr0i2f/" class="ctag ctag-5 ctag-1L4lr0i2f" aria-label="">Docker</a>
                     
@@ -714,7 +784,7 @@ update		# 重启配置文件修改过的程序
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 80 篇文章
+          ©2019 共 90 篇文章
           <br/>
 
         </p>
