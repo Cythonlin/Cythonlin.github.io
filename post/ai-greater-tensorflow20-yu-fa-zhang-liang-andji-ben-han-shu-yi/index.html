@@ -17,8 +17,8 @@
     <meta name="referrer" content="never">
     <meta name="description" content="前言
 TF2.0 是之前学习的内容，当时是写在了私有的YNote中，重写于SF。
-TF2.0-GPU 安装教程传送门：https://segmentfault.com/a/1190000020304638
-之前接触过 TF1, 手动sess..." />
+之前接触过 TF1, 手动session机制，看着很是头疼。 TF2.0不需要做这些
+TF2.0 理解起来更容易（逐渐 Pythonic and Numpic..." />
     <meta name="keywords" content="AI" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -74,7 +74,7 @@ TF2.0-GPU 安装教程传送门：https://segmentfault.com/a/1190000020304638
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615464655548" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -115,30 +115,31 @@ TF2.0-GPU 安装教程传送门：https://segmentfault.com/a/1190000020304638
                 <div class="text">
                   <h1 id="前言">前言</h1>
 <p>TF2.0 是之前学习的内容，当时是写在了私有的YNote中，重写于SF。<br>
-TF2.0-GPU 安装教程传送门：https://segmentfault.com/a/1190000020304638<br>
 之前接触过 TF1, 手动session机制，看着很是头疼。 TF2.0不需要做这些<br>
 TF2.0 理解起来更容易（逐渐 Pythonic and Numpic）<br>
 TF2.0 后端采用keras接口 (构建网络层)，更方便。<br>
 TF2.0 的keras接口定义的模型层，都实现了 call方法。意味大多数实例对象可以当作函数来直接调用</p>
 <h1 id="行列轴">行列轴</h1>
-<p>以列表为例（抽象举例，摞起来的面包片。。。。）<br>
-[               # 最外层，无意义不用记<br>
-[1,2,3],    # 面包片1  (第一个样本)<br>
-[4,5,6],    # 面包片2  (第二个样本)<br>
-]</p>
+<p>以列表为例（抽象举例，摞起来的面包片。。。。）</p>
+<pre><code>[               # 最外层，无意义不用记 
+    [1,2,3],    # 面包片1  (第一个样本)
+    [4,5,6],    # 面包片2  (第二个样本)
+]
+</code></pre>
 <ol>
 <li>每个 次内层列表 代表一个样本， 比如 [1,2,3] 整体代表 第一个样本</li>
 <li>最内层元素代表属性值。  eg:  1,2,3 单个拿出来都是属性值。</li>
 <li>例子： 元素5 单独拿出来，它就被看做  &quot;第二个样本的，属性值5&quot;     （当然横纵索引依然都是从0取的）</li>
 </ol>
-<p>以刚才的数据为例：<br>
-t = tf.constant(<br>
-[<br>
-[1., 2., 3.],<br>
-[4., 5., 6.]<br>
-]<br>
-)</p>
-<pre><code>print(tf.reduce_sum(t, axis=0))  # 求和操作，上下压扁， 聚合样本
+<p>以刚才的数据为例：</p>
+<pre><code>t = tf.constant(
+    [
+        [1., 2., 3.], 
+        [4., 5., 6.]
+    ]
+)
+
+print(tf.reduce_sum(t, axis=0))  # 求和操作，上下压扁， 聚合样本
 &gt;&gt; tf.Tensor([5. 7. 9.], shape=(3,), dtype=float32) 
 
 print(tf.reduce_sum(t, axis=1))  # 求和操作，左右压扁， 聚合属性
@@ -184,26 +185,29 @@ from sklearn.model_selection import train_test_split  # 训测分离
 </code></pre>
 <h1 id="张量操作符">张量&amp;操作符</h1>
 <h2 id="常量普通的张量">常量（普通的张量）</h2>
-<p>###定义：<br>
-c = tf.constant( [[1., 2., 3.], [4., 5., 6.]] )    # 数字后面加个点代表 转float32 类型<br>
-print(c)<br>
-&gt;&gt; tf.Tensor([[1. 2. 3.] [4. 5. 6.]], shape=(2, 3), dtype=float32)<br>
-###六则运算（加减乘除，矩阵乘, 矩阵转置）<br>
-先说矩阵乘法（大学都学过的，运算过程不说了）：<br>
-语法格式：  a @ b<br>
-条件要求：  a的列数 === b的行数     （必须相等）<br>
-eg:       （5行2列 @ 2行10列 = 5行10列）</p>
-<pre><code>特例： (第0维度，必须相等)
+<h3 id="定义">定义：</h3>
+<pre><code>c = tf.constant( [[1., 2., 3.], [4., 5., 6.]] )    # 数字后面加个点代表 转float32 类型
+print(c)  
+&gt;&gt; tf.Tensor([[1. 2. 3.] [4. 5. 6.]], shape=(2, 3), dtype=float32)
+</code></pre>
+<h3 id="六则运算加减乘除矩阵乘-矩阵转置">六则运算（加减乘除，矩阵乘, 矩阵转置）</h3>
+<p>先说矩阵乘法（大学都学过的，运算过程不说了）：</p>
+<pre><code>语法格式：  a @ b
+条件要求：  a的列数 === b的行数     （必须相等）
+eg:       （5行2列 @ 2行10列 = 5行10列）
+
+特例： (第0维度，必须相等)
     t1 = tf.ones([2, 20, 30])
     t2 = tf.ones([2, 30, 50])
     print( (t1@t2).shape )
     &gt;&gt; (2, 20, 50)   # 第0维没变， 后2维照常按照矩阵乘法运算
 </code></pre>
-<p>矩阵转置：<br>
-tf.transpose(t)<br>
-# 不仅可以普通转置，还可以交换维度<br>
-t2 = tf.transpose(t,[1,0])    # 行变列，列变行。 和基本的转置差不多（逆序索引，轴变逆序）</p>
-<pre><code># 或假如以 （2,100，200，3）形状 为例
+<p>矩阵转置：</p>
+<pre><code>tf.transpose(t)
+# 不仅可以普通转置，还可以交换维度
+t2 = tf.transpose(t,[1,0])    # 行变列，列变行。 和基本的转置差不多（逆序索引，轴变逆序）
+
+# 或假如以 （2,100，200，3）形状 为例
 t = tf.ones([2, 100, 200, 3])                 
 print(tf.transpose(t, [1, 3, 0, 2]).shape) # 轴交换位置
 &gt;&gt; (100, 3, 2, 200)
@@ -710,7 +714,7 @@ print(v2)
                  <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20stablejiang-lin/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">AI =&gt; Tensorflow2.0（stable）降临</h4>
+                  <h4 class="title white no-margin">AI =&gt; Tensorflow2.0安装</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
@@ -744,6 +748,21 @@ print(v2)
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-03-10">2021-03-10</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/">PY =&gt; 2017-2021高级冷门备忘</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
@@ -758,55 +777,18 @@ print(v2)
                   
                   
                   
-                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
+                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/"> IDE =&gt; My Pycharm</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
-                  
-                  
-                  
-                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-03-03">2021-03-03</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
                   
                   
                   
@@ -970,9 +952,9 @@ print(v2)
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
@@ -1028,7 +1010,7 @@ print(v2)
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 90 篇文章
+          ©2019 共 79 篇文章
           <br/>
 
         </p>

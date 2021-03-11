@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; 推荐系统（六）推荐缓存服务 | Cython_lin</title>
+<title>RS =&gt; 推荐系统（六）推荐缓存服务+LR | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,9 +15,7 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="说明
-承接上文 RS =&gt; 推荐系统（五）实时推荐+ABTest+推荐中心
-待推荐结果的redis缓存
+    <meta name="description" content="待推荐结果的redis缓存
 
 目的：
 
@@ -29,7 +27,11 @@
 获取redis结果，进行判断
 
 如果redis有
-..." />
+
+读取需要推荐的文章数量放回，并删除这些文章，并且放入推荐历史推荐结果中
+
+
+如果..." />
     <meta name="keywords" content="Golang" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -85,7 +87,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615464655548" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -100,7 +102,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-25"><i class="fa fa-calendar"></i><span class="lately">9 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-25"><i class="fa fa-calendar"></i><span class="lately">14 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/go-greater-fu-xi/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/go-greater-fu-xi/"> </span>
@@ -114,7 +116,7 @@
                       <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-0 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
               </div>
-              <h1 class="title ularge white bold">RS =&gt; 推荐系统（六）推荐缓存服务</h1>
+              <h1 class="title ularge white bold">RS =&gt; 推荐系统（六）推荐缓存服务+LR</h1>
             </div>
           </div>
         </div>  
@@ -124,9 +126,7 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="说明">说明</h1>
-<p>承接上文 <a href="">RS =&gt; 推荐系统（五）实时推荐+ABTest+推荐中心</a></p>
-<h1 id="待推荐结果的redis缓存">待推荐结果的redis缓存</h1>
+                  <h1 id="待推荐结果的redis缓存">待推荐结果的redis缓存</h1>
 <ul>
 <li>目的：
 <ul>
@@ -169,9 +169,440 @@ cache_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
 # 首先从获取redis结果，进行判断(缓存拿)
     key = 'reco:{}:{}:art'.format(temp.user_id, temp.channel_id)
     res = cache_client.zrevrange(key, 0, temp.article_num - 1)
+    # 如果redis有，读取需要推荐的文章数量放回，并删除这些文章，并且放入推荐历史推荐结果中
+    if res:
+        cache_client.zrem(key, *res)
+
+    # 如果redis没有数据，进行wait_recommend读取，放入redis中
+
+    # 删除redis这个键
+    cache_client.delete(key)
+    try:
+        # 字符串变成列表
+        hbase_cache = eval(hbu.get_table_row('wait_recommend',
+                                             'reco:{}'.format(temp.user_id).encode(),
+                                             'channel:{}'.format(temp.channel_id).encode()))
+
+    except Exception as e:
+        logger.warning(&quot;{} WARN read user_id:{} wait_recommend exception:{} not exist&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, e))
+
+        hbase_cache = []
+    if not hbase_cache:
+        #  如果wait_recommend中也没有，直接返回空，去进行一次召回读取、排序然后推荐
+        return hbase_cache
+    # wait_recommend有，从wait_recommend取出所有结果，定一个数量(如100篇)的文章存入redis
+    if len(hbase_cache) &gt; 100:
+        logger.info(
+            &quot;{} INFO reduce user_id:{} channel:{} wait_recommend data&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+        # 拿出固定数量（100）给redis
+        cache_redis = hbase_cache[:100]
+        # 放入redis缓存
+        cache_client.zadd(key, dict(zip(cache_redis, range(len(cache_redis)))))
+        # 剩下的放回wait hbase结果
+        hbu.get_table_put('wait_recommend',
+                          'reco:{}'.format(temp.user_id).encode(),
+                          'channel:{}'.format(temp.channel_id).encode(),
+                          str(hbase_cache[100:]).encode())
+    else:
+        logger.info(
+            &quot;{} INFO delete user_id:{} channel:{} wait_recommend data&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+        # - wait_recommend不够一定数量，全部取出放入redis当中，直接推荐出去
+        # 清空wait_recommend
+        hbu.get_table_put('wait_recommend',
+                          'reco:{}'.format(temp.user_id).encode(),
+                          'channel:{}'.format(temp.channel_id).encode(),
+                          str([]).encode())
+
+        # 放入redis缓存
+        cache_client.zadd(key, dict(zip(hbase_cache, range(len(hbase_cache)))))
+
+    res = cache_client.zrevrange(key, 0, temp.article_num - 1)
+    if res:
+        cache_client.zrem(key, *res)
+</code></pre>
+<p>推荐出去的结果放入历史结果</p>
+<pre><code># 进行类型转换
+    res = list(map(int, res))
+    logger.info(&quot;{} INFO get cache data and store user_id:{} channel:{} cache history data&quot;.format(
+        datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+    # 放入历史记录
+    hbu.get_table_put('history_recommend',
+                    'reco:his:{}'.format(temp.user_id).encode(),
+                    'channel:{}'.format(temp.channel_id).encode(),
+                    str(res).encode(),
+                    timestamp=temp.time_stamp)
+    return res
+</code></pre>
+<p>完整逻辑代码：</p>
+<pre><code>from server import cache_client
+import logging
+from datetime import datetime
+
+logger = logging.getLogger('recommend')
+
+
+def get_cache_from_redis_hbase(temp, hbu):
+    &quot;&quot;&quot;
+    进行用户频道推荐缓存结果的读取
+    :param temp: 用户请求的参数
+    :param hbu: hbase工具
+    :return:
+    &quot;&quot;&quot;
+
+    # - 首先从获取redis结果，进行判断(缓存拿)
+    key = 'reco:{}:{}:art'.format(temp.user_id, temp.channel_id)
+    res = cache_client.zrevrange(key, 0, temp.article_num - 1)
     # - 如果redis有，读取需要推荐的文章数量放回，并删除这些文章，并且放入推荐历史推荐结果中
     if res:
-        cache_client.zrem(key, *res)</code></pre>
+        cache_client.zrem(key, *res)
+    else:
+        # - 如果redis当中不存在，则从wait_recommend中读取
+        # 删除redis这个键
+        cache_client.delete(key)
+        try:
+            # 字符串编程列表
+            hbase_cache = eval(hbu.get_table_row('wait_recommend',
+                                                'reco:{}'.format(temp.user_id).encode(),
+                                                'channel:{}'.format(temp.channel_id).encode()))
+
+        except Exception as e:
+            logger.warning(&quot;{} WARN read user_id:{} wait_recommend exception:{} not exist&quot;.format(
+                datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, e))
+
+            hbase_cache = []
+        if not hbase_cache:
+            #   - 如果wait_recommend中也没有，直接返回空，去进行一次召回读取、排序然后推荐
+            return hbase_cache
+        #   - wait_recommend有，从wait_recommend取出所有结果，定一个数量(如100篇)的文章存入redis
+        if len(hbase_cache) &gt; 100:
+            logger.info(
+                &quot;{} INFO reduce user_id:{} channel:{} wait_recommend data&quot;.format(
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+            # 拿出固定数量（100）给redis
+            cache_redis = hbase_cache[:100]
+            # 放入redis缓存
+            cache_client.zadd(key, dict(zip(cache_redis, range(len(cache_redis)))))
+            # 剩下的放回wait hbase结果
+            hbu.get_table_put('wait_recommend',
+                            'reco:{}'.format(temp.user_id).encode(),
+                            'channel:{}'.format(temp.channel_id).encode(),
+                            str(hbase_cache[100:]).encode())
+        else:
+            logger.info(
+                &quot;{} INFO delete user_id:{} channel:{} wait_recommend data&quot;.format(
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+            # - wait_recommend不够一定数量，全部取出放入redis当中，直接推荐出去
+            # 清空wait_recommend
+            hbu.get_table_put('wait_recommend',
+                            'reco:{}'.format(temp.user_id).encode(),
+                            'channel:{}'.format(temp.channel_id).encode(),
+                            str([]).encode())
+
+            # 放入redis缓存
+            cache_client.zadd(key, dict(zip(hbase_cache, range(len(hbase_cache)))))
+
+        res = cache_client.zrevrange(key, 0, temp.article_num - 1)
+        if res:
+            cache_client.zrem(key, *res)
+
+    # 进行执行PL，然后写入历史推荐结果
+    # 进行类型转换
+    res = list(map(int, res))
+    logger.info(&quot;{} INFO get cache data and store user_id:{} channel:{} cache history data&quot;.format(
+        datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+    # 放入历史记录
+    hbu.get_table_put('history_recommend',
+                    'reco:his:{}'.format(temp.user_id).encode(),
+                    'channel:{}'.format(temp.channel_id).encode(),
+                    str(res).encode(),
+                    timestamp=temp.time_stamp)
+
+    return res
+</code></pre>
+<h2 id="在推荐中心加入缓存逻辑">在推荐中心加入缓存逻辑</h2>
+<pre><code>from server import redis_cache
+# 1、获取缓存
+res = redis_cache.get_reco_from_cache(temp, self.hbu)
+
+# 如果没有，然后走一遍算法推荐 召回+排序，同时写入到hbase待推荐结果列表
+if not res:
+    logger.info(&quot;{} INFO get user_id:{} channel:{} recall/sort data&quot;.
+                format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+
+    res = self.user_reco_list(temp)
+</code></pre>
+<h1 id="排序模型在线预测">排序模型在线预测</h1>
+<h2 id="前文">前文</h2>
+<pre><code>之前在CTR那里已经训练好了LR，并且后来特征中心已经把 用户和Item特征抽取出放到了hbase
+</code></pre>
+<h2 id="接下来的步骤">接下来的步骤</h2>
+<ul>
+<li>召回之后的文章结果进行排序</li>
+<li>步骤：
+<ul>
+<li>读取用户特征中心特征</li>
+<li>读取文章特征中心特征、合并用户文章特征构造预测样本</li>
+<li>预测并进行排序是筛选</li>
+</ul>
+</li>
+</ul>
+<p>配置Spark环境代码：</p>
+<pre><code>import os
+import sys
+# 如果当前代码文件运行测试需要加入修改路径，避免出现后导包问题
+BASE_DIR = os.path.dirname(os.path.dirname(os.getcwd()))
+sys.path.insert(0, os.path.join(BASE_DIR))
+
+PYSPARK_PYTHON = &quot;/miniconda2/envs/reco_sys/bin/python&quot;
+os.environ[&quot;PYSPARK_PYTHON&quot;] = PYSPARK_PYTHON
+os.environ[&quot;PYSPARK_DRIVER_PYTHON&quot;] = PYSPARK_PYTHON
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+from server.utils import HBaseUtils
+from server import pool
+from pyspark.ml.linalg import DenseVector
+from pyspark.ml.classification import LogisticRegressionModel
+import pandas as pd
+
+
+conf = SparkConf()
+config = (
+    (&quot;spark.app.name&quot;, &quot;sort&quot;),
+    (&quot;spark.executor.memory&quot;, &quot;2g&quot;),    # 设置该app启动时占用的内存用量，默认1g
+    (&quot;spark.master&quot;, 'yarn'),
+    (&quot;spark.executor.cores&quot;, &quot;2&quot;),   # 设置spark executor使用的CPU核心数
+)
+
+conf.setAll(config)
+spark = SparkSession.builder.config(conf=conf).getOrCreate()
+</code></pre>
+<p>读取用户特征中心(10个)（用户特征权重： weights ）</p>
+<pre><code>hbu = HBaseUtils(pool)
+# 排序
+# 1、读取用户特征中心特征
+try:
+    user_feature = eval(hbu.get_table_row('ctr_feature_user',
+                                            '{}'.format(1115629498121846784).encode(),
+                                            'channel:{}'.format(18).encode()))
+except Exception as e:
+    user_feature = []
+</code></pre>
+<p>读取文章特征中心111个：</p>
+<pre><code>if user_feature:
+    # 2、读取文章特征中心特征  
+    # 当初存的时候是这样的存储格式（ 一共111个）：
+        # channel_id: 1个特征             article_feature[0]
+        # article_weights: 10个特征     article_feature[1:11]
+        # articlevector: 100个特征       article_feature[11:]
+        
+
+    result = []
+
+    for article_id in [17749, 17748, 44371, 44368]:
+        try:
+            article_feature = eval(hbu.get_table_row('ctr_feature_article',
+                                                    '{}'.format(article_id).encode(),
+                                                    'article:{}'.format(article_id).encode()))
+        except Exception as e:
+            article_feature = [0.0] * 111
+        f = []
+        # 第一个channel_id
+        f.extend([article_feature[0]])
+        # 第二个article_vector
+        f.extend(article_feature[11:])
+        # 第三个用户权重特征
+        f.extend(user_feature)
+        # 第四个文章权重特征
+        f.extend(article_feature[1:11])
+        vector = DenseVector(f)
+
+        result.append([1115629498121846784, article_id, vector])
+</code></pre>
+<p>文章特征表110个，合并后👇</p>
+<pre><code>(合并特征向量(channel_id1个+文章向量100个+用户特征权重10个+文章关键词权重) = 121个特征)
+</code></pre>
+<h3 id="最终结果result格式">最终结果result格式</h3>
+<pre><code>[
+    [
+            article_id,
+            user_id
+            DenseVector([channel_id, weights, article_weights])
+    ],
+    [
+            article_id,
+            user_id
+            DenseVector([channel_id, weights, article_weights])
+    ]
+]
+</code></pre>
+<h2 id="处理样本格式模型加载预测">处理样本格式，模型加载预测</h2>
+<pre><code># 4、预测并进行排序是筛选
+df = pd.DataFrame(result, columns=[&quot;user_id&quot;, &quot;article_id&quot;, &quot;features&quot;])
+test = spark.createDataFrame(df)
+
+# 加载逻辑回归模型
+model = LogisticRegressionModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/LR.obj&quot;)
+predict = model.transform(test)
+</code></pre>
+<p>预测结果进行筛选</p>
+<pre><code>def vector_to_double(row):
+    return float(row.article_id), float(row.probability[1])
+res = predict.select(['article_id', 'probability']).rdd.map(vector_to_double).toDF(['article_id', 'probability']).sort('probability', ascending=False)
+</code></pre>
+<p>获取排序之后前N个文章</p>
+<pre><code>article_list = [i.article_id for i in res.collect()]
+if len(article_list) &gt; 100:
+    article_list = article_list[:100]
+reco_set = list(map(int, article_list))
+</code></pre>
+<h1 id="添加实时排序的模型预测">添加实时排序的模型预测</h1>
+<p>添加spark配置，grpc启动灰将spark相关信息初始化</p>
+<pre><code>from pyspark import SparkConf
+from pyspark.sql import SparkSession
+# spark配置
+conf = SparkConf()
+conf.setAll(DefaultConfig.SPARK_GRPC_CONFIG)
+
+SORT_SPARK = SparkSession.builder.config(conf=conf).getOrCreate()
+
+# SPARK grpc配置
+SPARK_GRPC_CONFIG = (
+(&quot;spark.app.name&quot;, &quot;grpcSort&quot;),  # 设置启动的spark的app名称，没有提供，将随机产生一个名称
+(&quot;spark.master&quot;, &quot;yarn&quot;),
+(&quot;spark.executor.instances&quot;, 4)
+)
+</code></pre>
+<p>添加模型服务预测模块，sort_service, 增加以下预测逻辑</p>
+<pre><code>from server import SORT_SPARK
+from pyspark.ml.linalg import DenseVector
+from pyspark.ml.classification import LogisticRegressionModel
+import pandas as pd
+import numpy as np
+from datetime import datetime
+import logging
+
+logger = logging.getLogger(&quot;recommend&quot;)
+</code></pre>
+<p>预测函数</p>
+<pre><code>def lr_sort_service(reco_set, temp, hbu):
+    &quot;&quot;&quot;
+    排序返回推荐文章
+    :param reco_set:召回合并过滤后的结果
+    :param temp: 参数
+    :param hbu: Hbase工具
+    :return:
+    &quot;&quot;&quot;
+    # 排序
+    # 1、读取用户特征中心特征
+    try:
+        user_feature = eval(hbu.get_table_row('ctr_feature_user',
+                                            '{}'.format(temp.user_id).encode(),
+                                            'channel:{}'.format(temp.channel_id).encode()))
+        logger.info(&quot;{} INFO get user user_id:{} channel:{} profile data&quot;.format(
+            datetime.now().strftime('%Y-%m-%d %H:%M:%S'), temp.user_id, temp.channel_id))
+    except Exception as e:
+        user_feature = []
+
+    if user_feature:
+        # 2、读取文章特征中心特征
+        result = []
+
+        for article_id in reco_set:
+            try:
+                article_feature = eval(hbu.get_table_row('ctr_feature_article',
+                                                        '{}'.format(article_id).encode(),
+                                                        'article:{}'.format(article_id).encode()))
+            except Exception as e:
+
+                article_feature = [0.0] * 111
+            f = []
+            # 第一个channel_id
+            f.extend([article_feature[0]])
+            # 第二个article_vector
+            f.extend(article_feature[11:])
+            # 第三个用户权重特征
+            f.extend(user_feature)
+            # 第四个文章权重特征
+            f.extend(article_feature[1:11])
+            vector = DenseVector(f)
+            result.append([temp.user_id, article_id, vector])
+
+        # 4、预测并进行排序是筛选
+        df = pd.DataFrame(result, columns=[&quot;user_id&quot;, &quot;article_id&quot;, &quot;features&quot;])
+        test = SORT_SPARK.createDataFrame(df)
+
+        # 加载逻辑回归模型
+        model = LogisticRegressionModel.load(&quot;hdfs://hadoop-master:9000/headlines/models/LR.obj&quot;)
+        predict = model.transform(test)
+
+        def vector_to_double(row):
+            return float(row.article_id), float(row.probability[1])
+
+        res = predict.select(['article_id', 'probability']).rdd.map(vector_to_double).toDF(
+            ['article_id', 'probability']).sort('probability', ascending=False)
+        article_list = [i.article_id for i in res.collect()]
+        logger.info(&quot;{} INFO sorting user_id:{} recommend article&quot;.format(datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                                                        temp.user_id))
+        # 排序后，只将排名在前100个文章ID返回给用户推荐
+        if len(article_list) &gt; 100:
+            article_list = article_list[:100]
+        reco_set = list(map(int, article_list))
+
+    return reco_set
+</code></pre>
+<p>推荐中心加入排序</p>
+<pre><code># 配置default
+RAParam = param(
+    COMBINE={
+        'Algo-1': (1, [100, 101, 102, 103, 104], [200]),  # 首页推荐，所有召回结果读取+LR排序
+        'Algo-2': (2, [100, 101, 102, 103, 104], [200])  # 首页推荐，所有召回结果读取 排序
+    },
+
+# reco_center
+from server.sort_service import lr_sort_service
+sort_dict = {
+    'LR': lr_sort_service,
+}
+
+# 排序代码逻辑
+_sort_num = RAParam.COMBINE[temp.algo][2][0]
+reco_set = sort_dict[RAParam.SORT[_sort_num]](reco_set, temp, self.hbu)
+</code></pre>
+<p>为了测试,原来的数据重新插入一份，历史记录也删除掉，缓存也删掉，</p>
+<pre><code>hbase(main):016:0* put 'cb_recall', 'recall:user:1115629498121846784', 'als:18', [19200, 17665, 16151, 16411, 19233, 13090,15140, 16421, 19494, 14381, 17966, 17454, 14125, 16174, 14899, 44339, 16437, 18743, 44090, 18238, 13890, 14915, 15429, 15944, 44371, 18005, 15196, 13410, 13672, 44137, 18795, 19052, 44652, 44654, 44657, 14961, 17522, 43894, 44412, 16000, 14208, 44419, 17802, 14223, 18836, 140956, 18335, 13728, 14498, 44451, 44456, 18609, 18353, 44468, 18103, 135869, 16062, 14015, 13757, 13249, 44483, 17605, 14021, 15309, 18127, 43983, 44754, 43986, 19413, 14805, 18904, 44761, 17114, 13272, 14810, 18907, 13022, 14299, 17120, 17632, 43997, 17889, 17385, 18156, 15085, 13295, 44020, 14839, 44024, 14585, 18172, 44541]
+Took 0.2007 seconds                                                                                 
+hbase(main):017:0&gt; get 'cb_recall', 'recall:user:1115629498121846784'
+COLUMN                     CELL                                                                      als:13                    timestamp=1558041571134, value=[141431]                                   als:18                    timestamp=1559205376286, value=[19200, 17665, 16151, 16411, 19233, 13090,                            15140, 16421, 19494, 14381, 17966, 17454, 14125, 16174, 14899, 44339, 16                           437, 18743, 44090, 18238, 13890, 14915, 15429, 15944, 44371, 18005, 15196                           , 13410, 13672, 44137, 18795, 19052, 44652, 44654, 44657, 14961, 17522, 4                           3894, 44412, 16000, 14208, 44419, 17802, 14223, 18836, 140956, 18335, 137
+                        28, 14498, 44451, 44456, 18609, 18353, 44468, 18103, 135869, 16062, 14015
+                        , 13757, 13249, 44483, 17605, 14021, 15309, 18127, 43983, 44754, 43986, 1
+                        9413, 14805, 18904, 44761, 17114, 13272, 14810, 18907, 13022, 14299, 1712
+                        0, 17632, 43997, 17889, 17385, 18156, 15085, 13295, 44020, 14839, 44024, 
+                        14585, 18172, 44541]                                                     
+als:5                     timestamp=1558041564668, value=[141440]                                  
+als:7                     timestamp=1558041564688, value=[141437]                                  
+1 row(s)
+Took 0.1108 seconds
+</code></pre>
+<h1 id="supervisor添加grpc实时推荐程序">supervisor添加grpc实时推荐程序</h1>
+<pre><code>[program:online]
+environment=JAVA_HOME=/root/bigdata/jdk,SPARK_HOME=/root/bigdata/spark,HADOOP_HOME=/root/bigdata/hadoop,PYSPARK_PYTHON=/miniconda2/envs/reco_sys/bin/python ,PYSPARK_DRIVER_PYTHON=/miniconda2/envs/reco_sys/bin/python
+command=/miniconda2/envs/reco_sys/bin/python /root/toutiao_project/reco_sys/abtest/routing.py
+directory=/root/toutiao_project/reco_sys/abtest
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/root/logs/recommendsuper.log
+loglevel=info
+stopsignal=KILL
+stopasgroup=true
+killasgroup=true
+</code></pre>
+<p>supervisor执行命令 update,开启实时排序测试。</p>
 
                 </div>
                 <div class="clear"></div>
@@ -186,7 +617,7 @@ cache_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
                  <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-02-28">2021-02-28</time>
-                  <h4 class="title white no-margin">RS =&gt; RS复习</h4>
+                  <h4 class="title white no-margin">RS =&gt; 推荐系统（七）DL-Wide&amp;Deep</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
@@ -234,6 +665,21 @@ cache_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-03-10">2021-03-10</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/">PY =&gt; 2017-2021高级冷门备忘</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
@@ -248,55 +694,18 @@ cache_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
                   
                   
                   
-                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
+                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/"> IDE =&gt; My Pycharm</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
-                  
-                  
-                  
-                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-03-03">2021-03-03</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
                   
                   
                   
@@ -460,9 +869,9 @@ cache_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
@@ -518,7 +927,7 @@ cache_client = redis.StrictRedis(host=DefaultConfig.REDIS_HOST,
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 90 篇文章
+          ©2019 共 79 篇文章
           <br/>
 
         </p>

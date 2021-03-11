@@ -80,7 +80,7 @@ sublime C:\Users\lin..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615464655548" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -95,7 +95,7 @@ sublime C:\Users\lin..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">16 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-18"><i class="fa fa-calendar"></i><span class="lately">21 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/pr-greater-powershell-7/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/pr-greater-powershell-7/"> </span>
@@ -649,8 +649,38 @@ time string
 <p>然后全部松手再复制生成的代码块(直接一个单s键即可)</p>
 <pre><code>s
 </code></pre>
+<p>修改快捷键(搜索， cheat.sh)</p>
+<pre><code>ctrl + shift + c
+</code></pre>
 <h1 id="for-sublime">For Sublime</h1>
-<p>sublime这方面配置文档欠缺，缺快捷键</p>
+<p><a href="https://github.com/gauravk-in/cheat.sh-sublime-plugin">=&gt; 插件地址（文档较少，讲的是Mac的，Windows我已参透，且听我细细道来=&gt;）</a></p>
+<h2 id="安装步骤">安装步骤</h2>
+<p>&quot;Preferences -&gt; Browse Packages&quot;</p>
+<pre><code>git clone https://github.com/gauravk-in/cheat.sh-sublime-plugin.git CheatSheet
+</code></pre>
+<p>ctrl+shift+p: 输入</p>
+<pre><code>Package Control: Satisfy Dependencies    
+</code></pre>
+<p>ctrl + ` 控制台查看是否有报错信息，若正常，即可使用</p>
+<h2 id="配置此插件的快捷键">配置此插件的快捷键</h2>
+<p>作者文档没有写如何配置快捷键， stack，github搜了一圈，毫无信息。<br>
+于是打开了源码文件，看了下，有个 Default.sublime-commands 文件。<br>
+里面配置的是命令信息， 把主要字段加入到 全局Key-Binding即可：</p>
+<pre><code>{ &quot;keys&quot;: [&quot;alt+p&quot;], &quot;command&quot;: &quot;cheat_sheet&quot;, &quot;args&quot;:{&quot;with_comments&quot;: true}},
+</code></pre>
+<p>特别注意：</p>
+<pre><code>args参数必加， 搞了半天，没打开控制台看，后来提示缺 with_comments参数
+去源码一看，需传递 with_comments， 并且合着sublime语法格式用 args包着。
+</code></pre>
+<p>使用方式：</p>
+<pre><code>1. 打开一个文件.py，写入语词（py文件默认py ，也可在py文件 加个java，写java语句）
+2. 选中语句， 按 alt + p 😎😎😎😎😎
+</code></pre>
+<p>其他配置：</p>
+<pre><code>也可配置其他如：（底下调出输入框，来输入语句，但是都没上面配的选中替换好用）
+1. 要是真的需要，则找上面的  &quot;Default.sublime-commands&quot; 文件😑。
+2. 此文件里面有对应配置，看着对照配到全局  &quot;Key-Binding&quot; 👌 即可。
+</code></pre>
 
                 </div>
                 <div class="clear"></div>
@@ -713,6 +743,21 @@ time string
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-03-10">2021-03-10</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/">PY =&gt; 2017-2021高级冷门备忘</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
@@ -727,55 +772,18 @@ time string
                   
                   
                   
-                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
+                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/"> IDE =&gt; My Pycharm</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
-                  
-                  
-                  
-                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-03-03">2021-03-03</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
                   
                   
                   
@@ -939,9 +947,9 @@ time string
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
@@ -997,7 +1005,7 @@ time string
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 90 篇文章
+          ©2019 共 79 篇文章
           <br/>
 
         </p>

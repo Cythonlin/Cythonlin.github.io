@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI =&gt; Tensorflow2.0（stable）降临 | Cython_lin</title>
+<title>AI =&gt; Tensorflow2.0安装 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,12 +15,12 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="前言
-就在今天凌晨，TF20标准版，降临，可喜可贺。
-因此，我认为，值得记录。。。
-Github URL
-https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0
-&quot;..." />
+    <meta name="description" content="环境推荐
+最后成功的配套版本如下：
+win10
+gtx1050   (其他型号的，不保证，应该也能差不多)
+python3.7 (感觉python问题并不是特别大。 建议 3.7)
+cuda:     cuda_10.0.130_411.3..." />
     <meta name="keywords" content="AI" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -76,7 +76,7 @@ https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615464655548" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -105,7 +105,7 @@ https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0
                       <a href="https://cythonlin.github.io/tag/n16me-6oV/" class="ctag ctag-0 ctag-n16me-6oV" aria-label="">AI</a>
                     
               </div>
-              <h1 class="title ularge white bold">AI =&gt; Tensorflow2.0（stable）降临</h1>
+              <h1 class="title ularge white bold">AI =&gt; Tensorflow2.0安装</h1>
             </div>
           </div>
         </div>  
@@ -115,41 +115,57 @@ https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="前言">前言</h1>
-<p>就在今天凌晨，TF20标准版，降临，可喜可贺。<br>
-因此，我认为，值得记录。。。</p>
-<h1 id="github-url">Github URL</h1>
-<p>https://github.com/tensorflow/tensorflow/releases/tag/v2.0.0</p>
-<p>&quot;goldiegadde released this 19 hours ago&quot;  ~~ yeah</p>
-<h1 id="参考beta环境">参考Beta环境</h1>
-<p>我之前写过一篇2.0-GPU Beta环境， 你若连Tensorflow都每装过，那么移步：<br>
-传送门：https://segmentfault.com/a/1190000020304638</p>
-<h1 id="更新至tf20-gpu命令">更新至TF20-GPU命令</h1>
-<pre><code>pip install -U tensorflow-gpu -i https://pypi.douban.com/simple
+                  <h1 id="环境推荐">环境推荐</h1>
+<p>最后成功的配套版本如下：</p>
+<pre><code>win10
+gtx1050   (其他型号的，不保证，应该也能差不多)
+python3.7 (感觉python问题并不是特别大。 建议 3.7)
+cuda:     cuda_10.0.130_411.31_win10
+cudnn:    cudnn-10.0-windows10-x64-v7.4.2.24
+tensorflow-gpu==2.0.0-beta0
+</code></pre>
+<h1 id="安装cuda">安装CUDA</h1>
+<p>官链：https://developer.nvidia.com/cuda-downloads</p>
+<p>配置环节：<br>
+1. 默认自动安装的路径如下：  （如果你选的自定义安装，你要记住你的路径）<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin<br>
+2. 将此路径配置到 环境变量 中<br>
+3. 关掉所有cmd, 重新打开cmd，输入 nvcc -V<br>
+4. 没报错说明安装成功。</p>
+<h1 id="安装cudnn">安装CUDNN</h1>
+<p>官链：https://developer.nvidia.com/rdp/cudnn-download（如果你不想用我的工具包，可自行官链）<br>
+(官网下 CUDNN 貌似需要登录)</p>
+<p>操作环节：</p>
+<ol>
+<li>你可以看到我分享的资源中，有CUDNN，下载下来，解压（任意位置都可，记住就行）。</li>
+<li>解压后，进入解压的目录，你会看到有个cuda目录，进去！然后做如下操作！！！<br>
+2.1. 进入 bin 目录， 把里面的文件（应该就一个），复制到<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\bin<br>
+2.2  进入 include 目录，把里面的文件（应该就一个），复制到<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\include<br>
+2.3  进入 lib 目录, 再继续进入 x64 目录，把里面的文件（应该就一个），复制到<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\lib\x64<br>
+说一下： 上面3个路径，安装cuda提到的（精简版的默认路径， 你的和我的是一模一样的，直接复制）</li>
+<li>将此路径添加到环境变量 （同样是默认路径，直接拿去复制，配了就行）：<br>
+C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.0\lib\x64</li>
+</ol>
+<h1 id="安装">安装</h1>
+<pre><code>pip install tensorflow-gpu==2.0.0 -i https://pypi.douban.com/simple
+</code></pre>
+<p>至此，全部安装完成，接下来测试。</p>
+<h1 id="测试安装-测试是否使用gpu">测试安装 &amp; 测试是否使用GPU</h1>
+<pre><code>import tensorflow as tf
+
+print(tf.__version__)
+print(tf.test.gpu_device_name())
 </code></pre>
 <h1 id="查看版本">查看版本</h1>
 <pre><code>&gt;&gt;&gt; import tensorflow as tf       # 运行后，会输出一段关于CUDA的 INFO
 &gt;&gt;&gt; tf.__version__
 '2.0.0'
 </code></pre>
-<h1 id="pycharm语法高亮问题">Pycharm语法高亮问题</h1>
-<p>Pycharm当前最高可用版是 v2版本。<br>
-但是TF20(Stable)是新出的， 所以Pycharm中是没有TF20语法高亮的。</p>
-<p>其实你可以等等。Pychram等更新到 v3版本（11月份左右， Pycharm出标准版）</p>
-<p>如果你等不及了，没问题。 给你个 v3预先版地址，自己下载。 绝对支持 TF20语法高亮，亲测！<br>
-Pycharm3.0+传送门：https://www.jetbrains.com/pycharm/nextversion/</p>
-<h3 id="强调导入问题">强调导入问题</h3>
-<p>TF2O 的 Keras 是这样导入的： （因为每次更新TF，Adam很容易找不到，所以以Adam导入为例）</p>
-<p>方式1：<br>
-import tensorflow as tf<br>
-import tensorflow.keras as tk<br>
-tk.optimizers.Adam()<br>
-方式2：<br>
-import tensorflow as tf<br>
-from tensorflow.keras import optimizers<br>
-optimizers.Adam()<br>
-语法高亮这个问题是我去Stack找的：<br>
-原标准回答传送门： https://stackoverflow.com/questions/58188704/unable-to-import-kerasfrom-tensorflow-2-0-in-pycharm/</p>
+<h1 id="pycharm-nextversion">Pycharm nextversion</h1>
+<p>https://www.jetbrains.com/pycharm/nextversion/</p>
 
                 </div>
                 <div class="clear"></div>
@@ -175,10 +191,10 @@ optimizers.Adam()<br>
               
               <article class="next grid-50 tablet-grid-50 grid-parent">
                 <div class="thumb cover lazy loaded" style="background-image: url('https://cythonlin.github.io/media/images/n16me-6oV.jpg');"></div>
-                 <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20win10-and-beta-and-gpu-ban-an-zhuang/" class="full-link"></a>
+                 <a href="https://cythonlin.github.io/post/py-greater-hmm-yu-crf-yu-viterbi/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2020-09-29">2020-09-29</time>
-                  <h4 class="title white no-margin">AI =&gt; Tensorflow2.0（win10 &amp; Beta &amp; GPU版 ）安装</h4>
+                  <h4 class="title white no-margin">PY =&gt; HMM 与 CRF 与 Viterbi</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
@@ -212,6 +228,21 @@ optimizers.Adam()<br>
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-03-10">2021-03-10</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/">PY =&gt; 2017-2021高级冷门备忘</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
@@ -226,55 +257,18 @@ optimizers.Adam()<br>
                   
                   
                   
-                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
+                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/"> IDE =&gt; My Pycharm</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
-                  
-                  
-                  
-                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-03-03">2021-03-03</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
                   
                   
                   
@@ -438,9 +432,9 @@ optimizers.Adam()<br>
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
@@ -496,7 +490,7 @@ optimizers.Adam()<br>
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 90 篇文章
+          ©2019 共 79 篇文章
           <br/>
 
         </p>

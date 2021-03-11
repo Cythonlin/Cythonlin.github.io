@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; RS复习 | Cython_lin</title>
+<title>RS =&gt; 推荐系统（七）DL-Wide&amp;Deep | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,14 +15,11 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="常用高级语句
-列表爆炸：
-mysql
-SELECT xxx FROM xxx
-LATERAL VIEW explode(某列表) 
-
-pyspark
-df.withColumn(&quot;某新列&quot;, F.explode(&quo..." />
+    <meta name="description" content="TF20
+=&gt; [TF20前面写过，直接见
+=&gt; Tensorflow2.0语法 - 张量&amp;基本函数(一)
+=&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二）
+=&gt; Tenso..." />
     <meta name="keywords" content="RS,Python" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -78,7 +75,7 @@ df.withColumn(&quot;某新列&quot;, F.explode(&quo..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615007890303" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615464655548" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -93,7 +90,7 @@ df.withColumn(&quot;某新列&quot;, F.explode(&quo..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-28"><i class="fa fa-calendar"></i><span class="lately">6 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-28"><i class="fa fa-calendar"></i><span class="lately">11 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater-fu-xi/"> </span>
@@ -109,7 +106,7 @@ df.withColumn(&quot;某新列&quot;, F.explode(&quo..." />
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
               </div>
-              <h1 class="title ularge white bold">RS =&gt; RS复习</h1>
+              <h1 class="title ularge white bold">RS =&gt; 推荐系统（七）DL-Wide&amp;Deep</h1>
             </div>
           </div>
         </div>  
@@ -119,60 +116,13 @@ df.withColumn(&quot;某新列&quot;, F.explode(&quo..." />
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="常用高级语句">常用高级语句</h1>
-<h2 id="列表爆炸">列表爆炸：</h2>
-<p>mysql</p>
-<pre><code>SELECT xxx FROM xxx
-LATERAL VIEW explode(某列表) 
-</code></pre>
-<p>pyspark</p>
-<pre><code>df.withColumn(&quot;某新列&quot;, F.explode(&quot;某列表&quot;))
-</code></pre>
-<h1 id="用户行为">用户行为</h1>
-<p>曝光 exposure<br>
-点击 clicked<br>
-分享 shared<br>
-收藏 collected<br>
-阅时 read_time<br>
-......</p>
-<h1 id="用户画像标签权重算法">用户画像标签权重算法</h1>
-<h2 id="公式">公式</h2>
-<pre><code>用户标签权重 = 行为对应每个关键词（标签）权重分数之和 * 时间衰减系数
-</code></pre>
-<h2 id="行为权重分数">行为权重分数</h2>
-<pre><code>action                      score
-阅时&lt;1000                     1
-阅时&gt;=1000                    2
-收藏                          2
-分享                          3
-点击                          5
-</code></pre>
-<p>行为权重对应相加（一般都是True 或 False），故用乘法查位</p>
-<pre><code>sum_score = shraed * 3 + collected * 2 + ..............
-</code></pre>
-<h2 id="时间衰减">时间衰减</h2>
-<p>note:  log无论是math.log 还是 np.log，还是AI，通通都是 e为底</p>
-<pre><code>1 / ( log(t)+1 )   # t为 当前时间与，行为发生时间的差值
-</code></pre>
-<p>t:时间差值越大，衰减系数越小。</p>
-<pre><code>用户标签权重 = 行为权重分数之和 * 时间衰减系数
-</code></pre>
-<p>则，用户对应每个关键词（标签）权重被拉低，代码如下</p>
-<pre><code>from datetime import datetime, timedelta
-delta = datetime.now() - datetime.strptime(&quot;2019-3-3 08:08:08&quot;, &quot;%Y-%m-%d %H:%M:%S&quot;)
-timeweight = 1 / (np.log(delta.days+1) ) 
-</code></pre>
-<h1 id="用户画像存储">用户画像存储</h1>
-<h2 id="方案1">方案1：</h2>
-<pre><code>存到 hive，用 hbase 关联hive
-</code></pre>
-<p>出现的问题：删HBase，hive会出现 tablenotfound的异常</p>
-<h2 id="方案2">方案2：</h2>
-<pre><code>存到hbase, 用 hive 关联 hbase
-</code></pre>
-<p>这样即使删除了hive，hbase自己也不会报错</p>
-<h2 id="存储过程">存储过程</h2>
-<p>Happybase操作见 <a href="https://www.cklin.top/post/rs-greater-tui-jian-xi-tong-er-chi-xian-hua-xiang-gou-jian/">😊=&gt; 推荐系统</a></p>
+                  <h1 id="tf20">TF20</h1>
+<p>=&gt; [TF20前面写过，直接见<br>
+<a href="https://www.cklin.top/post/ai-greater-tensorflow20-yu-fa-zhang-liang-andji-ben-han-shu-yi/">=&gt; Tensorflow2.0语法 - 张量&amp;基本函数(一)</a><br>
+<a href="https://www.cklin.top/post/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/">=&gt; Tensorflow2.0语法 - dataset数据封装+训测验切割（二）</a><br>
+<a href="https://www.cklin.top/post/ai-greater-tensorflow20-yu-fa-keras_api-de-shi-yong-san/">=&gt; Tensorflow2.0语法 - keras_API的使用(三)</a><br>
+<a href="https://www.cklin.top/post/py-greater-tensorflow20-mo-xing-bao-cun-yu-bu-shu/">=&gt; PY =&gt; Tensorflow2.0模型保存与部署(四)</a><br>
+<a href="https://www.cklin.top/post/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/">=&gt; Tensorflow2.0 GPU管理与分布式(五)</a></p>
 
                 </div>
                 <div class="clear"></div>
@@ -201,7 +151,7 @@ timeweight = 1 / (np.log(delta.days+1) )
                  <a href="https://cythonlin.github.io/post/go-greater-fu-xi/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-02-25">2021-02-25</time>
-                  <h4 class="title white no-margin">RS =&gt; 推荐系统（六）推荐缓存服务</h4>
+                  <h4 class="title white no-margin">RS =&gt; 推荐系统（六）推荐缓存服务+LR</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
@@ -235,6 +185,21 @@ timeweight = 1 / (np.log(delta.days+1) )
                   
                   
                   <article class="item post-0 post type-post status-publish format-standard has-post-thumbnail hentry">
+                    <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/" class="thumb hover-effect">
+                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
+                    </a>
+                    <div class="info gradient-effect">
+                      <time datetime="2021-03-10">2021-03-10</time>
+                      <h4 class="title usmall">
+                        <a href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/">PY =&gt; 2017-2021高级冷门备忘</a>
+                      </h4>
+                    </div>
+                    <div class="clear"></div>
+                  </article>
+                  
+                  
+                  
+                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/ide-greater-my-sublimepy/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
@@ -249,55 +214,18 @@ timeweight = 1 / (np.log(delta.days+1) )
                   
                   
                   
-                  <article class="item post-1 post type-post status-publish format-standard has-post-thumbnail hentry">
+                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
                     <a href="https://cythonlin.github.io/post/rs-greater-9/" class="thumb hover-effect">
                       <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
                     </a>
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-9/">RS =&gt; 9</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-9/"> IDE =&gt; My Pycharm</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
                   </article>
-                  
-                  
-                  
-                  <article class="item post-2 post type-post status-publish format-standard has-post-thumbnail hentry">
-                    <a href="https://cythonlin.github.io/post/rs-greater-8/" class="thumb hover-effect">
-                      <span class="fullimage cover" style="display:block;border-radius:50%;background-image: url('/media/images/gridea.jpg');"></span>
-                    </a>
-                    <div class="info gradient-effect">
-                      <time datetime="2021-03-03">2021-03-03</time>
-                      <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
-                      </h4>
-                    </div>
-                    <div class="clear"></div>
-                  </article>
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
                   
                   
                   
@@ -461,9 +389,9 @@ timeweight = 1 / (np.log(delta.days+1) )
                   <h4 class="widget-title title white bordered">标签云</h4>
                   <div class="tagcloud">
                     
-                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-0 ctag-c137hZpK4" aria-label="">IDE</a>
+                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-0 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
+                      <a href="https://cythonlin.github.io/tag/c137hZpK4/" class="ctag ctag-1 ctag-c137hZpK4" aria-label="">IDE</a>
                     
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
@@ -519,7 +447,7 @@ timeweight = 1 / (np.log(delta.days+1) )
           <a href="https://cythonlin.github.io"><img src="\media\images\custom-footerLogo.png" alt=""></a>
         </div>
         <p class="published border-effect">
-          ©2019 共 90 篇文章
+          ©2019 共 79 篇文章
           <br/>
 
         </p>
