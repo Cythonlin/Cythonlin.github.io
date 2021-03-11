@@ -2,585 +2,13 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://cythonlin.github.io</id>
     <title>Cython_lin</title>
-    <updated>2021-03-11T12:12:28.937Z</updated>
+    <updated>2021-03-11T12:13:38.430Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://cythonlin.github.io"/>
     <link rel="self" href="https://cythonlin.github.io/atom.xml"/>
     <logo>https://cythonlin.github.io/images/avatar.png</logo>
     <icon>https://cythonlin.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, Cython_lin</rights>
-    <entry>
-        <title type="html"><![CDATA[PY => 2017-2021高级冷门备忘]]></title>
-        <id>https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/</id>
-        <link href="https://cythonlin.github.io/post/py-greater-2017-2021-gao-ji-zhi-shi-fu-xi/">
-        </link>
-        <updated>2021-03-10T04:46:37.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="目的">目的</h1>
-<p>把远古写的笔记全部删除，浓缩到此篇文章！<br>
-知其然且知其所以然！<br>
-冷门且高级且易忘！！！😏😏</p>
-<h1 id="放一个最简单的大招">放一个最简单的大招😏</h1>
-<p>知道单元素元组为什么要 ( ,) 这样设计，而非 ()？</p>
-<pre><code>a = (1+2)           # 3
-b = (1+2,)          # (3,)
-c = (1+2) * (3+4)   # 21   👈 就是为了避开这个
-d = (1+2,) + (3+4,) # (3, 7)
-</code></pre>
-<h1 id="可变类型与不可变类型">可变类型与不可变类型：</h1>
-<pre><code>可变类型：[], {}                # 可增删改 查
-不可变类型: int float str ()    # 无法增删改， 只可查
-</code></pre>
-<p>区别：+ 与 += ：</p>
-<pre><code>+: 
-    无论是可变类型 还是 不可变类型， 都是新指向的空间
-+=:  
-    对于可变类型：原地操作，原指向，原空间 😀建议😀
-    对于不可变类型：异地操作，新指向，新空间
-=+:
-    正数赋值
-</code></pre>
-<h1 id="字典与集合">字典与集合</h1>
-<p>字典如下函数与集合的关系：</p>
-<pre><code>keys()
-values()
-items()
-返回值皆支持集合操作
-</code></pre>
-<p>py39字典新增</p>
-<pre><code>| （并集运算符）
-|= （并集赋值符）
-
-&gt;&gt;&gt; a = {1:1, 2:2}
-&gt;&gt;&gt; b = {1:3, 3:4}
-&gt;&gt;&gt; a | b
-{1: 3, 2: 2, 3: 4}
-&gt;&gt;&gt; b | a
-{1: 1, 3: 4, 2: 2}
-
-# 十个字概括： 键异扩新项，键同赋新值
-# 注意1： |  后为新项/新值
-# 注意2： 此运算符，是计算出的新结果，需要赋给新变量使用
-</code></pre>
-<p>提一嘴集合：</p>
-<pre><code>赋新值运算符：（并交叉）
-    a | b   
-    a &amp; b
-    a - b
-
-函数不建议使用：
-    略
-</code></pre>
-<h1 id="高阶函数">高阶函数</h1>
-<p>总是记不住高阶函数的参数位置吗？ 那我觉得这个概念有必要提一嘴：👇</p>
-<pre><code>函数是一等公民  了解一下！！！
-</code></pre>
-<h2 id="map很简单这里只说map双参的实现方案">map很简单，这里只说map双参的实现方案：</h2>
-<p>方案1：偏函数，基础，略</p>
-<pre><code>from functools import partial
-略
-</code></pre>
-<p>😀方案2：starmap 多参，这才是我想说的，我相信很少人用过</p>
-<pre><code>from itertools import starmap
-
-list(
-    starmap(
-        lambda x, y,z: print(x + 100, y + 200,z+300),
-        ((1,2,3),(4,5,6))
-        # 可见虽然dict.items()，不是严格双层，但也帮我们强转
-    )
-)
-
-# 101 202 303
-# 104 205 306
-#😀😀 不仅可以传 Sim-dict 这种 Nx2格式的， 还能传 NxN格式的（N行N列）
-</code></pre>
-<h2 id="zip-很简单唯一注意的就是不规则参数">zip 很简单，唯一注意的就是不规则参数</h2>
-<p>只取前N为能1V1匹配到的，如果不匹配并不会报错，而是直接过滤单个的</p>
-<pre><code>In [132]: list(zip((1,2),(3,4,5)))
-Out[132]: [(1, 3), (2, 4)]
-</code></pre>
-<h1 id="字典生成式-和-集合生成式-易混区分">字典生成式 和 集合生成式 易混区分</h1>
-<p>集合生成式，（x,y必须要用序列包起来）</p>
-<pre><code>set1 = {(x,y) for x,y in dict(a=1,b=2).items()}
-print(set1)
-</code></pre>
-<p>字典生成式，必须要写 : , 谨记 必须冒号，才是字典😀😀并且一定不要用括号</p>
-<pre><code>dict1 = {x:y for x,y in dict(a=1,b=2).items()}
-print(dict1)
-</code></pre>
-<h1 id="三器">三器</h1>
-<h2 id="可迭代对象-生成器-迭代器三者的关系">可迭代对象、生成器、迭代器三者的关系：</h2>
-<pre><code>1. 迭代器，生成器一定是可迭代对象
-2. 生成器是迭代器的一种（子集）
-3. 可迭代对象：必须实现 __iter__方法
-4. 迭代器：必须实现 __iter__方法  和__next__方法 
-5. 😀生成器：包含yield的函数 或 (生成器推导语法) 才是Generator生成器，否则都是迭代器
-6. 😀生成器看着是函数，但是它底层依然是实现了 __iter__() 和 __next__() 的类
-7. 可迭代对象都可被for循环 所遍历， 另外实现了 __getitem__的类 其对象也可for遍历
-8. 工具包： from collections import Iterable,Iterator （PY39已被废除）
-9.  新工具包：from collections.abc import Iterator,Generator,Iterable
-</code></pre>
-<p>验证生成器是否 是（迭代器，生成器，可迭代对象）代码：</p>
-<pre><code>from collections.abc import Iterator,Generator,Iterable
-def fun():
-    for x in range(10):
-        a = yield x
-        print(a)
-f = fun() 
-
-print(isinstance(f, Iterator))      # True
-print(isinstance(f, Generator))     # True
-print(isinstance(f, Iterable))     # True
-</code></pre>
-<p>验证不具有yield 或 ()推导生成式类是否为生成器：</p>
-<pre><code>class A():
-    def __iter__(self):
-        pass
-    def __next__(self):
-        pass
-obj = A()
-print(isinstance(obj, Iterator))      # True
-print(isinstance(obj, Generator)) # False   
-# 👆上面这个False可以看出， 虽然实现了 __iter__和 __next__
-# 👆但是并没有 yield 或 ()推导生成式，所以它只能叫迭代器，而不是生成器
-print(isinstance(obj, Iterable))     # True
-</code></pre>
-<h3 id="generator-推理单步迭代的3种方式">Generator 推理单步迭代的3种方式：</h3>
-<p>先挑明：</p>
-<ul>
-<li>他们都有 next(),和__next__()  但是😲</li>
-<li>迭代器没有 send() 方法</li>
-<li>生成器有 send()  方法：因为send()是专门为 yield提供的</li>
-</ul>
-<p>代码解释：</p>
-<pre><code># next(f)  和 f.__next__()   这两种很简单，略
-# 😀😀😀下面send()是重点，生成器专门为yield提供的 ----------------------------
-def fun():
-    for x in range(10):
-        a = yield x
-        print(a)
-
-f = fun()                 # 无输出
-f.send(None)         #  fun内无任何输出,  注意，连None都没有，只是开关的作用
-
-c = f.send(&quot;100&quot;)         #  执行后，输出值为 100 ， 也就是 打印a的值
-print(c)                  # 这个返回值就是断点处x的值， 结果为 0， 因为这是第一次send
-</code></pre>
-<p>😀😀😀上述send(n)语法解释:</p>
-<pre><code>如果第一个使用send(n), 那么send参数必须是None， 死语法。（next不需要传参）
-    Note1: 你也可使用 next(f) 和 f.__next__() 代替 第一个f.send(None)
-    Note2: 第一个 next(f) 和 f.__next__() 和 f.send(None)，  都是起到开关的作用
-
-yield流程：
-    1. f.send(None) # 长官输入指令给 fun函数，并执行到 😀yield 关键词及右侧停止。
-    2. a = yield x # 相当于一个士兵等待指令，等号😀左边还未执行，程序😀右边就被封锁了
-    3. f.send(100)   # 长官输入100，士兵收到后就把程序😀右边解封，并执行等号左边
-    4. 于是 a 被赋值为 100
-</code></pre>
-<h3 id="简单小结一下">简单小结一下</h3>
-<p>iter(x)    可以把序列类型类型数据变为 <strong>迭代器</strong>，注意是<strong>迭代器</strong></p>
-<p>其实python里面不止有 Iterator 和 Generator<br>
-也有其他类型，如：</p>
-<pre><code>zip()返回值
-map()返回值 等
-他们都是迭代器的一种。 isinstance True
-</code></pre>
-<p>还有一些，叫做<strong>Iterable可迭代对象</strong></p>
-<pre><code> 如常见序列， 
- (),[],{},
- {}.items(), 
- range()  等
- 他们既不是迭代器，也不是生成器，它们只是可迭代对象
-</code></pre>
-<h2 id="装饰器不多废话代码例子与注释鲜明联想">装饰器（不多废话，代码例子与注释鲜明联想）</h2>
-<p>标准装饰器：</p>
-<pre><code>def f(func):
-    @wraps(func)
-    def f1(*args, **kwargs):
-        print('上面加了-奶油')
-        result = func(*args, **kwargs) # 我是面包
-        print('下面加了-沙拉')
-        return result
-    return f1
-
-@f  # 等价于  func = f(func)
-def func():
-    print(&quot;我是面包&quot;)
-
-func()
-
-# 输出结果 👇
-# 上面加了-奶油
-# 我是面包
-# 下面加了-沙拉
-</code></pre>
-<p>带参数的装饰器：（把@单个符号看作一个部分， 把@后面所有当作整体然后返回结果 交给@）<br>
-其实就是最外面又套了个函数，然后这个函数 返回结果是返回之前的整体：</p>
-<pre><code>from functools import wraps
-def 包装纸(纸质):      # 带参数的装饰器
-    print(f&quot;在外面再包一层{纸质}&quot;)
-    def f(func):
-        @wraps(func)
-        def f1(*args, **kwargs):
-            print('上面加了-奶油')
-            result = func(*args, **kwargs) # 我是面包
-            print('下面加了-沙拉')
-            return result
-        return f1
-
-    return f
-
-@包装纸(&quot;锡纸&quot;)  # 等价于  func = f(func)
-def func():
-    print(&quot;我是面包&quot;)
-
-func()
-
-# 输出结果 👇
-# 在外面再包一层锡纸
-# 上面加了-奶油
-# 我是面包
-# 下面加了-沙拉
-</code></pre>
-<p>用装饰器装饰类：</p>
-<pre><code>和上面几乎一模一样， 就是装饰的是类
-@f      # 等价于  A = f(A) 😎看这里，就是这里变了，传递的是类，仅此而已
-class A():
-    pass
-</code></pre>
-<p>类装饰器（上面说的都是用普通函数当作装饰器，其实类也可以作为装饰器）😎</p>
-<pre><code># 其实这更简单... 
-
-class A:
-    def __init__(self,  func):
-        self.func = func
-
-    def  __call__(self, *args, **kwargs):
-        self.func(*args, **kwargs)
-
-@A      # 等价于 test = A(test)
-def test():
-    pass
-
-test()
-</code></pre>
-<p>跟着我的思路走😎：</p>
-<pre><code>1. @A 等价于 test = A(test)
-2. 先执行 = 右面的，即 A(test)，这是类的实例化啊： 即第一步调用 __init__()，
-3. __init__()会自动返回实例（底层是 __new__） 因为自动返回，所以无需return😎
-4. 再执行等号左面的，即  test = 实例对象
-5. 然后开始执行test()，即 实例对象(),  看到这里，自然而然就想到自动调 __call__()
-</code></pre>
-<h1 id="继承广度c3-mro">继承（广度，C3, MRO）</h1>
-<p>python3中super() 等价于 super(类, self)。 所以用哪个都无所谓，一模一样。</p>
-<pre><code>class A:
-    def say(self, name):
-        print(f'Im {name}')
-
-class B(A):
-    def say(self, name):
-        # 下面两种用法一模一样
-        super().say(name)                 # PY3新式
-        # super(B, self).say(name)        # PY2遗留
-</code></pre>
-<p>👇super(D, self) 的定义说明：</p>
-<pre><code>def super(cls, instance):
-    mro_list = instance.__class_.mro()
-    # 此类对应的下一个MRO类的 index，加1代表除了自己
-    next_mro_index = mro_list.index(cls) + 1
-    # 找到此索引对应的的类名并返回
-    return mro_list( next_mro_index )
-</code></pre>
-<p>写了一大堆废话解释，全删了，直接记住下面的例子。<br>
-三个要点：</p>
-<ol>
-<li>Mro是广度，</li>
-<li>遇super则跳（当yield看）。钻牛角尖毫无意义！！！！😑</li>
-<li>1和2结合起来，先广度跳（B1跳B2， 然后跳Base， 再原路返回，完美）</li>
-<li>秘诀：<br>
-（😑 跳之前，从左到右，从下到上画 倒Z）（横画完，则向左上方画捺，再画横，循环...）<br>
-（😑 跳之后，原路返回）</li>
-</ol>
-<p>示例：</p>
-<pre><code>class Base:
-    def __init__(self, ):
-        print(&quot;Base&quot;)
-        
-class B1(Base):
-    def __init__(self, ):
-        print(&quot;B1&quot;)
-        super(B1, self).__init__()
-        print(&quot;sorry 1&quot;)
-class B2(Base):
-    def __init__(self, ):
-        print(&quot;B2&quot;)
-        super(B2, self).__init__()
-        print(&quot;sorry 2&quot;)
-        
-class B12(B1,B2):
-    def __init__(self, ):
-        super(B12, self).__init__()
-b12 = B12()
-</code></pre>
-<p>打印结果👇：</p>
-<pre><code>B1
-B2
-Base
-sorry 2
-sorry 1
-</code></pre>
-<h1 id="上下文管理器">上下文管理器</h1>
-<h2 id="实现方式1协议__enter__协议__exit__">实现方式1（协议__enter__+协议__exit__）</h2>
-<pre><code>class A:
-    def __init__(self, filename, mode):
-        self.f1 = open(filename, mode)
-        print(&quot;人呢&quot;)
-    def __enter__(self):
-        print(&quot;打开了新文件&quot;)
-        return self.f1
-
-    def __exit__(self, *args, **kwargs):
-        print(&quot;关闭了新文件&quot;)
-        self.f1.close()
-
-with A(&quot;1.txt&quot;, &quot;rb+&quot;) as f:
-    print(&quot;读取了数据&quot;)
-    print(f.read().decode(&quot;utf-8&quot;))
-
-# 人呢
-# 打开了新文件
-# 读取了数据
-# h哈哈哈哈哈哈哈哈哈 （这是文件read读出的内容）
-# 关闭了新文件
-</code></pre>
-<ol>
-<li>enter中return 的值，  就是 as 后面的值。</li>
-<li>with后的 类必须实例化必须实例化 ，不然会报错</li>
-<li>👍执行顺序是 init-&gt;enter-&gt;包围体-&gt;exit</li>
-</ol>
-<h2 id="实现方式2contextmanager底层也是第一种">实现方式2（@contextmanager）底层也是第一种</h2>
-<pre><code>from contextlib import contextmanager as context
-@context
-def f():
-    print(&quot;yield之前的 f()调用&quot;)
-    yield &quot;执行内容&quot;
-    print(f&quot;yield之后&quot;, )
-with f() as a:
-    print(a)
-</code></pre>
-<h1 id="属性描述符">属性描述符</h1>
-<h2 id="方式1">方式1</h2>
-<pre><code>class User:
-    def __init__(self, name):
-        self.__name = name
-        
-    def get_name(self):
-        return self.__name
-    def set_name(self, name):
-        self.__name = name
-
-    name = property(fget=get_name, fset=set_name, fdel=None)
-
-u = User(&quot;Tom&quot;)
-print(u.name)       # Tom
-u.name = 'Bob'
-print(u.name)       # Bob
-</code></pre>
-<h2 id="方式2">方式2</h2>
-<pre><code>class User:
-    def __init__(self, name):
-        self.__name = name
-
-    @property
-    def name(self):
-        return self.__name
-    @name.setter
-    def name(self, name):
-        self.__name=name
-u2 = User(&quot;Jack&quot;)
-print(u2.name)          # Jack
-u2.name  = &quot;Mike&quot;
-print(u2.name)          # Mike
-</code></pre>
-<h1 id="类魔法函数">类魔法函数</h1>
-<h2 id="__new__-实例的生产器">__new__： 实例的生产器</h2>
-<pre><code>class A:
-'''
-    作用： 这句话是官方源码对 __new__作用的注释：&quot;&quot;&quot; Create and return a new object.&quot;&quot;&quot;
-    原理： 在实例化后，自动调用__init__, 其实在这之前还调用了__new__ ，可做拦截。
-                __new__的返回值， 就是实例化对象后的对象，返回什么对象就是什么。
-                并且返回值就是 __init__(self) 这里面的 self
-    使用： 若重写 __new__,  需要调用父类的 __new__() 。把super()结果返回就是正常使用的self
-                return super(A, cls).__new__(cls)
-    扩展： 可用拦截这个特性，在实例传递给 __init__之前，对 instance做限制（单例）
-'''
-# 单例 例子如下
-
-    instance = None     # 类属性， 因为 __new__中本身就是cls类， 所以必须用cls调用
-    def __new__(cls, *args, **kwargs):
-        if not cls.instance:
-            cls.instance = super().__new__(cls) # 若无继承，则用object的new
-        return cls.instance
-
-    def __init__(self, value):
-        print(value)
-
-# 实例化先把初始值传到了 __new__ (1,)
-# 然后才把初始值传到了 __init__ 1
-# 实例化先把初始值传到了 __new__ (2,)
-# 然后才把初始值传到了 __init__ 2
-# True
-</code></pre>
-<p>👍最后强调一下，调用基类的new时，注意传的参数， 只传 cls，不能多传。<br>
-👍我们自己定义的new, args和kwargs接收了实例化传的初始值， 并且还会把这个值无损传递给 init。<br>
-👍至于如何无损传递,不要钻牛角尖，也不要去new里面修改传递的参数，没意义，直接去 init操作值即可</p>
-<h2 id="__setattr__-和__getattr__-和__delattr__">__setattr__() 和__getattr__() 和__delattr__()</h2>
-<pre><code>&quot;&quot;&quot;
-    __setattr__()：=号 属性赋值 会自动调用此方法 
-    __getattr__()：.号 属性取值 会自动调用此方法    # 注：找不到属性才会调用此方法
-    __delattr__()：del 属性删除 会自动调用此方法
-&quot;&quot;&quot;
-</code></pre>
-<h2 id="__getattribute__">__getattribute__()</h2>
-<pre><code>&quot;&quot;&quot;
-    和 __getattr__() 一样，只不过 __getattribute__最先调用，并拦截了 __getattr__()
-&quot;&quot;&quot;
-</code></pre>
-<h2 id="__getitem__">__getitem__()</h2>
-<pre><code>&quot;&quot;&quot;
-    对对象进行 切片、索引、遍历 等 会自动调用此方法
-&quot;&quot;&quot;
-</code></pre>
-<h2 id="__init_subclass__">__init_subclass__（）</h2>
-<pre><code>&quot;&quot;&quot;
-    被继承的类 会自动调用__init_subclass__ 
-&quot;&quot;&quot;
-</code></pre>
-<h2 id="__contains__">__contains__()</h2>
-<pre><code>xx in xx
-</code></pre>
-<h2 id="dira-和-dira-和-a__dict__-和-a__dict__-的区别">dir(a) 和 dir(A) 和 a.__dict__ 和 A.__dict__ 的区别</h2>
-<ul>
-<li>dir():
-<ul>
-<li>a：世间万物，全部都有（注意，你没听错，是全部😏）</li>
-<li>A：只比 a 少了一个 实例属性。</li>
-</ul>
-</li>
-<li>__dict__:
-<ul>
-<li>a: 只列出（自己的实例属性 + 继承的实例属性）</li>
-<li>A: 只列出（自己的类属性+类方法+静态方法+实例方法） （注意😏没有继承，没有静态属性）</li>
-</ul>
-</li>
-</ul>
-<h2 id="一些其他属性方法">一些其他属性/方法</h2>
-<p>查看mro</p>
-<pre><code>A.mro()
-</code></pre>
-<p>查看MRO列表的下一个基类。</p>
-<pre><code>A.__base__
-</code></pre>
-<p>查看上一代的基类（直接继承关系的都算，间接的不算）</p>
-<pre><code>A.__bases__
-</code></pre>
-<p>查看对象的实例对应的原型类</p>
-<pre><code>a1.__class__  # 查看a1的类为 A
-
-当然类也可以, eg：  D.__class__   结果是👍 &lt;class 'type'&gt;
-</code></pre>
-<p>👍type站在了食物链的顶端（和type() 查看类型是一个type）<br>
-👍毕竟python万物皆对象, 如果你觉得这句话不够严谨，你可以</p>
-<pre><code>print(type.__class__)
-print(type(type))
-</code></pre>
-<p>结果都是， &lt;class 'type'&gt; 。 可以看作 type实现了😏😏&quot;小自举&quot;</p>
-<h1 id="浅拷贝深拷贝皮肉举例">浅拷贝+深拷贝（皮+肉举例）</h1>
-<p>谨记（copy不可变类型无意义， copy可变类型才有意义）：</p>
-<pre><code>无论深copy/浅copy 都无法 copy/deepcopy😏不可变类型的变量
-即使你copy/deepcopy后，你id() 比较后，发现地址一致
-</code></pre>
-<p>用法（通常copy可变类型序列）：</p>
-<pre><code>from copy import copy
-c1 = copy(&lt;序列&gt;)
-from copy import deepcopy
-d1 = deepcopy(&lt;序列&gt;)
-</code></pre>
-<p>深/浅copy区别：</p>
-<pre><code>浅拷贝：不同的皮肤 用 同一块肉  =&gt; 😏[ ]一层序列叫做皮
-深拷贝：不同的皮肤 用 不同的肉  =&gt; 😏[ [] ] N层序列才叫肉
-
-所以也就意味着：
-    一层序列（深/浅）无区别。
-    N 层序列（深/浅）才有区别：
-        浅：只能copy外层，内层公用地址。（别改内层数据，你改了，我也跟着变了。。）
-        深：全身copy个遍，全部新开地址。（你改你内外层的数据和我无关）
-</code></pre>
-<h1 id="lambda">Lambda</h1>
-<p>lambda内执行多个函数:</p>
-<pre><code>lambda: ([f1(), f2(), f3()]) 
-</code></pre>
-<p>lambda匿名 自执行函数（和JS很像）（lambda定义体必须用小括号括起来）</p>
-<pre><code>(lambda x:print(x))(1)
-</code></pre>
-<h1 id="解构赋值">解构赋值</h1>
-<pre><code>a, *_ = range(10)
-*_, a = range(10)
-a,*_, b = range(10)
-</code></pre>
-<h1 id="反射">反射</h1>
-<h2 id="模块反射两种方式-import_module-和-__import__">模块反射两种方式 （import_module 和 __import__() )</h2>
-<p>😏 必用import_mosule。   __import__()这个有BUG， 多路径不能导入</p>
-<h3 id="import_module">import_module</h3>
-<pre><code>from importlib import import_module
-parse = import_module('urllib.parse')   
-parse.urlencode({'a':1})
-# 正常运行
-# 如果换成 __import__() 就会找不到模块，所以必用 import_module😏
-</code></pre>
-<h2 id="变量反射">变量反射</h2>
-<p>hasattr+getattr</p>
-<pre><code>hasattr(random,'randint')
-randint = getattr(random,'randint')
-print(randint(0,1))
-</code></pre>
-<p>delattr:</p>
-<pre><code>delattr(random, 'randint')
-</code></pre>
-<h1 id="文件复制假移动真剪切">文件复制/假移动/真剪切</h1>
-<p>shutil模块很好用。<br>
-但是他的移动有说法：</p>
-<pre><code>shutil.move() : 先复制后删除 （但稳定）
-os.rename(): 剪切（神速）也可改名（）
-</code></pre>
-<p>复制正常用即可：</p>
-<pre><code>shutil.copy(源路径，目标路径)    # 复制
-</code></pre>
-<h1 id="目录遍历-oswalk">目录遍历 os.walk</h1>
-<pre><code>&quot;&quot;&quot;
-    os.walk() 是一个深度遍历模式的文件遍历函数
-    返回值是一个迭代器，遍历这个迭代器后，每一次的返回值都是如下顺序三种构成
-        1. current_path: 当前路径 
-        2. dir_list:     其下目录列表
-        3. file_list:    其下文件列表
-    
-&quot;&quot;&quot;
-import os
-file_generator = os.walk('D:/虚拟E盘-代码空间/TF2')
-for current_dir, dir_list, file_list in file_generator:
-    print(current_dir, dir_list, file_list)
-</code></pre>
-<h1 id="非阻塞执行命令">非阻塞执行命令</h1>
-<p>主要代替os.system</p>
-<pre><code>import subprocess
-res = subprocess.run('dir', shell=True, stdout=subprocess.PIPE) # 结果输入到res管道中去
-print(res.stdout.decode('gbk'))    # res管道中有输出日志，如果在win下，需要 decode
-</code></pre>
-<h1 id="global-nonlocal">global &amp; nonlocal</h1>
-<p>global 作用于普通函数与类中<br>
-nonlocal  作用于闭包中</p>
-]]></content>
-    </entry>
     <entry>
         <title type="html"><![CDATA[IDE => My Sublime（PY）]]></title>
         <id>https://cythonlin.github.io/post/ide-greater-my-sublimepy/</id>
@@ -1686,6 +1114,212 @@ print(res.stdout.decode('gbk'))    # res管道中有输出日志，如果在win�
 <h1 id="global-nonlocal">global &amp; nonlocal</h1>
 <p>global 作用于普通函数与类中<br>
 nonlocal  作用于闭包中</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[GO => Golang复习（未完待续）]]></title>
+        <id>https://cythonlin.github.io/post/rs-greater/</id>
+        <link href="https://cythonlin.github.io/post/rs-greater/">
+        </link>
+        <updated>2021-03-03T07:10:37.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="env">ENV</h1>
+<h3 id="goroot-默认go安装根目录即可">GOROOT: 默认go安装根目录即可</h3>
+<pre><code>D:\code\go
+</code></pre>
+<h3 id="gopath工程目录里面有bin-pkg-src">GOPATH：工程目录（里面有bin, pkg, src）</h3>
+<pre><code>D:\code\go\work
+    # 我们只需用goland 去 open src目录即可
+</code></pre>
+<h3 id="gobingopath里面的bin目录">GOBIN：GOPATH里面的bin目录</h3>
+<p>作用： go install 生成的exe 会自动存到这里</p>
+<pre><code>D:\code\go\work\bin
+</code></pre>
+<p>此外我们还需将此目录放入到环境变量，随时随地exe执行</p>
+<h3 id="go111module">GO111MODULE</h3>
+<pre><code>off ：无模块支持，go 会从 GOPATH 和 vendor 文件夹寻找包。
+on ：模块支持，go 会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod 下载依赖。
+auto ：在 $GOPATH/src 外面且根目录有 go.mod 文件时，开启模块支持。
+</code></pre>
+<h1 id="平台go命令">平台+Go命令</h1>
+<h2 id="查看go的环境变量">查看GO的环境变量</h2>
+<pre><code>go env | grep GOOS
+go env | grep GOARCH
+</code></pre>
+<p>GOOS变量值是什么平台，编译后的文件就只能在什么平台运行</p>
+<h2 id="windows">windows:</h2>
+<pre><code> go build .\hello.go
+.\hello.exe
+</code></pre>
+<p>Goland terminal修改GOOS</p>
+<pre><code>cmd: set GOOS=linux
+ps:    $env:GOOS=&quot;linux&quot;
+# go env | grep GOOS   # 此时已变为linux
+
+go build .\hello.go
+.\hello
+# 😴 执行失败，平台不兼容
+</code></pre>
+<h2 id="linux">linux:</h2>
+<pre><code>./hello 执行成功
+./hello.exe    执行成功 （纯Linux是会执行失败的，但是这是WSL）
+# WSL特殊，因为WSL可以兼容执行windows exe的格式
+</code></pre>
+<h2 id="go-install">go install</h2>
+<p>把目录下 go build 编译后的 exe文件，自动添加到 GOBIN目录下</p>
+<pre><code># 需要把上面的环境变量配置好：GO111MODULE auto
+go install
+</code></pre>
+<h1 id="赋值">赋值</h1>
+<pre><code>:=       (python3.8也出了，不过，其用途是 条件赋值一体化)
+</code></pre>
+<p>特殊：空赋值（定义后可不使用，也不能使用）： _</p>
+<pre><code>a := 1    // a必须在下文使用
+_,b := 1,2  // 必须在下文使用
+// _,_ := 1,2  // 这种写法是错误的
+_,_ = 1,2   // 当有所有变量都是空变量的时候， 用 = 即可，而不是用:=
+</code></pre>
+<h1 id="真假">真假</h1>
+<p>只有 true/false<br>
+不能使用 0 &quot;&quot; 之类的数据来代替真假（py可以， if 1:pass）</p>
+<h1 id="i">i++</h1>
+<p>go: 只有 i++ 和 i+= ,  且只能单独放一行 (i-- 和 i-= 也是可以的)<br>
+py: 只有 i+=</p>
+<h1 id="交换变量的四种方式">交换变量的四种方式</h1>
+<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
+a := 1<br>
+b := 3</p>
+<h3 id="方式0">方式0</h3>
+<pre><code>c := 0
+c = a
+a = b
+b = c
+</code></pre>
+<h3 id="方式1">方式1</h3>
+<pre><code>a,b = b,a
+</code></pre>
+<h3 id="方式2">方式2</h3>
+<pre><code>a = a + b
+b = a - b
+a = a - b
+</code></pre>
+<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
+<pre><code>a = a ^ b
+b = a ^ b
+a = a ^ b
+
+fmt.Println(a)
+fmt.Println(b)
+</code></pre>
+<h1 id="string">string</h1>
+<p>原生字符串输入：</p>
+<pre><code>python &quot;&quot;&quot; &quot;&quot;&quot;
+golang ` `          反引号
+</code></pre>
+<p>python和golang都是内部不可变，外部可变（可以整体替换赋值）<br>
+都有 len()</p>
+<h1 id="数组">数组</h1>
+<h2 id="定长创建">定长创建</h2>
+<p>方式1</p>
+<pre><code>arr1 := [3]int{1,2,3}
+</code></pre>
+<p>方式2</p>
+<pre><code>var arr2 [3]int
+arr2 = [3]int{1,2,3}
+fmt.Println(arr1)
+fmt.Println(arr2)
+</code></pre>
+<h2 id="非定长创建">非定长创建</h2>
+<pre><code>arr1 := []int{1,2,3}
+</code></pre>
+<p>append:</p>
+<pre><code>arr1 = append(arr1, 4)
+</code></pre>
+<p>len:</p>
+<pre><code>len(arr1)
+</code></pre>
+<p>😏cap:</p>
+<pre><code>arr1 := []int{1,2,3}
+fmt.Println(len(arr1),cap(arr1))      // 3,3
+arr1 = append(arr1, 4,5)	  // 5,6  
+fmt.Println(len(arr1),cap(arr1))
+</code></pre>
+<p>len()的变化是没什么好说的<br>
+cap() 首先 arr1的只有3个元素，容量就分了3个（满了）<br>
+既然满了，那就append一个元素，开一个空间？这太费劲了。<br>
+于是 go 会在你每次元素容量溢出的时候，为你😊2倍扩容。</p>
+<p>😑注意0，不足1024，2倍扩容。 超过1024，1.25倍扩容。<br>
+😑注意1，这个二倍是在现有的容量进行2倍扩容。 eg:</p>
+<pre><code>3 * 2 = 6
+6 * 2 = 12
+...
+</code></pre>
+<p>😊特别注意<br>
+如果是用 for 循环的方式append （）</p>
+<pre><code>那么你给多少长度，他就会给你扩充至多少。
+😊虽然最后一次遍历输出看起来 len 和 cap 趋近相等
+😊但是每一次循环的过程，还是采用 二倍扩容原则！！！
+</code></pre>
+<p>eg:</p>
+<pre><code>arr1 := []int{1,2,3}
+fmt.Println(len(arr1),cap(arr1))      // 3,3
+for i := 0; i &lt; 92; i++ {
+	arr1 = append(arr1, i)
+}
+fmt.Println(len(arr1),cap(arr1))      // 95, 96
+arr1 = append(arr1, 1,2,3,4,5) // 我们的容量只有96，所以越界了，2倍
+fmt.Println(len(arr1),cap(arr1))      // 96, 192
+</code></pre>
+<h2 id="遍历">遍历</h2>
+<p>方式1：</p>
+<pre><code>for i, v := range arr2 {    // 和python一样 v只是copy的值，并不能用v改变数组
+	fmt.Println(i,v)           // index,  value
+}
+// fmt.Println(i,v)    // 报错 , 因为上面的 i, v 都是临时变量， python则体外可用
+</code></pre>
+<p>😎Note: Go的 i,和v都是临时面两<br>
+方式2：</p>
+<pre><code>for i := 0; i &lt; len(arr2); i++ {
+	fmt.Println(i,arr2[i])
+}
+</code></pre>
+<h1 id="切片">切片</h1>
+<h2 id="认知">认知</h2>
+<p>和python一样，都是左闭右开</p>
+<pre><code>arr1 := []int{1,2,3,4,5,6,7}
+slice1 := arr1[2:5]
+fmt.Println(slice1)
+</code></pre>
+<h2 id="使用方式">使用方式</h2>
+<pre><code>[:n]
+[m:]
+</code></pre>
+<p>数组转切片：<br>
+// 这个和python截然相反，go意味着数组转切片，完全引用（指针），py表示浅拷贝<br>
+[:]</p>
+<h2 id="原理">原理</h2>
+<p>切片就是数组的部分引用（指针）（2者都是互相，牵一发而动全身，）<br>
+😣这点和python完全相反（python 切出来就是新地址了）</p>
+<h2 id="创建指定空切片长度len容量cap">创建指定空切片,长度len+容量cap</h2>
+<p>好处：一次性分配，成本开销低。</p>
+<pre><code>str2 := make([]string, 0, 20)      // 如果不指定cap, 则默认与len一致
+fmt.Println(len(str2), cap(str2))  // len=0, cap=20
+</code></pre>
+<h2 id="浅拷贝">浅拷贝</h2>
+<p>copy(新，旧) ， 二者必须都是切片类型 （数组转切片上面说了 [:]）</p>
+<pre><code>arr1 := [5]int{1,2,3,4,5}
+slice1 := make([]int, len(arr1))
+copy(slice1, arr1[:])  // arr1必须转切片， arr1[:]
+fmt.Println(slice1)
+</code></pre>
+<h1 id="if">if</h1>
+<p>无小括号</p>
+<h1 id="for">for</h1>
+<p>无小括号</p>
+<h1 id="指针">指针</h1>
+<p>GC自动回收，不需要手动回收(py可 del 动态回收)</p>
+<h2 id="new">new</h2>
+<pre><code>name := new(string) // new出来的就地址
+*name = &quot;zhangsan&quot;</code></pre>
 ]]></content>
     </entry>
 </feed>
