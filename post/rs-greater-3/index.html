@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; 3 | Cython_lin</title>
+<title>RS =&gt; 个性化 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,8 +15,13 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="ING..........
-" />
+    <meta name="description" content="商业用户指标
+DAU：每日活跃用户数量
+用户留存：User某段时间开始使用产品，过一段时间，仍继续使用该产品
+相似度
+杰卡德相似度
+只倾向适用于用于0，1点击类数值：
+          Item A  Item B  Item C  It..." />
     <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -72,7 +77,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615464813020" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -87,7 +92,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">8 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">12 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/rs-greater-3/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater-3/"> </span>
@@ -101,7 +106,7 @@
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
               </div>
-              <h1 class="title ularge white bold">RS =&gt; 3</h1>
+              <h1 class="title ularge white bold">RS =&gt; 个性化</h1>
             </div>
           </div>
         </div>  
@@ -111,7 +116,74 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <p>ING..........</p>
+                  <h1 id="商业用户指标">商业用户指标</h1>
+<p>DAU：每日活跃用户数量<br>
+用户留存：User某段时间开始使用产品，过一段时间，仍继续使用该产品</p>
+<h1 id="相似度">相似度</h1>
+<h2 id="杰卡德相似度">杰卡德相似度</h2>
+<p>只倾向适用于用于0，1点击类数值：</p>
+<pre><code>          Item A  Item B  Item C  Item D  Item E
+User1       1       0       1       1       0
+User2       1       0       0       1       1
+User3       1       0       1       0       0
+User4       0       1       0       1       1
+User5       1       1       1       0       1
+</code></pre>
+<h2 id="向量内积点积">向量内积(点积)</h2>
+<p>几种表现形式：</p>
+<pre><code>A转置 B 
+&lt;A,B&gt;
+A·B
+</code></pre>
+<p>两种计算方式，做连等，求 cosθ：</p>
+<pre><code>A·B = |A| · |B| · cosθ
+A·B = a1*b1 + a2*b2 + ..... an*bn
+</code></pre>
+<h2 id="余弦相似度">余弦相似度</h2>
+<pre><code>C为B在A上的投影（AC同向）
+A·B  = |A| · |B| · cosθ = |A| · |C| &gt; 1 (角度越大，C值越小，内积越小，越不相似)
+
+θ越小越好， cosθ 约大越好
+</code></pre>
+<p>取值范围:</p>
+<pre><code>[0.1]
+</code></pre>
+<p>余弦相似度存在弊端：（归一化，认知）</p>
+<pre><code>假如某用户user1没见过世面，看见的东西都是好的，那么就会给最高分
+又有某用户user2见多识广，看见的东西都不合口味，那么不排除审美偏高，则全打低分。
+</code></pre>
+<p>所以这种情况需要一种力量把盲高拉低， 把盲低拉高。那就是（依靠平均值）<br>
+进而衍生出了皮尔逊相关系数 👇</p>
+<h2 id="皮尔逊相关系数">皮尔逊相关系数</h2>
+<ul>
+<li>就是把 余弦相似度，的每个子项（细致入微到最小颗粒）都 减去一个 均值。</li>
+<li>再按余弦相似度正常计算即可。</li>
+</ul>
+<p>API：（和杰卡德相似，都是按列计算，若要求用户相似度，需转置。）</p>
+<pre><code>df.T.corr() # 求所有Item之两两相似度
+</code></pre>
+<p>取值范围：</p>
+<pre><code>[-1. 1]
+</code></pre>
+<h2 id=""></h2>
+<h1 id="离线召回">离线召回</h1>
+<p>协同、FM、DSSM</p>
+<p>计算Item A 和Item B的相似度(根据列，若求User之间的相似度需要转置 df.T.values)</p>
+<pre><code>from sklearn.metrics import jaccard_score
+print(jaccard_score(df[&quot;Item A&quot;], df[&quot;Item B&quot;])) # (A∩B) / (A∪B) = 1/5=0.2
+</code></pre>
+<h2 id="用户协同过滤-usercf">用户协同过滤 UserCF</h2>
+<p>A用户相似B用户有相同的Item C，   把A喜欢的其他的Item 直接推给B即可</p>
+<h1 id="实时召回">实时召回</h1>
+<ul>
+<li>实时画像</li>
+<li>实施增益计算</li>
+<li>后验排序调整</li>
+</ul>
+<h1 id="增量更新day">增量更新/day</h1>
+<p>拿新数据去，model save/model load，更新模型参数，继续model load + model save</p>
+<h1 id="全量更新-防止模型局部收敛-全量更新15day">全量更新 (防止模型局部收敛， 全量更新/15day)</h1>
+<p>拿着新数据重新训练模型(所有参数全部重来)</p>
 
                 </div>
                 <div class="clear"></div>
@@ -126,7 +198,7 @@
                  <a href="https://cythonlin.github.io/post/rs-greater-4/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-03-03">2021-03-03</time>
-                  <h4 class="title white no-margin">RS =&gt; 4</h4>
+                  <h4 class="title white no-margin">RS =&gt; 个性化召回</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/left-arrow.svg" width="15" alt="Left Arrow">
@@ -210,7 +282,7 @@
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">GO =&gt; Golang持续...</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -380,9 +452,9 @@
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-3 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     

@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; 8 | Cython_lin</title>
+<title>GO =&gt; Golang持续... | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,9 +15,16 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="RS =&gt; 8
-" />
-    <meta name="keywords" content="RS" />
+    <meta name="description" content="ENV
+GOROOT: 默认go安装根目录即可
+D:\code\go
+
+GOPATH：工程目录（里面有bin, pkg, src）
+D:\code\go\work
+    # 我们只需用goland 去 open src目录即可
+
+GOBI..." />
+    <meta name="keywords" content="Golang" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
   </head>
@@ -72,7 +79,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615464813020" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -87,7 +94,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">8 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">12 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/rs-greater-8/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater-8/"> </span>
@@ -98,10 +105,10 @@
             <div class="info">
               <div class="tags ">
                 
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-0 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
               </div>
-              <h1 class="title ularge white bold">RS =&gt; 8</h1>
+              <h1 class="title ularge white bold">GO =&gt; Golang持续...</h1>
             </div>
           </div>
         </div>  
@@ -111,7 +118,204 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <p>RS =&gt; 8</p>
+                  <h1 id="env">ENV</h1>
+<h3 id="goroot-默认go安装根目录即可">GOROOT: 默认go安装根目录即可</h3>
+<pre><code>D:\code\go
+</code></pre>
+<h3 id="gopath工程目录里面有bin-pkg-src">GOPATH：工程目录（里面有bin, pkg, src）</h3>
+<pre><code>D:\code\go\work
+    # 我们只需用goland 去 open src目录即可
+</code></pre>
+<h3 id="gobingopath里面的bin目录">GOBIN：GOPATH里面的bin目录</h3>
+<p>作用： go install 生成的exe 会自动存到这里</p>
+<pre><code>D:\code\go\work\bin
+</code></pre>
+<p>此外我们还需将此目录放入到环境变量，随时随地exe执行</p>
+<h3 id="go111module">GO111MODULE</h3>
+<pre><code>off ：无模块支持，go 会从 GOPATH 和 vendor 文件夹寻找包。
+on ：模块支持，go 会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod 下载依赖。
+auto ：在 $GOPATH/src 外面且根目录有 go.mod 文件时，开启模块支持。
+</code></pre>
+<h1 id="平台go命令">平台+Go命令</h1>
+<h2 id="查看go的环境变量">查看GO的环境变量</h2>
+<pre><code>go env | grep GOOS
+go env | grep GOARCH
+</code></pre>
+<p>GOOS变量值是什么平台，编译后的文件就只能在什么平台运行</p>
+<h2 id="windows">windows:</h2>
+<pre><code> go build .\hello.go
+.\hello.exe
+</code></pre>
+<p>Goland terminal修改GOOS</p>
+<pre><code>cmd: set GOOS=linux
+ps:    $env:GOOS=&quot;linux&quot;
+# go env | grep GOOS   # 此时已变为linux
+
+go build .\hello.go
+.\hello
+# 😴 执行失败，平台不兼容
+</code></pre>
+<h2 id="linux">linux:</h2>
+<pre><code>./hello 执行成功
+./hello.exe    执行成功 （纯Linux是会执行失败的，但是这是WSL）
+# WSL特殊，因为WSL可以兼容执行windows exe的格式
+</code></pre>
+<h2 id="go-install">go install</h2>
+<p>把目录下 go build 编译后的 exe文件，自动添加到 GOBIN目录下</p>
+<pre><code># 需要把上面的环境变量配置好：GO111MODULE auto
+go install
+</code></pre>
+<h1 id="赋值">赋值</h1>
+<pre><code>:=       (python3.8也出了，不过，其用途是 条件赋值一体化)
+</code></pre>
+<p>特殊：空赋值（定义后可不使用，也不能使用）： _</p>
+<pre><code>a := 1    // a必须在下文使用
+_,b := 1,2  // 必须在下文使用
+// _,_ := 1,2  // 这种写法是错误的
+_,_ = 1,2   // 当有所有变量都是空变量的时候， 用 = 即可，而不是用:=
+</code></pre>
+<h1 id="真假">真假</h1>
+<p>只有 true/false<br>
+不能使用 0 &quot;&quot; 之类的数据来代替真假（py可以， if 1:pass）</p>
+<h1 id="i">i++</h1>
+<p>go: 只有 i++ 和 i+= ,  且只能单独放一行 (i-- 和 i-= 也是可以的)<br>
+py: 只有 i+=</p>
+<h1 id="交换变量的四种方式">交换变量的四种方式</h1>
+<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
+a := 1<br>
+b := 3</p>
+<h3 id="方式0">方式0</h3>
+<pre><code>c := 0
+c = a
+a = b
+b = c
+</code></pre>
+<h3 id="方式1">方式1</h3>
+<pre><code>a,b = b,a
+</code></pre>
+<h3 id="方式2">方式2</h3>
+<pre><code>a = a + b
+b = a - b
+a = a - b
+</code></pre>
+<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
+<pre><code>a = a ^ b
+b = a ^ b
+a = a ^ b
+
+fmt.Println(a)
+fmt.Println(b)
+</code></pre>
+<h1 id="string">string</h1>
+<p>原生字符串输入：</p>
+<pre><code>python &quot;&quot;&quot; &quot;&quot;&quot;
+golang ` `          反引号
+</code></pre>
+<p>python和golang都是内部不可变，外部可变（可以整体替换赋值）<br>
+都有 len()</p>
+<h1 id="数组">数组</h1>
+<h2 id="定长创建">定长创建</h2>
+<p>方式1</p>
+<pre><code>arr1 := [3]int{1,2,3}
+</code></pre>
+<p>方式2</p>
+<pre><code>var arr2 [3]int
+arr2 = [3]int{1,2,3}
+fmt.Println(arr1)
+fmt.Println(arr2)
+</code></pre>
+<h2 id="非定长创建">非定长创建</h2>
+<pre><code>arr1 := []int{1,2,3}
+</code></pre>
+<p>append:</p>
+<pre><code>arr1 = append(arr1, 4)
+</code></pre>
+<p>len:</p>
+<pre><code>len(arr1)
+</code></pre>
+<p>😏cap:</p>
+<pre><code>arr1 := []int{1,2,3}
+fmt.Println(len(arr1),cap(arr1))      // 3,3
+arr1 = append(arr1, 4,5)	  // 5,6  
+fmt.Println(len(arr1),cap(arr1))
+</code></pre>
+<p>len()的变化是没什么好说的<br>
+cap() 首先 arr1的只有3个元素，容量就分了3个（满了）<br>
+既然满了，那就append一个元素，开一个空间？这太费劲了。<br>
+于是 go 会在你每次元素容量溢出的时候，为你😊2倍扩容。</p>
+<p>😑注意0，不足1024，2倍扩容。 超过1024，1.25倍扩容。<br>
+😑注意1，这个二倍是在现有的容量进行2倍扩容。 eg:</p>
+<pre><code>3 * 2 = 6
+6 * 2 = 12
+...
+</code></pre>
+<p>😊特别注意<br>
+如果是用 for 循环的方式append （）</p>
+<pre><code>那么你给多少长度，他就会给你扩充至多少。
+😊虽然最后一次遍历输出看起来 len 和 cap 趋近相等
+😊但是每一次循环的过程，还是采用 二倍扩容原则！！！
+</code></pre>
+<p>eg:</p>
+<pre><code>arr1 := []int{1,2,3}
+fmt.Println(len(arr1),cap(arr1))      // 3,3
+for i := 0; i &lt; 92; i++ {
+	arr1 = append(arr1, i)
+}
+fmt.Println(len(arr1),cap(arr1))      // 95, 96
+arr1 = append(arr1, 1,2,3,4,5) // 我们的容量只有96，所以越界了，2倍
+fmt.Println(len(arr1),cap(arr1))      // 96, 192
+</code></pre>
+<h2 id="遍历">遍历</h2>
+<p>方式1：</p>
+<pre><code>for i, v := range arr2 {    // 和python一样 v只是copy的值，并不能用v改变数组
+	fmt.Println(i,v)           // index,  value
+}
+// fmt.Println(i,v)    // 报错 , 因为上面的 i, v 都是临时变量， python则体外可用
+</code></pre>
+<p>😎Note: Go的 i,和v都是临时面两<br>
+方式2：</p>
+<pre><code>for i := 0; i &lt; len(arr2); i++ {
+	fmt.Println(i,arr2[i])
+}
+</code></pre>
+<h1 id="切片">切片</h1>
+<h2 id="认知">认知</h2>
+<p>和python一样，都是左闭右开</p>
+<pre><code>arr1 := []int{1,2,3,4,5,6,7}
+slice1 := arr1[2:5]
+fmt.Println(slice1)
+</code></pre>
+<h2 id="使用方式">使用方式</h2>
+<pre><code>[:n]
+[m:]
+</code></pre>
+<p>数组转切片：<br>
+// 这个和python截然相反，go意味着数组转切片，完全引用（指针），py表示浅拷贝<br>
+[:]</p>
+<h2 id="原理">原理</h2>
+<p>切片就是数组的部分引用（指针）（2者都是互相，牵一发而动全身，）<br>
+😣这点和python完全相反（python 切出来就是新地址了）</p>
+<h2 id="创建指定空切片长度len容量cap">创建指定空切片,长度len+容量cap</h2>
+<p>好处：一次性分配，成本开销低。</p>
+<pre><code>str2 := make([]string, 0, 20)      // 如果不指定cap, 则默认与len一致
+fmt.Println(len(str2), cap(str2))  // len=0, cap=20
+</code></pre>
+<h2 id="浅拷贝">浅拷贝</h2>
+<p>copy(新，旧) ， 二者必须都是切片类型 （数组转切片上面说了 [:]）</p>
+<pre><code>arr1 := [5]int{1,2,3,4,5}
+slice1 := make([]int, len(arr1))
+copy(slice1, arr1[:])  // arr1必须转切片， arr1[:]
+fmt.Println(slice1)
+</code></pre>
+<h1 id="if">if</h1>
+<p>无小括号</p>
+<h1 id="for">for</h1>
+<p>无小括号</p>
+<h1 id="指针">指针</h1>
+<p>GC自动回收，不需要手动回收(py可 del 动态回收)</p>
+<h2 id="new">new</h2>
+<pre><code>name := new(string) // new出来的就地址
+*name = &quot;zhangsan&quot;</code></pre>
 
                 </div>
                 <div class="clear"></div>
@@ -210,7 +414,7 @@
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">GO =&gt; Golang持续...</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -380,9 +584,9 @@
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-3 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     

@@ -74,7 +74,7 @@ from sklearn.model_selection import train..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615464813020" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -115,9 +115,10 @@ from sklearn.model_selection import train..." />
                 <div class="text">
                   <h1 id="训练集-测试集-验证集切割">训练集-测试集-验证集切割</h1>
 <p>###方法1：（借用三方sklearn库）<br>
-因为sklearn的train_test_split只能切2份，所以我们需要切2次：<br>
-from sklearn.model_selection import train_test_split</p>
-<pre><code>x_train, x_test, y_train, y_test = train_test_split(
+因为sklearn的train_test_split只能切2份，所以我们需要切2次：</p>
+<pre><code>from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test = train_test_split(
     x, y,                # x,y是原始数据
     test_size=0.2        # test_size默认是0.25
 )  # 返回的是 剩余训练集+测试集
@@ -127,14 +128,15 @@ x_train, x_valid, y_train, y_valid = train_test_split(
     test_size=0.2        # test_size默认是0.25
 )  # 返回的是 二次剩余训练集+验证集
 </code></pre>
-<p>切分好的数据，一般需要做 batch_size， shuffle等， 可以使用 tf.keras模型的 fit() 一步传递！<br>
-eg:<br>
-model.compile(<br>
-loss=keras.losses.mean_squared_error,<br>
-optimizer=keras.optimizers.SGD(),<br>
-metrics=['acc']    # 注意这个metrics参数，下面一会就提到<br>
-)</p>
-<pre><code>history = model.fit(
+<p>切分好的数据，一般需要做 batch_size， shuffle等， 可以使用 tf.keras模型的 fit() 一步传递！</p>
+<pre><code>eg:
+model.compile(
+    loss=keras.losses.mean_squared_error, 
+    optimizer=keras.optimizers.SGD(),
+    metrics=['acc']    # 注意这个metrics参数，下面一会就提到
+)
+
+history = model.fit(
     x_train, 
     y_train, 
     validation_data=(x_valid, y_valid),     # 验证集在这里用了！！！
@@ -154,13 +156,14 @@ y_predict = model.predict(x_test)            # 返回的是预测结果
 <p>###方法2：（tf.split）<br>
 自己封装的代码：功能包括： 3切分，乱序数据集，分批操作 一体化！！！ （可能有瑕疵）<br>
 已上传至Github :  https://github.com/hacker-lin/train_test_valid_split<br>
-定义部分：<br>
-class HandlerData:<br>
-def <strong>init</strong>(self, x, y):<br>
-&quot;&quot;&quot;我封装的类，数据通过实例化传进来保存&quot;&quot;&quot;<br>
-self.x = x<br>
-self.y = y</p>
-<pre><code>    def shuffle_and_batch(self, x, y, batch_size=None):
+定义部分：</p>
+<pre><code>class HandlerData:
+    def __init__(self, x, y):
+        &quot;&quot;&quot;我封装的类，数据通过实例化传进来保存&quot;&quot;&quot;
+        self.x = x
+        self.y = y
+
+    def shuffle_and_batch(self, x, y, batch_size=None):
         &quot;&quot;&quot;默认定死乱序操作，batch_size可选参数， 其实乱序参数也应该设置可选的。懒了&quot;&quot;&quot;
         data = tf.data.Dataset.from_tensor_slices((x, y))    # 封装 dataset数据集格式
 
@@ -211,10 +214,11 @@ self.y = y</p>
                 (x_valid, y_valid)
             )
 </code></pre>
-<p>调用案例：<br>
-x = tf.ones([1000, 5000])<br>
-y = tf.ones([1000, 1])</p>
-<pre><code>data_obj = HandlerData(x,y)   # x是原生的样本数据，x是原生的label数据
+<p>调用案例：</p>
+<pre><code>x = tf.ones([1000, 5000])
+y = tf.ones([1000, 1])
+
+data_obj = HandlerData(x,y)   # x是原生的样本数据，x是原生的label数据
 
 # 方式1：使用乱序，使用分批，就是一个参数都不用传，全是默认值
 train, test, valid = data_obj.train_test_valid_split(
@@ -310,25 +314,27 @@ for data in dataset:   # 封装的数据集需要遍历（或者 iter() 改变�
 对应来看， （一个大Tensor里面， 有4个小Tensor）。 记住这个理念
 </code></pre>
 <h3 id="数据来源参数类型">数据来源参数类型</h3>
-<p>参数传元组：<br>
-question = [[1, 0], [1, 1]]<br>
-answer = ['encode', 'decoder']<br>
-dataset = tf.data.Dataset.from_tensor_slices( (question, answer) ) # 用元组包起来了<br>
-for data in dataset:<br>
-print(data[0],'=&gt;' ,data[1])<br>
-输出:<br>
-&gt;&gt; tf.Tensor([1 0], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'encode', shape=(), dtype=string)<br>
-tf.Tensor([1 1], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'decoder', shape=(), dtype=string)</p>
-<pre><code>你可以看出它自动把我们传递的 question 和 answer 两个大列表。  &quot;相当于做了zip()操作&quot;。
+<p>参数传元组：</p>
+<pre><code>question = [[1, 0], [1, 1]]
+answer = ['encode', 'decoder']
+dataset = tf.data.Dataset.from_tensor_slices( (question, answer) ) # 用元组包起来了
+for data in dataset:
+    print(data[0],'=&gt;' ,data[1])
+输出:
+&gt;&gt; tf.Tensor([1 0], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'encode', shape=(), dtype=string)
+   tf.Tensor([1 1], shape=(2,), dtype=int32) =&gt; tf.Tensor(b'decoder', shape=(), dtype=string)
+   
+你可以看出它自动把我们传递的 question 和 answer 两个大列表。  &quot;相当于做了zip()操作&quot;。
 
 # 我的实验经历：训练 Encoder-Decoder模型的，&quot;问答对数据&quot;，做编码后，就可以这样用元组传。
 </code></pre>
-<p>参数传字典：<br>
-data_dict = {<br>
-'encoder': [1, 0],<br>
-'decoder': [1, 1]<br>
-}</p>
-<pre><code>dataset = tf.data.Dataset.from_tensor_slices(data_dict)
+<p>参数传字典：</p>
+<pre><code>data_dict = {
+    'encoder': [1, 0],
+    'decoder': [1, 1]
+}
+
+dataset = tf.data.Dataset.from_tensor_slices(data_dict)
 for data in dataset:    # 其实每一个元素就是一个字典
     print(data)
 
@@ -467,7 +473,7 @@ for data in dataset.repeat(2).batch(3):   # 重复2次。 3个一组  （这就�
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">GO =&gt; Golang持续...</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -637,9 +643,9 @@ for data in dataset.repeat(2).batch(3):   # 重复2次。 3个一组  （这就�
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-3 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     

@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GO =&gt; Golang复习（未完待续） | Cython_lin</title>
+<title>RS =&gt; NLP Model + TF20大纲 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,15 +15,15 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="ENV
-GOROOT: 默认go安装根目录即可
-D:\code\go
+    <meta name="description" content="贝叶斯学派 vs 频率派估计
 
-GOPATH：工程目录（里面有bin, pkg, src）
-D:\code\go\work
-    # 我们只需用goland 去 open src目录即可
+贝叶斯分引入先验， 频率派(极大似然)则无
+贝叶斯分布估计。 频率派是点估计（将参数当成随机变量求解）
 
-GOBI..." />
+伯努利分布
+θ^y * （1-θ）^ (1-y)         [期望θ]
+对数线性模型
+几率比： ..." />
     <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -79,7 +79,7 @@ GOBI..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615464813020" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -94,7 +94,7 @@ GOBI..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">8 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">12 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/rs-greater/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater/"> </span>
@@ -108,7 +108,7 @@ GOBI..." />
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
               </div>
-              <h1 class="title ularge white bold">GO =&gt; Golang复习（未完待续）</h1>
+              <h1 class="title ularge white bold">RS =&gt; NLP Model + TF20大纲</h1>
             </div>
           </div>
         </div>  
@@ -118,204 +118,167 @@ GOBI..." />
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <h1 id="env">ENV</h1>
-<h3 id="goroot-默认go安装根目录即可">GOROOT: 默认go安装根目录即可</h3>
-<pre><code>D:\code\go
+                  <h1 id="贝叶斯学派-vs-频率派估计">贝叶斯学派 vs 频率派估计</h1>
+<ol>
+<li>贝叶斯分引入先验， 频率派(极大似然)则无</li>
+<li>贝叶斯分布估计。 频率派是点估计（将参数当成随机变量求解）</li>
+</ol>
+<h1 id="伯努利分布">伯努利分布</h1>
+<p>θ^y * （1-θ）^ (1-y)         [期望θ]</p>
+<h1 id="对数线性模型">对数线性模型</h1>
+<p>几率比：  p/(1-p)<br>
+对数线性模型（就是在几率比的基础上加个log）： log( p/(1-p) ) = Θ^t * X<br>
+将 上述 对数线性模型，两边同时取 e^， 则能推导出 sigmoid</p>
+<h1 id="word-embedding之-word2vec">Word-Embedding之 Word2Vec</h1>
+<h2 id="cbow-n预测1">CBOW （n预测1）</h2>
+<p>核心原理：最小化(负样本词的概率) * 最大化(中心+上下文的词)<br>
+只对中间词做负采样：</p>
+<ul>
+<li>选取中心词+上下文的词构成正样本</li>
+<li>负采样其他词为负样本</li>
+<li>计算loss对（所有上下文词+中心词向量的和 记作w） 和 （正负样本每个词的theta）的梯度</li>
+<li>先更新 w，再更新theta。</li>
+</ul>
+<h2 id="skip-gram-1预测n">skip-gram （1预测n）</h2>
+<p>核心原理：同样（所有上下文词+中心词向量的和 记作w）</p>
+<ul>
+<li>w中 （每个词 w'）都选出正负样本</li>
+<li>计算loss对theta 和 w' 的偏导</li>
+<li>更新w'的词向量（费劲，每次只能更新一个词 w'）需要更新n(个词)次</li>
+</ul>
+<h2 id="负采样类似-softmax">负采样（类似 softmax）</h2>
+<ul>
+<li>词 i 的长度(在0-1之间) = (词i出现的次数)^(3/4) /  (所有词出现次数)^(3/4) 的 和</li>
+<li>每个词看作一个子线段的范围。  总线段为1。</li>
+<li>然后另新建一个10^8长度的线段，按照不同比例尺和 上述长度1线段保持对齐（也划分出一样的刻度）。</li>
+<li>然后生成随机数，随机数所在10^8线段对应的，0-1线段的刻度（也就是某个词i）, 此词即为负样本。</li>
+</ul>
+<h2 id="word-embeddingword2vec作用">Word Embedding（Word2Vec）作用</h2>
+<p>作为预训练模型，呗当作上游任务， 目的是拿到下游任务中使用。<br>
+下游任务老式结构：</p>
+<pre><code>N个单词 =&gt; one-hot =&gt; 
+    将这些单词都乘训练好的Word Embedding矩阵(查表，取出每个单词对应的Embedding)
+         =&gt; DNN....
 </code></pre>
-<h3 id="gopath工程目录里面有bin-pkg-src">GOPATH：工程目录（里面有bin, pkg, src）</h3>
-<pre><code>D:\code\go\work
-    # 我们只需用goland 去 open src目录即可
+<p>在 Word Embedding这里：</p>
+<ul>
+<li>可以选择固定word embedding层级参数模式（frozen）</li>
+<li>也可以训练后面DNN架构时，连同训练 word embedding 参数模式（fine-tune）</li>
+</ul>
+<p>Word Embedding （Word2Vec）效果：</p>
+<pre><code>效果不明显
 </code></pre>
-<h3 id="gobingopath里面的bin目录">GOBIN：GOPATH里面的bin目录</h3>
-<p>作用： go install 生成的exe 会自动存到这里</p>
-<pre><code>D:\code\go\work\bin
+<p>阻碍原因 =&gt; 同义词</p>
+<pre><code>有些词是一词多义， 但是却都i体现在了一个词上， 自然只占用了一个词的空间。
+导致 两种上下文信息 都会编码到同一个 Word Embedding空间里去。
 </code></pre>
-<p>此外我们还需将此目录放入到环境变量，随时随地exe执行</p>
-<h3 id="go111module">GO111MODULE</h3>
-<pre><code>off ：无模块支持，go 会从 GOPATH 和 vendor 文件夹寻找包。
-on ：模块支持，go 会忽略 GOPATH 和 vendor 文件夹，只根据 go.mod 下载依赖。
-auto ：在 $GOPATH/src 外面且根目录有 go.mod 文件时，开启模块支持。
+<p>下面的 ELMO可以解决多义词问题👇</p>
+<h2 id="elmoembedding-from-language-models">ELMO(Embedding from language Models)</h2>
+<p>👉属于特征融合预训练类。<br>
+结构：</p>
+<pre><code>一层Word Embedding + 双层双向LSTM  （总共可以看作三层）（当然最后有个输出层）
 </code></pre>
-<h1 id="平台go命令">平台+Go命令</h1>
-<h2 id="查看go的环境变量">查看GO的环境变量</h2>
-<pre><code>go env | grep GOOS
-go env | grep GOARCH
+<p>所以每个词，经过后，都能得到 3个 embedding （就是下面的三层👇）<br>
+每层的作用：</p>
+<ul>
+<li>1层：单词的 Word Embedding</li>
+<li>2层：单词的 句法信息   （词性、短语类型、句子成分。）</li>
+<li>3层：单词的 语义信息   （理解单词的表达的意思）</li>
+</ul>
+<p>ELMO的下游使用：</p>
+<ol>
+<li>上面3个 Embedding 加一个权重w (这个w可以通过学习学到)。并加权求和。</li>
+<li>上面的加权求和结果就可以被看作 一个特征， 这个特征供给下游任务，(QA答句)的embedding使用（这也是特征融合）</li>
+<li>由于ELMO是动态根据上下文去调整 embedding，并且还有语义+语句的共同约束，所以同义词冲突由此解决， 也就不会出现 play这个多义词 由于之前所在环境都是体育类，而导致get不到  &quot;演出&quot;的语义</li>
+</ol>
+<p>缺点：</p>
+<pre><code>使用的是 lstm 而不是 Transformer 作为 特征提取器
 </code></pre>
-<p>GOOS变量值是什么平台，编译后的文件就只能在什么平台运行</p>
-<h2 id="windows">windows:</h2>
-<pre><code> go build .\hello.go
-.\hello.exe
+<h2 id="gptgenerative-pre-training">GPT（Generative Pre-Training）</h2>
+<p>优点：</p>
+<pre><code>特征抽取用的： Transformer， 而非 LSTM等RNN系 (RNN并行计算弱)
+Transformer (用了叠加的 self attention)
 </code></pre>
-<p>Goland terminal修改GOOS</p>
-<pre><code>cmd: set GOOS=linux
-ps:    $env:GOOS=&quot;linux&quot;
-# go env | grep GOOS   # 此时已变为linux
+<p>缺点：</p>
+<pre><code> GPT只用了上文 （白白浪费了 下文信息 （就是只看句子中这个单词之前的信息。之后的不看））
+ ELMO用的 上下文（上下文都有）
+</code></pre>
+<p>特点：  tine-tune</p>
+<pre><code>上游任务：Transfomer
+👉主要是下下游任务的使用：
+    1. 下游任务需要还原 和 上游的GPT模型一样的结构。 
+    2. 具体只需拿到GPT上游结构， 然后在输出层 修改成自己 需要的 场景即可
+</code></pre>
+<h2 id="bert">Bert</h2>
+<p>第一阶段（上游）：Bert预训练模型阶段 和 GPT 一样， Bert的改进：</p>
+<pre><code>1. 双向语言模型（上下文都照顾到）
+2. 模型数据规模比 GPT大
+</code></pre>
+<p>第二阶段（下游任务）：</p>
+<pre><code>1. 序列标注（词性标注，NER，语义角色标注）
+2. 分类任务（文本分类，情感分类）
+3. 句子关系判断（给2个句子，推断这2个句子的语义关系）
+    1. 文本蕴含（Textual Entailment）给定一个前提文本（premise），根据这个前提去推断假说文本（hypothesis）与premise的关系
+    2. QA
+    3. 语义改写
+    4. 自然语言推理
+4. 生成式：（输入文本后，生成一段语句）
+    1. 机器翻译
+    2. 写诗
+    3. 文本摘要
+    4. 看图说话
+</code></pre>
+<p>Masked双向语言模型的具体实现：</p>
+<pre><code>随机选择语料中15%的单词，把它抠掉，或者说用[Mask]掩码代替原始单词
+然后要求模型去正确预测被抠掉的单词。
 
-go build .\hello.go
-.\hello
-# 😴 执行失败，平台不兼容
+因为[mask] 填补过多，会被模型认为[mask]标记才是主要的。
+所以，BERT对此做了改进：
+    1.  这15%中的  80% 做 [mask]标记
+    2.  10%被替换为另外一个词
+    3.  剩下的10%原地不动
 </code></pre>
-<h2 id="linux">linux:</h2>
-<pre><code>./hello 执行成功
-./hello.exe    执行成功 （纯Linux是会执行失败的，但是这是WSL）
-# WSL特殊，因为WSL可以兼容执行windows exe的格式
+<p>除了 masked，bert还做了 Next Sentence Prediction，具体实现：</p>
+<pre><code>语言模型预训练的时候，分两种情况选择两个句子：
+1. 一种是选择语料中真正顺序相连的两个句子
+2. 另外一种是第二个句子从语料库中随机选择一个拼到第一个句子后面
 </code></pre>
-<h2 id="go-install">go install</h2>
-<p>把目录下 go build 编译后的 exe文件，自动添加到 GOBIN目录下</p>
-<pre><code># 需要把上面的环境变量配置好：GO111MODULE auto
-go install
-</code></pre>
-<h1 id="赋值">赋值</h1>
-<pre><code>:=       (python3.8也出了，不过，其用途是 条件赋值一体化)
-</code></pre>
-<p>特殊：空赋值（定义后可不使用，也不能使用）： _</p>
-<pre><code>a := 1    // a必须在下文使用
-_,b := 1,2  // 必须在下文使用
-// _,_ := 1,2  // 这种写法是错误的
-_,_ = 1,2   // 当有所有变量都是空变量的时候， 用 = 即可，而不是用:=
-</code></pre>
-<h1 id="真假">真假</h1>
-<p>只有 true/false<br>
-不能使用 0 &quot;&quot; 之类的数据来代替真假（py可以， if 1:pass）</p>
-<h1 id="i">i++</h1>
-<p>go: 只有 i++ 和 i+= ,  且只能单独放一行 (i-- 和 i-= 也是可以的)<br>
-py: 只有 i+=</p>
-<h1 id="交换变量的四种方式">交换变量的四种方式</h1>
-<p>下面代码，除了数据声明与定义，其他Py 和 Go 的语法都是一摸一样的（主要强调 异或方式）<br>
-a := 1<br>
-b := 3</p>
-<h3 id="方式0">方式0</h3>
-<pre><code>c := 0
-c = a
-a = b
-b = c
-</code></pre>
-<h3 id="方式1">方式1</h3>
-<pre><code>a,b = b,a
-</code></pre>
-<h3 id="方式2">方式2</h3>
-<pre><code>a = a + b
-b = a - b
-a = a - b
-</code></pre>
-<h3 id="方式3-注必须是整形-py也一样">方式3 （注：必须是整形， Py也一样）</h3>
-<pre><code>a = a ^ b
-b = a ^ b
-a = a ^ b
+<p>根据上述来判断第二个句子是不是紧贴着第一个句子。</p>
+<p>Bert输入结构：</p>
+<pre><code>它的输入部分是个线性序列，两个句子通过分隔符分割，最前面和最后增加两个标识符号。
 
-fmt.Println(a)
-fmt.Println(b)
+每个单词有三个embedding:
+    1. embedding1: 位置信息embedding
+    2. embedding2: 单词embedding
+    3. embedding3: 句子embedding
+
+将上述3个embedding叠加，即作为 Bert的输入。
 </code></pre>
-<h1 id="string">string</h1>
-<p>原生字符串输入：</p>
-<pre><code>python &quot;&quot;&quot; &quot;&quot;&quot;
-golang ` `          反引号
-</code></pre>
-<p>python和golang都是内部不可变，外部可变（可以整体替换赋值）<br>
-都有 len()</p>
-<h1 id="数组">数组</h1>
-<h2 id="定长创建">定长创建</h2>
-<p>方式1</p>
-<pre><code>arr1 := [3]int{1,2,3}
-</code></pre>
-<p>方式2</p>
-<pre><code>var arr2 [3]int
-arr2 = [3]int{1,2,3}
-fmt.Println(arr1)
-fmt.Println(arr2)
-</code></pre>
-<h2 id="非定长创建">非定长创建</h2>
-<pre><code>arr1 := []int{1,2,3}
-</code></pre>
-<p>append:</p>
-<pre><code>arr1 = append(arr1, 4)
-</code></pre>
-<p>len:</p>
-<pre><code>len(arr1)
-</code></pre>
-<p>😏cap:</p>
-<pre><code>arr1 := []int{1,2,3}
-fmt.Println(len(arr1),cap(arr1))      // 3,3
-arr1 = append(arr1, 4,5)	  // 5,6  
-fmt.Println(len(arr1),cap(arr1))
-</code></pre>
-<p>len()的变化是没什么好说的<br>
-cap() 首先 arr1的只有3个元素，容量就分了3个（满了）<br>
-既然满了，那就append一个元素，开一个空间？这太费劲了。<br>
-于是 go 会在你每次元素容量溢出的时候，为你😊2倍扩容。</p>
-<p>😑注意0，不足1024，2倍扩容。 超过1024，1.25倍扩容。<br>
-😑注意1，这个二倍是在现有的容量进行2倍扩容。 eg:</p>
-<pre><code>3 * 2 = 6
-6 * 2 = 12
-...
-</code></pre>
-<p>😊特别注意<br>
-如果是用 for 循环的方式append （）</p>
-<pre><code>那么你给多少长度，他就会给你扩充至多少。
-😊虽然最后一次遍历输出看起来 len 和 cap 趋近相等
-😊但是每一次循环的过程，还是采用 二倍扩容原则！！！
-</code></pre>
-<p>eg:</p>
-<pre><code>arr1 := []int{1,2,3}
-fmt.Println(len(arr1),cap(arr1))      // 3,3
-for i := 0; i &lt; 92; i++ {
-	arr1 = append(arr1, i)
-}
-fmt.Println(len(arr1),cap(arr1))      // 95, 96
-arr1 = append(arr1, 1,2,3,4,5) // 我们的容量只有96，所以越界了，2倍
-fmt.Println(len(arr1),cap(arr1))      // 96, 192
-</code></pre>
-<h2 id="遍历">遍历</h2>
-<p>方式1：</p>
-<pre><code>for i, v := range arr2 {    // 和python一样 v只是copy的值，并不能用v改变数组
-	fmt.Println(i,v)           // index,  value
-}
-// fmt.Println(i,v)    // 报错 , 因为上面的 i, v 都是临时变量， python则体外可用
-</code></pre>
-<p>😎Note: Go的 i,和v都是临时面两<br>
-方式2：</p>
-<pre><code>for i := 0; i &lt; len(arr2); i++ {
-	fmt.Println(i,arr2[i])
-}
-</code></pre>
-<h1 id="切片">切片</h1>
-<h2 id="认知">认知</h2>
-<p>和python一样，都是左闭右开</p>
-<pre><code>arr1 := []int{1,2,3,4,5,6,7}
-slice1 := arr1[2:5]
-fmt.Println(slice1)
-</code></pre>
-<h2 id="使用方式">使用方式</h2>
-<pre><code>[:n]
-[m:]
-</code></pre>
-<p>数组转切片：<br>
-// 这个和python截然相反，go意味着数组转切片，完全引用（指针），py表示浅拷贝<br>
-[:]</p>
-<h2 id="原理">原理</h2>
-<p>切片就是数组的部分引用（指针）（2者都是互相，牵一发而动全身，）<br>
-😣这点和python完全相反（python 切出来就是新地址了）</p>
-<h2 id="创建指定空切片长度len容量cap">创建指定空切片,长度len+容量cap</h2>
-<p>好处：一次性分配，成本开销低。</p>
-<pre><code>str2 := make([]string, 0, 20)      // 如果不指定cap, 则默认与len一致
-fmt.Println(len(str2), cap(str2))  // len=0, cap=20
-</code></pre>
-<h2 id="浅拷贝">浅拷贝</h2>
-<p>copy(新，旧) ， 二者必须都是切片类型 （数组转切片上面说了 [:]）</p>
-<pre><code>arr1 := [5]int{1,2,3,4,5}
-slice1 := make([]int, len(arr1))
-copy(slice1, arr1[:])  // arr1必须转切片， arr1[:]
-fmt.Println(slice1)
-</code></pre>
-<h1 id="if">if</h1>
-<p>无小括号</p>
-<h1 id="for">for</h1>
-<p>无小括号</p>
-<h1 id="指针">指针</h1>
-<p>GC自动回收，不需要手动回收(py可 del 动态回收)</p>
-<h2 id="new">new</h2>
-<pre><code>name := new(string) // new出来的就地址
-*name = &quot;zhangsan&quot;</code></pre>
+<h1 id="-">---------------------------------------------</h1>
+<h1 id="下面内容总结摘自">下面内容总结摘自</h1>
+<p><a href="https://blog.csdn.net/ibelieve8013">Jamie_Wu 's Blog</a>  ，Copy一份，在此谢过！</p>
+<h1 id="tf10-总览">TF10 总览</h1>
+<figure data-type="image" tabindex="1"><img src="https://cythonlin.github.io/post-images/1615788904931.png" alt="" loading="lazy"></figure>
+<h1 id="tf20api-总览">TF20API 总览</h1>
+<figure data-type="image" tabindex="2"><img src="https://cythonlin.github.io/post-images/1615788968398.png" alt="" loading="lazy"></figure>
+<h1 id="keras-总览">Keras 总览</h1>
+<figure data-type="image" tabindex="3"><img src="https://cythonlin.github.io/post-images/1615788997656.png" alt="" loading="lazy"></figure>
+<h1 id="data-总览">data 总览</h1>
+<figure data-type="image" tabindex="4"><img src="https://cythonlin.github.io/post-images/1615789035599.png" alt="" loading="lazy"></figure>
+<h1 id="estimator-总览">estimator 总览</h1>
+<figure data-type="image" tabindex="5"><img src="https://cythonlin.github.io/post-images/1615789117772.png" alt="" loading="lazy"></figure>
+<h1 id="cnn-总览">cnn 总览</h1>
+<figure data-type="image" tabindex="6"><img src="https://cythonlin.github.io/post-images/1615789161158.png" alt="" loading="lazy"></figure>
+<h1 id="rnn-总览">rnn 总览</h1>
+<figure data-type="image" tabindex="7"><img src="https://cythonlin.github.io/post-images/1615789172168.png" alt="" loading="lazy"></figure>
+<h1 id="分布式-总览">分布式 总览</h1>
+<figure data-type="image" tabindex="8"><img src="https://cythonlin.github.io/post-images/1615789188015.png" alt="" loading="lazy"></figure>
+<h1 id="保存部署-总览">保存部署 总览</h1>
+<figure data-type="image" tabindex="9"><img src="https://cythonlin.github.io/post-images/1615789205396.png" alt="" loading="lazy"></figure>
+<h1 id="seq2seq-总览">seq2seq 总览</h1>
+<figure data-type="image" tabindex="10"><img src="https://cythonlin.github.io/post-images/1615789344979.png" alt="" loading="lazy"></figure>
+<h1 id="transformer-总览">transformer 总览</h1>
+<figure data-type="image" tabindex="11"><img src="https://cythonlin.github.io/post-images/1615789348852.png" alt="" loading="lazy"></figure>
 
                 </div>
                 <div class="clear"></div>
@@ -414,7 +377,7 @@ fmt.Println(slice1)
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">GO =&gt; Golang持续...</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -584,9 +547,9 @@ fmt.Println(slice1)
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-3 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     

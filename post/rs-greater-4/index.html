@@ -2,7 +2,7 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RS =&gt; 4 | Cython_lin</title>
+<title>RS =&gt; 个性化召回 | Cython_lin</title>
 <meta name="description" content="" />
 <link rel="shortcut icon" href="https://cythonlin.github.io/favicon.ico">
 <link rel="stylesheet" href="https://cythonlin.github.io/styles/main.css">
@@ -15,8 +15,18 @@
 <script src="https://cythonlin.github.io/media/js/jquery.magnific-popup.min.js"></script>
 <script src="https://cythonlin.github.io/media/js/functions.js"></script>
     <meta name="referrer" content="never">
-    <meta name="description" content="ING..........
-" />
+    <meta name="description" content="LFM(latent factor model)
+升级版的SVD（奇异值分解）
+应用场景
+
+UI推荐列表
+Item之间相似度列表
+Item之间隐含Topic挖掘
+
+模型参数
+隐特征：10-32
+正则化系数：0.01-0.05
+Learnin..." />
     <meta name="keywords" content="RS" />
     <script src="https://cythonlin.github.io/media/js/waterfall.min.js"></script>
     <script src="https://cythonlin.github.io/media/js/prism.min.js"></script>
@@ -72,7 +82,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615464813020" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -87,7 +97,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">8 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-03-03"><i class="fa fa-calendar"></i><span class="lately">12 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/rs-greater-4/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater-4/"> </span>
@@ -101,7 +111,7 @@
                       <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-0 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
               </div>
-              <h1 class="title ularge white bold">RS =&gt; 4</h1>
+              <h1 class="title ularge white bold">RS =&gt; 个性化召回</h1>
             </div>
           </div>
         </div>  
@@ -111,7 +121,57 @@
             <article class="main-article post">
               <section class="post-content">
                 <div class="text">
-                  <p>ING..........</p>
+                  <h1 id="lfmlatent-factor-model">LFM(latent factor model)</h1>
+<p>升级版的SVD（奇异值分解）</p>
+<h2 id="应用场景">应用场景</h2>
+<ol>
+<li>UI推荐列表</li>
+<li>Item之间相似度列表</li>
+<li>Item之间隐含Topic挖掘</li>
+</ol>
+<h2 id="模型参数">模型参数</h2>
+<p>隐特征：10-32<br>
+正则化系数：0.01-0.05<br>
+Learning Rage: 0.01-0.05</p>
+<h2 id="lfm缺点">LFM缺点</h2>
+<p>召回计算Toplike，一个User向量，需要与每个Item向量点乘运算，耗时高，实时感知差</p>
+<h2 id="item2vec">Item2vec</h2>
+<ul>
+<li>做成格式1： dict1 ={'user_id': [item1, item2, ..., itemN]}</li>
+<li>取出每个user_id的value列表作为文件的每一行 items : dict1.values()</li>
+<li>每行 itemId 以空格分隔 （文件内只保存ItemID,  不需要userId）</li>
+</ul>
+<p>Google Word2Vec:</p>
+<pre><code>word2vec -train $train_file -output $item_vec_file -size 128 -window 5 -sample 1e-3 -negative 5 -hs 0 -binary 0 -cbow 0 -iter 50
+</code></pre>
+<p>输入文件的内容格式（ItemID+它自己的向量（128维也就是对应上面的-size参数））：</p>
+<pre><code>ID  一维向量 二维度向量.........................................128维向量
+25  0.392720 0.115408 -0.177216 0.152538 -0.185550 -0.048845 ... 128个
+...
+</code></pre>
+<p>根据上面训练出的Item向量，互相计算Item之间的相似度（Cos即可）<br>
+并取TopK最终格式为：</p>
+<pre><code>25  itemID1_相似度  itemID2_相似度  itemID3_相似度  itemID4_相似度。。。
+...
+</code></pre>
+<h1 id="基于内容召回content-based">基于内容召回（Content Based）</h1>
+<h2 id="步骤">步骤</h2>
+<ul>
+<li>抽取
+<ul>
+<li>文本： Item Profile（Title，分词，主题词，关键词（TF-IDF, TextRank））</li>
+<li>视频：关键帧图像的分类识别</li>
+<li>音频：语音识别+文字处理</li>
+</ul>
+</li>
+<li>抽取 user Profile (对Item的行为，给用户打标签，时间衰减)</li>
+<li>实时推荐</li>
+</ul>
+<p>优点：简单，解释性强，用户之间独立性强（用户点什么，就推和此Item内容相关）<br>
+缺点：特征抽取难，跨领域弱，可能造成大部分都推同一类。 另外需要积累一定量的用户行为</p>
+<h1 id="sigmoid导数">Sigmoid导数</h1>
+<p>fx = sigmoid<br>
+fx' = fx( 1-f(x) )</p>
 
                 </div>
                 <div class="clear"></div>
@@ -140,7 +200,7 @@
                  <a href="https://cythonlin.github.io/post/rs-greater-3/" class="full-link"></a>
                  <div class="info">
                   <time datetime="2021-03-03">2021-03-03</time>
-                  <h4 class="title white no-margin">RS =&gt; 3</h4>
+                  <h4 class="title white no-margin">RS =&gt; 个性化</h4>
                 </div>
                  <span class="epcl-button red">
                   <img src="https://cythonlin.github.io/media/images/right-arrow.svg" width="15" alt="Left Arrow">
@@ -210,7 +270,7 @@
                     <div class="info gradient-effect">
                       <time datetime="2021-03-03">2021-03-03</time>
                       <h4 class="title usmall">
-                        <a href="https://cythonlin.github.io/post/rs-greater-8/">RS =&gt; 8</a>
+                        <a href="https://cythonlin.github.io/post/rs-greater-8/">GO =&gt; Golang持续...</a>
                       </h4>
                     </div>
                     <div class="clear"></div>
@@ -380,9 +440,9 @@
                     
                       <a href="https://cythonlin.github.io/tag/wAXYBHxvH/" class="ctag ctag-1 ctag-wAXYBHxvH" aria-label="">Python</a>
                     
-                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-2 ctag-EjFvvnhFs" aria-label="">RS</a>
+                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-2 ctag-XH05Gb5J6" aria-label="">Golang</a>
                     
-                      <a href="https://cythonlin.github.io/tag/XH05Gb5J6/" class="ctag ctag-3 ctag-XH05Gb5J6" aria-label="">Golang</a>
+                      <a href="https://cythonlin.github.io/tag/EjFvvnhFs/" class="ctag ctag-3 ctag-EjFvvnhFs" aria-label="">RS</a>
                     
                       <a href="https://cythonlin.github.io/tag/sKPdrpV6Y/" class="ctag ctag-4 ctag-sKPdrpV6Y" aria-label="">PR</a>
                     
