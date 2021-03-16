@@ -75,7 +75,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615878742766" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -90,7 +90,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2021-02-28"><i class="fa fa-calendar"></i><span class="lately">15 天前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2021-02-28"><i class="fa fa-calendar"></i><span class="lately">16 天前</span></time>
               
               <a href="https://cythonlin.github.io/post/rs-greater-fu-xi/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/rs-greater-fu-xi/"> </span>
@@ -152,13 +152,96 @@ estimator.predict(数据集处理函数句柄,predict_keys=None, steps=None)
 <pre><code>tf.estimator.DNNClassifier(hidden_units,feature_columns)
 tf.estimator.DNNRegressor(hidden_units,feature_columns)
 
-tf.estimator.LinearEstimator(head, feature_columns)
+tf.estimator.LinearClassifier(feature_columns)
 tf.estimator.LinearRegressor(feature_columns)
 
 tf.estimator.DNNLinearCombinedClassifier()
 tf.estimator.DNNLinearCombinedRegressor()
 </code></pre>
-<h1 id="tf2官方操作csv实例">TF2官方操作CSV实例</h1>
+<h1 id="常用-feature_column指定estimator字段的数据类型">常用 feature_column（指定estimator字段的数据类型）</h1>
+<h2 id="数值型">数值型</h2>
+<ul>
+<li>数值列（tf.feature_column.numeric_column）</li>
+<li>指标列（tf.feature_column.indicator_column）</li>
+</ul>
+<h2 id="类别型">类别型</h2>
+<ul>
+<li>分桶列（tf.feature_column.bucketized_column） （相当于数值型数据分组-one-hot）</li>
+<li>分类标识列（tf.feature_column.categorical_column_with_identity）</li>
+<li>分类词汇列（tf.feature_column.categorical_column_with_vocabulary_list 或者 tf.feature_column.categorical_column_with_vocabulary_file）</li>
+<li>经过哈希处理的列（tf.feature_column.categorical_column_with_hash_bucket）</li>
+</ul>
+<h2 id="特征交叉embedding类型">特征交叉+Embedding类型</h2>
+<ul>
+<li>组合列（tf.feature_column.crossed_column）特征交叉</li>
+<li>嵌入列（tf.feature_column.embedding_column）</li>
+</ul>
+<h2 id="特殊说明数值列">特殊说明数值列</h2>
+<p>原封不动（当然可以指定数据类型等）</p>
+<pre><code>numeric_feature_column = tf.feature_column.numeric_column(key=&quot;SepalLength&quot;)
+</code></pre>
+<h2 id="特殊说明分桶列bucketized_column">特殊说明分桶列（bucketized_column）</h2>
+<p>目标：</p>
+<pre><code>日期范围	                 表示为…
+&lt; 1960 年	                [1, 0, 0, 0]
+&gt;= 1960 年 and &lt; 1980 年	[0, 1, 0, 0]
+&gt;= 1980 年 and &lt; 2000 年	[0, 0, 1, 0]
+&gt;= 2000 年	                [0, 0, 0, 1]
+</code></pre>
+<p>实现:</p>
+<pre><code># 首先，将原始输入转换为一个numeric column
+numeric_feature_column = tf.feature_column.numeric_column(&quot;Year&quot;)
+
+# 然后，按照边界[1960,1980,2000]将numeric column进行bucket，然后自动one-hot
+bucketized_feature_column = tf.feature_column.bucketized_column(
+    source_column = numeric_feature_column,
+    boundaries = [1960, 1980, 2000])
+</code></pre>
+<h2 id="特殊说明分类标识类">特殊说明分类标识类</h2>
+<p>就是把  0，1，2，3，4  转为标准one-hot</p>
+<pre><code>identity_feature_column = tf.feature_column.categorical_column_with_identity(
+    key='my_feature_b',
+    num_buckets=vocab_size) # Values [0, 4)
+</code></pre>
+<h2 id="特殊说明分类词汇列">特殊说明分类词汇列</h2>
+<p>就是把普通字符串类别，转为标准one-hot</p>
+<pre><code>vocabulary_feature_column =
+    tf.feature_column.categorical_column_with_vocabulary_list(
+        key=feature_name_from_input_fn,
+        vocabulary_list=[&quot;kitchenware&quot;, &quot;electronics&quot;, &quot;sports&quot;])
+</code></pre>
+<h2 id="特殊说明分类词汇列-2">特殊说明分类词汇列</h2>
+<p>当类别的数量特别大时，若将每个词汇或整数设置单独的类别，会消耗非常大的内存。<br>
+我们可大致给定类别值，让模型自己去做hash，然后映射到设定的类别（桶）中，并学习拟合到这些类别</p>
+<pre><code>hashed_feature_column =
+    tf.feature_column.categorical_column_with_hash_bucket(
+        key = &quot;some_feature&quot;,
+        hash_bucket_size = 100) # 就设定100个类别
+</code></pre>
+<h3 id="feature_column实例">feature_column实例</h3>
+<pre><code>a = tf.feature_column.numeric_column(&quot;数值字段&quot;)
+
+# 已知类别个数
+b = tf.feature_column.categorical_column_with_vocabulary_file(
+    &quot;类别字段名称&quot;,
+    [&quot;类别&quot;, &quot;类别2&quot;,...,&quot;类别n&quot;]  # 把所有类别字符串转为 ID 0,1,2,...,n
+)
+
+# 和上述类似，未知类别个数时，用分桶
+c = tf.feature_column.categorical_column_with_hash_bucket(
+    &quot;类别字段名称&quot;,
+    hash_bucket_size=2000       # 越大，冲突越少
+)
+</code></pre>
+<p>最后将 feature_column的结果，组装成列表， 返回给模型构造。<br>
+👉eg:</p>
+<pre><code>feature_columns = [a, b, c]
+classifier = tf.estimator.LinearClassifier(feature_columns)
+</code></pre>
+<p>👉正式训练模型：</p>
+<pre><code>classifier.train(数据集处理函数句柄(就是上面返回dataset的那个)，steps=None)
+</code></pre>
+<h2 id="上面的dataset函数句柄如下官方csv操作实例">👉上面的dataset函数句柄如下(官方CSV操作实例)：</h2>
 <pre><code>TRAIN_DATA_URL = &quot;https://storage.googleapis.com/tf-datasets/titanic/train.csv&quot;
 TEST_DATA_URL = &quot;https://storage.googleapis.com/tf-datasets/titanic/eval.csv&quot;
 
@@ -168,11 +251,9 @@ train_file_path = tf.keras.utils.get_file(&quot;train.csv&quot;, TRAIN_DATA_URL)
 test_file_path = tf.keras.utils.get_file(&quot;eval.csv&quot;, TEST_DATA_URL)
 # 'C:\\Users\\lin\\.keras\\datasets\\eval.csv'
 
-
+CSV_COLUMNS = ['survived', 'sex', 'age', 'n_siblings_spouses', 'parch', 'fare', 'class', 'deck', 'embark_town', 'alone']
 LABEL_COLUMN = 'survived'
 LABELS = [0, 1]
-CSV_COLUMNS = ['name', 'age']  # tf会默认把csv第一行当作列名处理，如果没有，需要自己指定列名
-
 
 def get_dataset(file_path):
     &quot;&quot;&quot;
@@ -181,7 +262,7 @@ def get_dataset(file_path):
     dataset = tf.data.experimental.make_csv_dataset(
         file_path,
         batch_size=12,
-        column_names=CSV_COLUMNS,   
+        column_names=CSV_COLUMNS,
         label_name=LABEL_COLUMN,
         na_value=&quot;?&quot;,
         num_epochs=1,
@@ -189,10 +270,110 @@ def get_dataset(file_path):
     return dataset
     # 只要我们将  column_names， label_name 这2个字段指定好
     # make_csv_dataset 将会自动帮我们组装 dataset格式 （包括 feature_dict 和 lable的迭代器）并return
-
+</code></pre>
+<p>👉因为要传函数句柄（就是函数名），而不是调用，所以额外的参数，需要用到偏函数解决</p>
+<pre><code>from functools import partial
 # 读取上面路径下的CSV
-raw_train_data = get_dataset(train_file_path)
-raw_test_data = get_dataset(test_file_path)</code></pre>
+train_func = partial(get_dataset, train_file_path)
+test_func = partial(get_dataset, test_file_path)
+classifier.train(train_func)
+result = classifier.evaluate(test_func) 
+print(result)
+</code></pre>
+<h1 id="tfdata文件都是-dataset的子集">tf.data(文件)都是 dataset的子集</h1>
+<pre><code>tf.data.TextLineDataset - 从文本文件中读取行。
+tf.data.TFRecordDataset - 从 TFRecord 文件中读取记录。
+tf.data.FixedLengthRecordDataset - 从二进制文件中读取具有固定大小的记录。
+</code></pre>
+<h1 id="dataset转iter">dataset转iter</h1>
+<pre><code>dataset1 = tf.data.Dataset.range(10)
+c = dataset1.__iter__()
+print(c.get_next()) 
+print(c.get_next())
+print(c.get_next())
+</code></pre>
+<p>👉Note: 不要用next() 也不要用 __next__()<br>
+👉注意：如果 __iter__() 找不到 get_next()<br>
+👉那么就直接用下面即可</p>
+<pre><code>iterator = tf.compat.v1.data.make_one_shot_iterator(dataset)
+dataset = iterator.get_next()
+return dataset
+</code></pre>
+<h1 id="tensorboard">tensorboard</h1>
+<h2 id="使用方式1keras-callback">使用方式1：keras callback</h2>
+<p>训练出模型，直接用tensorboard命令接口，前提需要在具有 模型文件的目录下。model.ckpt。</p>
+<pre><code>log_dir=&quot;logs/fit/&quot; + datetime.datetime.now().strftime(&quot;%Y%m%d-%H%M%S&quot;)
+callbacks = [ # put it to fit()
+    keras.callbacks.TensorBoard(log_dir),
+    keras.callbacks.ModelCheckpoint(save_model_file,save_best_only=True),
+    keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)
+]
+# tensorboard --logdir &quot;logs/fit&quot;
+</code></pre>
+<h2 id="使用方式2基于tensorflow20-的-gradient">使用方式2：(基于Tensorflow2.0 的 gradient)</h2>
+<pre><code>https://www.tensorflow.org/tensorboard/get_started?hl=zh-cn
+</code></pre>
+<h1 id="tfrecords">TFRecords</h1>
+<p>Note: 一个Example就是👉一个 样本</p>
+<h2 id="第一步生成tfrecord-writer">第一步，生成TFRecord Writer</h2>
+<pre><code>writer = tf.data.experimental.TFRecordWriter(path, compression_type=None)
+# path：TFRecord文件的存放路径；
+# compression_type：定义TFRecord文件保存的压缩格式；
+</code></pre>
+<p>也可以用纯python接口（好处就是可以用with上下文）：</p>
+<pre><code>with tf.io.TFRecordWriter() as writer:
+    xxx
+</code></pre>
+<h2 id="第二步tftrainfeature生成协议信息">第二步，tf.train.Feature生成协议信息</h2>
+<p>feature是一个字典值，它是将某个类型列表编码成特定的feature格式，而该字典键用于读取TFRecords文件时索引得到不同的数据，某个类型列表可能包含零个或多个值，列表类型如下三种：</p>
+<pre><code>tf.train.BytesList(value=[value]) # value转化为字符串（二进制）列表
+tf.train.FloatList(value=[value]) # value转化为浮点型列表
+tf.train.Int64List(value=[value]) # value转化为整型列表
+</code></pre>
+<p>其中，value是你要保存的数据。内层feature编码方式：</p>
+<pre><code>feature_internal = {
+    &quot;width&quot;:tf.train.Feature(int64_list=tf.train.Int64List(value=[width])),
+    &quot;weights&quot;:tf.train.Feature(float_list=tf.train.FloatList(value=[weights])),
+    &quot;image_raw&quot;:tf.train.Feature(bytes_list=tf.train.BytesList(value=[image_raw]))
+}
+</code></pre>
+<p>外层features再将内层字典编码：</p>
+<pre><code>features_extern = tf.train.Features(feature_internal)
+</code></pre>
+<ul>
+<li>tf.train.Feature这个接口可以编码封装列表类型和字典类型，内层用的是tf.train.Feature</li>
+<li>外层使用tf.train.Features</li>
+</ul>
+<h2 id="第三步使用tftrainexample将features编码数据封装成特定的pb协议格式">第三步，使用tf.train.Example将features编码数据封装成特定的PB协议格式</h2>
+<pre><code>example = tf.train.Example(features_extern)
+</code></pre>
+<h2 id="第四步将example数据系列化为字符串">第四步，将example数据系列化为字符串</h2>
+<pre><code>example_str = example.SerializeToString()
+</code></pre>
+<h2 id="第五步将系列化为字符串的example数据写入协议缓冲区">第五步，将系列化为字符串的example数据写入协议缓冲区</h2>
+<pre><code>writer.write(example_str)
+</code></pre>
+<h2 id="以上5步合写">以上5步合写</h2>
+<pre><code>writer = tf.data.experimental.TFRecordWriter(path, compression_type=None)
+example = tf.train.Example(
+    tf.train.Features(
+        {
+            &quot;width&quot;: tf.train.Feature(int64_list=tf.train.Int64List(value=[width])),
+            &quot;weights&quot;: tf.train.Feature(float_list=tf.train.FloatList(value=[weights])),
+            &quot;image_raw&quot;: tf.train.Feature(bytes_list=tf.train.BytesList(value=[image_raw]))
+        }
+    )
+)
+example_str = example.SerializeToString()  # 将example数据系列化为字符串
+writer.write(example_str)
+</code></pre>
+<h2 id="正式将业务数据写入到tfrecord">正式将业务数据写入到TFRecord</h2>
+<ol>
+<li>将特征中心的表读出（121个特征）</li>
+<li>将click列 和 合并好的feature列用select['click','feature']出来，并 collect()取值</li>
+<li>将取出的值转为 pandas 的 df</li>
+<li>将df存储到 TFRecord</li>
+</ol>
 
                 </div>
                 <div class="clear"></div>

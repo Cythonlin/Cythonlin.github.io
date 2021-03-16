@@ -78,7 +78,7 @@
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615878742766" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -93,7 +93,7 @@
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">6 个月前</span></time>
               
               <a href="https://cythonlin.github.io/post/ai-greater-deeplearningmetricsng/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ai-greater-deeplearningmetricsng/"> </span>
@@ -123,51 +123,59 @@
 但是，我喜欢用更直白的方式去理解知识。</p>
 <h1 id="数据划分">数据划分</h1>
 <h3 id="传统机器学习数据的划分">传统机器学习数据的划分</h3>
-<p>传统机器学习一般都是小规模数据（几万条）<br>
-那么可以  训练集：验证集：测试集 = 6:2:2<br>
-若是大规模深度学习一般都是大规模数据（几百万条）<br>
-训练集: 验证机：测试集 = 9:0.5:0.5<br>
-划分 验证集 可以过早的为我们预测 指标和精度</p>
+<p>传统机器学习一般都是小规模数据（几万条）</p>
+<pre><code>那么可以  训练集：验证集：测试集 = 6:2:2
+</code></pre>
+<p>若是大规模深度学习一般都是大规模数据（几百万条）</p>
+<pre><code>训练集: 验证机：测试集 = 9:0.5:0.5
+</code></pre>
+<p>划分 验证集 可以过早的为我们预测 指标和精度</p>
 <h3 id="偏差-与-方差">偏差 与 方差</h3>
 <p>高偏差： 训练集和测试集 loss 都比较高   （比人预测的loss高很多） （欠拟合）<br>
 高方差： 训练集Loss低， 测试集 Loss高。  所以训练集和测试集 loss相差太大， 也成为（过拟合）</p>
 <h1 id="防止过拟合的几种方法">防止过拟合的几种方法</h1>
 <h3 id="损失函数-惩罚项系数-正则化regularization">损失函数 (惩罚项系数) 正则化（regularization）</h3>
 <p>可分两种 （L1正则化惩罚 和 L2正则化惩罚）下面只以 L2为例，L2用的也是比较多的）<br>
-正则化系数公式：<br>
-loss = ...<br>
-new_loss = loss + (λ/2m) * w^2<br>
-w = w - learning_rate * 梯度<br>
-上面公式的单调变换解释：<br>
-求梯度的时候 λ越大， new_loss越大， 求得的梯度越大（正比）<br>
-w 减去的值就越大。   w变得就越小。<br>
-w 越小， 一定程度上特征就衰减了许多。  就有效的放置了过拟合哦</p>
-<p>对应API（有两种方式）：<br>
-L1 = keras.regularizers.l2(0.01)   # TF2 当作 keras 的 Layers定义来使用<br>
-L1 = tf.nn.l2_loss(w_b)            # 看到里面传递 w和b了吧， 这种是偏手动方式实现的API</p>
-<p>如果你想使用手撕实现，下面有个例子（伪代码）：<br>
-for<br>
-with tf.GradientTape() as tape:<br>
-...<br>
-loss_reg = [tf.nn.l2_loss(w_b) for w_b in model.trainable_variables] # [w1,b1,w2,b2]<br>
-print(tf.reduce_sum(loss_reg))		# tf.Tensor(2.98585, shape=(), dtype=float32) # 就是这个形状<br>
-loss = loss + loss_reg</p>
+正则化系数公式：</p>
+<pre><code>loss = ...
+new_loss = loss + (λ/2m) * w^2
+w = w - learning_rate * 梯度
+</code></pre>
+<p>上面公式的单调变换解释：</p>
+<pre><code>求梯度的时候 λ越大， new_loss越大， 求得的梯度越大（正比）
+w 减去的值就越大。   w变得就越小。
+w 越小， 一定程度上特征就衰减了许多。  就有效的放置了过拟合哦
+</code></pre>
+<p>对应API（有两种方式）：</p>
+<pre><code>L1 = keras.regularizers.l2(0.01)   # TF2 当作 keras 的 Layers定义来使用
+L1 = tf.nn.l2_loss(w_b)            # 看到里面传递 w和b了吧， 这种是偏手动方式实现的API
+</code></pre>
+<p>如果你想使用手撕实现，下面有个例子（伪代码）：</p>
+<pre><code>for
+	with tf.GradientTape() as tape:
+		...
+		loss_reg = [tf.nn.l2_loss(w_b) for w_b in model.trainable_variables] # [w1,b1,w2,b2]
+		print(tf.reduce_sum(loss_reg))		# tf.Tensor(2.98585, shape=(), dtype=float32) # 就是这个形状
+		loss = loss + loss_reg
+</code></pre>
 <h3 id="另一种正则化方式regularization-dropout">另一种正则化方式（regularization） -- DropOut</h3>
 <pre><code>&quot;随机&quot;剪枝， 略， TF框架一步到位
 </code></pre>
 <h3 id="还有一种防止过拟合的方式数据增强">还有一种防止过拟合的方式（数据增强）</h3>
-<p>防止过拟合的另一种方式，就是需要的大量的数据来支撑，那么数据就那么点，怎么办？<br>
-数据增强（ 其原理就是增大样本数量，小幅度翻转等） 某种程度上，就是增加了样本。</p>
+<p>防止过拟合的另一种方式，就是需要的大量的数据来支撑，那么数据就那么点，怎么办？</p>
+<pre><code>数据增强（ 其原理就是增大样本数量，小幅度翻转等） 某种程度上，就是增加了样本。
+</code></pre>
 <h3 id="最后一种防止过拟合的方法-earlystopping">最后一种防止过拟合的方法 （earlystopping  ）</h3>
-<p>earlystopping  （tf.keras.callback模块中，有这个 callback函数，注释部分有解释）<br>
-callbacks = [<br>
-keras.callbacks.TensorBoard(logdir),<br>
-keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),<br>
-# 在这里<br>
-keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)<br>
-# 验证集，每次都会提升，如果提升不动了，小于这个min_delta阈值，则会耐性等待5次。<br>
-# 5次过后，要是还提升这么点。就提前结束。<br>
-]</p>
+<p>earlystopping  （tf.keras.callback模块中，有这个 callback函数，注释部分有解释）</p>
+<pre><code>callbacks = [
+    keras.callbacks.TensorBoard(logdir),
+    keras.callbacks.ModelCheckpoint(output_model_file, save_best_only=True),
+    # 在这里
+    keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)
+    # 验证集，每次都会提升，如果提升不动了，小于这个min_delta阈值，则会耐性等待5次。
+    # 5次过后，要是还提升这么点。就提前结束。
+]
+</code></pre>
 <h1 id="数据预处理">数据预处理</h1>
 <h3 id="标准化-和-归一化能起到什么作用">标准化 和 归一化能起到什么作用：</h3>
 <pre><code>做了标准化 和 归一化 可以 让函数收敛的 更快速（梯度下降的快）
@@ -196,19 +204,23 @@ keras.callbacks.EarlyStopping(patience=5, min_delta=1e-3)<br>
 标准化：除以  标准差</p>
 <h3 id="下面的操作都是通过-中心化处理缩放处理-联合组成的">下面的操作都是通过  中心化处理+缩放处理 联合组成的</h3>
 <h1 id="normalization归一化-sklearn那里也提到过">normalization（归一化）  sklearn那里也提到过</h1>
-<p>目标：<br>
-将数据收敛到 [0,1]<br>
-公式<br>
-x - min(x)          # 中心化<br>
-------------------<br>
-max(x) - min(x)			# 缩放处理</p>
+<p>目标：</p>
+<pre><code>将数据收敛到 [0,1]
+</code></pre>
+<p>公式</p>
+<pre><code>x - min(x)          # 中心化
+------------------
+max(x) - min(x)			# 缩放处理
+</code></pre>
 <p>###StandardScaler（标准化）<br>
-目标：<br>
-将数据转化为标准 正态分布（均值为0，方差为1）<br>
-公式：<br>
-x - 平均值<br>
------------------<br>
-标准差</p>
+目标：</p>
+<pre><code>将数据转化为标准 正态分布（均值为0，方差为1）
+</code></pre>
+<p>公式：</p>
+<pre><code>x - 平均值
+-----------------
+	标准差
+</code></pre>
 <h3 id="标准化-和-归一化-选哪个">标准化 和 归一化 选哪个？？？</h3>
 <p>视觉图片： 归一化<br>
 其他：   标准化较好</p>
@@ -231,18 +243,21 @@ x - 平均值<br>
 验证集：1/4 自己的语料</p>
 <h1 id="随机初始化权重">随机初始化权重</h1>
 <h3 id="随机初始化认知">随机初始化认知</h3>
-<p>为什么不是初始化为0？？？<br>
-因为神经网络中， W初始化为0的话， 会导致反向传播后， 所有神经元会训练同一个网络。一点效果没有<br>
-为什么不初始化很大的值或者很小的值？？？<br>
-这是分情况来定的。<br>
-比如你用的 tanh 或者 sigmoid函数<br>
-由脑海中的图像可知（求导 或 斜率） ，当 初始值过大，或者过小。<br>
-都会可能导致，y直接落在 sigmoid的  顶部和底部（就是斜率水平，近乎为0）<br>
-落在了水平的梯度。这样的梯度，猴年马月也降不下去啊。。。。。<br>
-如果落在了 倾斜陡峭的梯度。 那么梯度下降的一定很快啦。</p>
+<p>为什么不是初始化为0？？？</p>
+<pre><code>因为神经网络中， W初始化为0的话， 会导致反向传播后， 所有神经元会训练同一个网络。一点效果没有
+</code></pre>
+<p>为什么不初始化很大的值或者很小的值？？？</p>
+<pre><code>这是分情况来定的。
+比如你用的 tanh 或者 sigmoid函数
+由脑海中的图像可知（求导 或 斜率） ，当 初始值过大，或者过小。
+都会可能导致，y直接落在 sigmoid的  顶部和底部（就是斜率水平，近乎为0）
+落在了水平的梯度。这样的梯度，猴年马月也降不下去啊。。。。。
+如果落在了 倾斜陡峭的梯度。 那么梯度下降的一定很快啦。
+</code></pre>
 <h3 id="如果做了batchnormalization那么可使用-高斯-x-001">如果做了BatchNormalization，那么可使用 高斯 x 0.01</h3>
-<p>正态分布 * 拉低值<br>
-np.random.randn(2,2)  * 0.01			# 2,2是形状， 这个0.01 可以自己调节。 总之，小一点 最好， 但不要太小</p>
+<p>正态分布 * 拉低值</p>
+<pre><code>np.random.randn(2,2)  * 0.01			# 2,2是形状， 这个0.01 可以自己调节。 总之，小一点 最好， 但不要太小
+</code></pre>
 <h3 id="如果使用了relu激活函数对应-初始化方法">如果使用了Relu激活函数，对应 初始化方法</h3>
 <pre><code>np.random.randn(shapex, shapey) *  np.sqrt( 2/shapex )	# 系数为2
 </code></pre>
@@ -252,11 +267,12 @@ np.random.randn(2,2)  * 0.01			# 2,2是形状， 这个0.01 可以自己调节�
 <h1 id="激活函数">激活函数</h1>
 <h3 id="激活函数认知">激活函数认知</h3>
 <p>学习Andrew Ng课更深刻了解了激活函数。</p>
-<p>神经网络中，为什么我们需要激活函数，甚至需要非线性激活函数？<br>
-首先挑明，我们使用神经网络的目的，就是想训练出更多，更丰富的特征。<br>
-所以。 一直用线性激活函数，或者不用激活函数。会使得你整个网络训练到头，还是线性的。就没意思了。<br>
-它学不到丰富的特征的。</p>
-<pre><code>因为神经网络多层是需要拿前一层的结果作为下一层的 x，所以有了如下公式：
+<p>神经网络中，为什么我们需要激活函数，甚至需要非线性激活函数？</p>
+<pre><code>首先挑明，我们使用神经网络的目的，就是想训练出更多，更丰富的特征。
+	所以。 一直用线性激活函数，或者不用激活函数。会使得你整个网络训练到头，还是线性的。就没意思了。
+	它学不到丰富的特征的。
+
+因为神经网络多层是需要拿前一层的结果作为下一层的 x，所以有了如下公式：
 	w3 (w2 (w1x+b) +b) +b
 展开后， 
 	w3 * w2 * w1 * x + ......   
@@ -265,20 +281,23 @@ np.random.randn(2,2)  * 0.01			# 2,2是形状， 这个0.01 可以自己调节�
 	这样倒不如 一层网络也不用。
 	直接上个 逻辑回归模型，效果估计也是一样的。。。。。。
 </code></pre>
-<p>当然有一些场合也需要使用 线性激活函数，比如 房价预测。身高预测。（这些都是线性回归模型）<br>
-这些情况，就可以使用 线性激活函数了。</p>
-<pre><code>但是不妨想一想， 就像上面 身高预测这些。是线性回归，并且 y预测都是正数值。
+<p>当然有一些场合也需要使用 线性激活函数，比如 房价预测。身高预测。（这些都是线性回归模型）</p>
+<pre><code>这些情况，就可以使用 线性激活函数了。
+
+但是不妨想一想， 就像上面 身高预测这些。是线性回归，并且 y预测都是正数值。
 某种程度上，其实我们也可以使用 relu激活函数， （因为 relu的右半侧（就是大于0的部分） 也是线性的哦）
 </code></pre>
-<p>我们NN隐层就大多数都使用非线性激活函数。<br>
-隐层： relu 或者 leakly relu 或者 tanh<br>
-输出层： sigmoid  或者 softmax 或者 tanh  等等</p>
+<p>我们NN隐层就大多数都使用非线性激活函数。</p>
+<pre><code>隐层： relu 或者 leakly relu 或者 tanh
+输出层： sigmoid  或者 softmax 或者 tanh  等等
+</code></pre>
 <h3 id="sigmoid">sigmoid</h3>
-<p>公式<br>
-1<br>
----------<br>
-1 + e**(-x)</p>
-<pre><code>每个out: (0, 1)  
+<p>公式</p>
+<pre><code>   1  
+---------
+1 + e**(-x)
+
+每个out: (0, 1)  
 
 二分类out之和为 1
 </code></pre>
@@ -299,23 +318,27 @@ e**(x1) + e**(x2) + ... + e**(xn)
 1. tf.nn.softmax()<br>
 2. 函数参数 xxxxx (activations='softmax')<br>
 3. tf.keras.activations.softmax()</p>
-<p>softmax特点：<br>
-输出的是什么形状的张量，输出的就是什么形状的张量<br>
-也是有线性决策边界（线性 多 分类器）</p>
+<p>softmax特点：</p>
+<pre><code>输出的是什么形状的张量，输出的就是什么形状的张量
+也是有线性决策边界（线性 多 分类器）
+</code></pre>
 <h3 id="tanh">tanh</h3>
-<p>coshx<br>
-e<strong>x - e</strong>(-x)<br>
--------------<br>
-2<br>
-sinhx<br>
-e<strong>x + e</strong>(-x)<br>
---------------<br>
-2<br>
-tanhx<br>
-e<strong>x - e</strong>(-x)<br>
--------------<br>
-e<strong>x + e</strong>(-x)</p>
-<pre><code>每个out: (0,1) * 2 -1  ===&gt;  (-1,1)
+<p>coshx</p>
+<pre><code>e**x - e**(-x)
+-------------
+	  2
+</code></pre>
+<p>sinhx</p>
+<pre><code>e**x + e**(-x)
+--------------
+	  2
+</code></pre>
+<p>tanhx</p>
+<pre><code> e**x - e**(-x)
+-------------
+e**x + e**(-x)
+      
+每个out: (0,1) * 2 -1  ===&gt;  (-1,1)
 
 LSTM
 </code></pre>
@@ -324,38 +347,43 @@ LSTM
 2. 函数参数 xxxxx (activations='tanh')<br>
 3. tf.keras.activations.tanh()</p>
 <h3 id="relu">relu</h3>
-<p>公式：<br>
-y = 0 if x &lt; 0 else x    # 大于0，梯度为1<br>
-对应API<br>
+<p>公式：</p>
+<pre><code>y = 0 if x &lt; 0 else x    # 大于0，梯度为1
+</code></pre>
+<p>对应API<br>
 1. tf.nn.relu()<br>
 2. 或函数参数 xxxxx (activations='relu')<br>
 3. tf.keras.activations.relu()</p>
-<pre><code>leaky_relu: (小扩展)
-	y = kx if x &lt; 0 else x    
-	tf.nn.leaky_relu()
+<pre><code>    leaky_relu: (小扩展)
+        y = kx if x &lt; 0 else x    
+        tf.nn.leaky_relu()
 </code></pre>
 <h1 id="损失函数">损失函数</h1>
 <h3 id="mse-均方误差">MSE （均方误差）</h3>
-<p>公式<br>
-Σ( (y-y_predict)**2 )<br>
---------------------<br>
-n<br>
-对应API<br>
-公式实现：<br>
-tf.reduce_mean( tf.square( y-y_predict ) )<br>
-tf.API:<br>
-tf.reduce_mean( tf.loss.MSE(y, y_predict) )</p>
+<p>公式</p>
+<pre><code>Σ( (y-y_predict)**2 )
+--------------------
+     n
+</code></pre>
+<p>对应API</p>
+<pre><code>公式实现： 
+	tf.reduce_mean( tf.square( y-y_predict ) )
+tf.API:   
+	tf.reduce_mean( tf.loss.MSE(y, y_predict) )
+</code></pre>
 <h3 id="crossentropy-交叉熵">CrossEntropy （交叉熵）</h3>
 <p>熵公式：  -Σ（plogp）<br>
-交叉熵公式：-（ Σplogq ）     p为真实值One-hot, q为预测值<br>
-p: [1,0,0]<br>
-q: [0.9, 0,0.1]<br>
-H = -( 1<em>log0.9 + 0</em>log0 + 0*log0.1) = -log0.9 = -ln0.9 ≈ 0.1053....<br>
-tf的 tf.math.log相当于 ln<br>
-交叉熵API：<br>
-交叉熵越小（y与y-predict差距越小，预测较准确）<br>
-交叉熵越大（y与y_predict差距越大，交叉相乘累加后值大，说明预测错位了。。。所以交叉起来变大了）</p>
-<pre><code>tf.API: （方式1：直接是函数调用）
+交叉熵公式：-（ Σplogq ）     p为真实值One-hot, q为预测值</p>
+<pre><code>p: [1,0,0]
+q: [0.9, 0,0.1]
+H = -( 1*log0.9 + 0*log0 + 0*log0.1) = -log0.9 = -ln0.9 ≈ 0.1053....
+tf的 tf.math.log相当于 ln
+</code></pre>
+<p>交叉熵API：</p>
+<pre><code>交叉熵越小（y与y-predict差距越小，预测较准确）
+交叉熵越大（y与y_predict差距越大，交叉相乘累加后值大，说明预测错位了。。。所以交叉起来变大了）
+
+tf.API: （方式1：直接是函数调用）
 	loss = tf.losses.categorical_crossentropy([1,0,0], [0.9, 0, 0.1],from_logits=True)  # 第一个参数y, 第二个参数 y_predict
 	loss = tf.reduce_mean(loss)
 
@@ -368,52 +396,64 @@ tf.API: （方式2：用类的call调用 , 这次以 二分类交叉熵为例）
 <h1 id="梯度">梯度</h1>
 <h3 id="sgdstochastic-gradent-descent">SGD（Stochastic Gradent Descent）:</h3>
 <p>解释 各种梯度下降的区别：<br>
-Mini-Batch Gradent Descent:<br>
-指定每次 mini-batch个 来做梯度下降 （就是每次指定多少个样本 来做GD的意思）<br>
-这种介于  1-全部样本之间的。 是最优的<br>
-Batch gradent descent:<br>
-mini-batch 为全部样本<br>
-Stochastic gradent descent:<br>
-mini-batch 为 1个样本<br>
-缺点： 每次 1个样本做SGD， 那么就失去了 向量化（矩阵乘代替循环）的 加速快感。。。。。</p>
-<p>减去梯度，代表朝着梯度方向走<br>
-w新 = w当前 - learning_rate * 梯度	<br>
-使用方式：<br>
-model.compile(..... ,optimizer=keras.optimizers.SGD(learning_rate=0.01))</p>
+Mini-Batch Gradent Descent:</p>
+<pre><code>指定每次 mini-batch个 来做梯度下降 （就是每次指定多少个样本 来做GD的意思）
+这种介于  1-全部样本之间的。 是最优的
+</code></pre>
+<p>Batch gradent descent:</p>
+<pre><code>mini-batch 为全部样本
+</code></pre>
+<p>Stochastic gradent descent:</p>
+<pre><code>mini-batch 为 1个样本
+缺点： 每次 1个样本做SGD， 那么就失去了 向量化（矩阵乘代替循环）的 加速快感。。。。。
+</code></pre>
+<p>减去梯度，代表朝着梯度方向走</p>
+<pre><code>w新 = w当前 - learning_rate * 梯度	
+</code></pre>
+<p>使用方式：</p>
+<pre><code>model.compile(..... ,optimizer=keras.optimizers.SGD(learning_rate=0.01))
+</code></pre>
 <h3 id="再记录其他优化器之前-先补一个-指数加权平均-的知识">再记录其他优化器之前， 先补一个 指数加权平均 的知识</h3>
-<p>公式：<br>
-y = β * X之前 + （1-β）* X当前</p>
-<p>图形曲线表现：<br>
-β越小：（小到0.5） ：曲线越抖动频繁（锯齿 越厉害）（0.5左右已经，严重上下跳动了）<br>
-β越大：（大至1.0） ：曲线越光滑（无锯齿）<br>
-所以 β： 越大越好<br>
-（涉及到一个技术--偏差修正， 如果你不修正。 可能训练会稍微慢一些。无伤大雅）</p>
+<p>公式：</p>
+<pre><code>y = β * X之前 + （1-β）* X当前
+</code></pre>
+<p>图形曲线表现：</p>
+<pre><code>β越小：（小到0.5） ：曲线越抖动频繁（锯齿 越厉害）（0.5左右已经，严重上下跳动了）
+β越大：（大至1.0） ：曲线越光滑（无锯齿）
+所以 β： 越大越好 
+（涉及到一个技术--偏差修正， 如果你不修正。 可能训练会稍微慢一些。无伤大雅）
+</code></pre>
 <h3 id="momentum动量">Momentum（动量）</h3>
-<p>公式大概：<br>
-dw' =  β * dw-1 + ( 1-β ) * dw		# 用 dw-1 掰弯 dw<br>
-db' =  β * db-1 + ( 1-β ) * db		# 用 db-1 掰弯 db</p>
-<p>公式理解：<br>
-在原来的梯度基础上， 用 上一次的梯度方向， 把当前将要计算的梯度掰弯</p>
+<p>公式大概：</p>
+<pre><code>dw' =  β * dw-1 + ( 1-β ) * dw		# 用 dw-1 掰弯 dw
+db' =  β * db-1 + ( 1-β ) * db		# 用 db-1 掰弯 db
+</code></pre>
+<p>公式理解：</p>
+<pre><code>在原来的梯度基础上， 用 上一次的梯度方向， 把当前将要计算的梯度掰弯
+</code></pre>
 <h3 id="rmsprop">RMSProp</h3>
 <pre><code>model.compile(..... ,optimizer=keras.optimizers.RMSprop(learning_rate=0.01, momentum=0.9))
 </code></pre>
 <h3 id="adam强烈推荐">Adam(强烈推荐)</h3>
-<p>TF-API:  默认原参数<br>
-model.compile(..... ,optimizer=keras.optimizers.Adam(<br>
-learning_rate=0.001,<br>
-beta_1=0.9,           # 学习率衰减参数<br>
-beta_2=0.999,<br>
-epsilon=1e-7,<br>
-),<br>
-)<br>
-其实这个API参数，我们只稍微调整一下 learning _ rate 即可，其他不用怎么。</p>
+<p>TF-API:  默认原参数</p>
+<pre><code>model.compile(..... ,optimizer=keras.optimizers.Adam(
+		learning_rate=0.001,
+		beta_1=0.9,           # 学习率衰减参数
+		beta_2=0.999,
+		epsilon=1e-7,
+	),
+)
+</code></pre>
+<p>其实这个API参数，我们只稍微调整一下 learning _ rate 即可，其他不用怎么。</p>
 <h3 id="学习率衰减">学习率衰减</h3>
-<p>其实大多数 优化器内都有 学习率衰减参数，例如：<br>
-SGD(decay)<br>
-Adam(beta_1)<br>
-当然你也可以自己实现（按照样本已训练的批次，动态衰减）<br>
-learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）</p>
-<pre><code>其实还有更多 可调节参数，就像Adam中的 那么多参数似。当然我压根也没想自己实现衰减。。
+<p>其实大多数 优化器内都有 学习率衰减参数，例如：</p>
+<pre><code>SGD(decay)
+Adam(beta_1)
+</code></pre>
+<p>当然你也可以自己实现（按照样本已训练的批次，动态衰减）</p>
+<pre><code>learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）
+
+其实还有更多 可调节参数，就像Adam中的 那么多参数似。当然我压根也没想自己实现衰减。。
 
 可知 decay越小， 学习率衰减的越慢， 当衰减率为0时。  学习率压根就不衰减
 而 decay越大， 学习率衰减的越快， 当衰减率为1时。  那衰减的就太夸张了~~
@@ -426,17 +466,20 @@ learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）</p>
 然后把最后 输出层 扔掉，自己加一个新输出层（当然中间你也可以加一些新的NN层）<br>
 然后 旁敲侧击，只在最后一层提供输入，只对 新的输出层（或者你额外加的NN）层训练。</p>
 <h3 id="应用条件">应用条件</h3>
-<p>当你迁移后的数据有特别特别多的时候， 那么你完全可以把 搬过来的 模型参数 从头到尾训练一遍。<br>
-就像你 狗模型， 前面的网络学到了很多  毛，特征。 （这猫也有嘛，所以正好可以用得上）<br>
-然后你 在狗模型的基础上 ，训练猫模型 （我不太了解猫~~~， 比如说可以新学到猫的胡须之类的新特征）<br>
-总结来说：  新模型 = NN层（狗）参数 + NN层（猫）参数 + 输出层（猫）参数<br>
-当然， 如果你迁移支持的数据，只有很少，根本不够强大的神经网络训练<br>
-那么，你就可以直接把，搬过来的模型参数固定住， 直接只在 最后输出层，提供输入，进行训练<br>
-总结来说：  新模型 = NN层（狗）参数 + 输出层（猫）参数</p>
-<p>迁移学习的主要目的思想：<br>
-当你 有很少的小数据集A， 但是你想训练成一个 NN 来 达到目的。<br>
-可想而知，少量数据集A 还不够 NN 塞牙缝的。。。</p>
-<pre><code>所以，你需要找一些其他类似的数据集B（量多的，好收集的）
+<p>当你迁移后的数据有特别特别多的时候， 那么你完全可以把 搬过来的 模型参数 从头到尾训练一遍。</p>
+<pre><code>就像你 狗模型， 前面的网络学到了很多  毛，特征。 （这猫也有嘛，所以正好可以用得上）
+然后你 在狗模型的基础上 ，训练猫模型 （我不太了解猫~~~， 比如说可以新学到猫的胡须之类的新特征）
+总结来说：  新模型 = NN层（狗）参数 + NN层（猫）参数 + 输出层（猫）参数
+</code></pre>
+<p>当然， 如果你迁移支持的数据，只有很少，根本不够强大的神经网络训练</p>
+<pre><code>那么，你就可以直接把，搬过来的模型参数固定住， 直接只在 最后输出层，提供输入，进行训练
+总结来说：  新模型 = NN层（狗）参数 + 输出层（猫）参数
+</code></pre>
+<p>迁移学习的主要目的思想：</p>
+<pre><code>当你 有很少的小数据集A， 但是你想训练成一个 NN 来 达到目的。
+可想而知，少量数据集A 还不够 NN 塞牙缝的。。。
+
+所以，你需要找一些其他类似的数据集B（量多的，好收集的）
 然后这些大量数据集B，足以 驰骋于 NN ， 得到一个模型。（并且带着 训练好的参数）
 
 数据集A说： &quot;
@@ -448,19 +491,20 @@ learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）</p>
 数据集B大哥说： &quot;可以&quot;
 </code></pre>
 <h3 id="迁移学习api-tensorflow20">迁移学习API （Tensorflow2.0）</h3>
-<p>温馨提示： TF20的Keras Layers 是可以 用切片语法 选取具体网络层的，举个例子：<br>
-# from tensorflow import keras<br>
-# cut_resnet = keras.applications.DenseNet121(  # 使用现有ResNet模型<br>
-#     include_top=False,  # 不要最后一层，而是使用我们自己定义的全连接层<br>
-#     pooling='avg',<br>
-#     weights='imagenet',  # 初始化权重（从imagenet训练好模型参数来初始化）<br>
-# )<br>
-# for layer in cut_resnet.layers[0:-3]:  # 部分可训练（fine-tune分割）<br>
-#     trainable=False             # 0 到 倒数第三层，参数不可训练<br>
-#<br>
-# new_model = keras.models.Sequential()<br>
-# new_model.add(cut_resnet)<br>
-# new_model.add(其他层)</p>
+<p>温馨提示： TF20的Keras Layers 是可以 用切片语法 选取具体网络层的，举个例子：</p>
+<pre><code># from tensorflow import keras
+# cut_resnet = keras.applications.DenseNet121(  # 使用现有ResNet模型
+#     include_top=False,  # 不要最后一层，而是使用我们自己定义的全连接层
+#     pooling='avg',
+#     weights='imagenet',  # 初始化权重（从imagenet训练好模型参数来初始化）
+# )
+# for layer in cut_resnet.layers[0:-3]:  # 部分可训练（fine-tune分割）
+#     trainable=False             # 0 到 倒数第三层，参数不可训练
+# 
+# new_model = keras.models.Sequential()
+# new_model.add(cut_resnet)
+# new_model.add(其他层)
+</code></pre>
 <h3 id="迁移学习-适用场景">迁移学习 适用场景</h3>
 <ol>
 <li>统一使用领域（要么文本迁移要文本，  要门图像迁移到图像。）</li>
@@ -468,11 +512,11 @@ learning rate = learning rate * 1/（epoch轮数 * 衰减率 + 1）</p>
 <li>假如 A 迁移到 B （最好A的许多特征信息，B正好可以用得到。比如 猫狗，都有毛发，胡须，四条腿）</li>
 </ol>
 <h3 id="多任务学习了解用的少">多任务学习（了解，用的少）</h3>
-<p>直接感观：我认为就像（类的继承 ， 或者封装为一个函数， 这样的概念。。）<br>
-你想训练 预测 各种各样类别的图片。<br>
-你可以首先 用一个任务 训练一下 共有特征 的 NN。<br>
-然后其他任务 用这个 训练好的 共有的特征的 NN。<br>
-Ng提示： 你需要有庞大的神经网络支撑，不然效果不好。</p>
+<p>直接感观：我认为就像（类的继承 ， 或者封装为一个函数， 这样的概念。。）</p>
+<pre><code>你想训练 预测 各种各样类别的图片。
+你可以首先 用一个任务 训练一下 共有特征 的 NN。
+然后其他任务 用这个 训练好的 共有的特征的 NN。
+Ng提示： 你需要有庞大的神经网络支撑，不然效果不好。    </code></pre>
 
                 </div>
                 <div class="clear"></div>

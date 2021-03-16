@@ -77,7 +77,7 @@ GPU管理
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615878742766" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -92,7 +92,7 @@ GPU管理
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">6 个月前</span></time>
               
               <a href="https://cythonlin.github.io/post/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/py-greater-tensorflow20-gpu-guan-li-yu-fen-bu-shi/"> </span>
@@ -126,10 +126,11 @@ watch -n 0.1  -x nvidia-smi 	# 动态实时0.1秒间隔，查看GPU占用情况�
 </code></pre>
 <h3 id="如何管理gpu">如何管理GPU</h3>
 <p>使用内存增长式 API<br>
-内存增长解释： 按需分配<br>
-# 查看物理GPU信息<br>
-gpus = tf.config.experimental.list_physical_devices('GPU')  # 获取所有物理GPU信息</p>
-<pre><code>tf.config.experimental.set_visible_devices(gpus[2])      # 只使用 第3个GPU， 默认不设置就是使用所有GPU
+内存增长解释： 按需分配</p>
+<pre><code># 查看物理GPU信息
+gpus = tf.config.experimental.list_physical_devices('GPU')  # 获取所有物理GPU信息
+
+tf.config.experimental.set_visible_devices(gpus[2])      # 只使用 第3个GPU， 默认不设置就是使用所有GPU
 
 for gpu in gpus:             
 	tf.config.experimental.set_memory_growth(gpu, True)   # 这行代码必须放在前面
@@ -165,10 +166,14 @@ with tf.device('/CPU:0'): 		# 指定CPU名字作为上下文环境，（将此CP
 <p>镜像式策略：<br>
 0. 一台机器， 多GPU</p>
 <ol>
-<li>参数同步式，分布式训练</li>
-<li>同步的意思是， 每个GPU的不同的参数会 按次序同步处理。<br>
-主要机制：<br>
-数据集 分发 给 不同的 GPU处理 （参考多线程）</li>
+<li>
+<p>参数同步式，分布式训练</p>
+</li>
+<li>
+<p>同步的意思是， 每个GPU的不同的参数会 按次序同步处理。<br>
+主要机制：</p>
+<p>数据集 分发 给 不同的 GPU处理 （参考多线程）</p>
+</li>
 </ol>
 <h3 id="centralstoragestrategy">CentralStorageStrategy</h3>
 <pre><code>MirroredStrategy 变种
@@ -182,31 +187,42 @@ with tf.device('/CPU:0'): 		# 指定CPU名字作为上下文环境，（将此CP
 </code></pre>
 <h3 id="parameterserverstrategy">ParameterServerStrategy</h3>
 <ol>
-<li>参数，异步分布</li>
-<li>机器分为 Parameter Server 和 Worker两类 (可理解为，生产者，消费者)<br>
-Parameter Serve： 负责管理，更新 参数和梯度<br>
-Worker:  负责计算，训练网络</li>
-<li>将输入数据转发给 多个 Worker<br>
-Woker流程：<br>
-3.1 Worker们， 训练后 将参数 push 回给 Server<br>
-3.2 Worker们， 训练后 将 Server的参数 pull 拉过来</li>
+<li>
+<p>参数，异步分布</p>
+</li>
+<li>
+<p>机器分为 Parameter Server 和 Worker两类 (可理解为，生产者，消费者)</p>
+<pre><code> Parameter Serve： 负责管理，更新 参数和梯度
+ Worker:  负责计算，训练网络
+</code></pre>
+</li>
+<li>
+<p>将输入数据转发给 多个 Worker<br>
+Woker流程：</p>
+<pre><code> 3.1 Worker们， 训练后 将参数 push 回给 Server
+ 3.2 Worker们， 训练后 将 Server的参数 pull 拉过来
+</code></pre>
+</li>
 </ol>
-<p>Server流程：<br>
-3.1 梯度聚合<br>
-3.2 梯度更新</p>
+<p>Server流程：</p>
+<pre><code>3.1 梯度聚合
+3.2 梯度更新
+</code></pre>
 <h3 id="总结同步式-vs-异步式">总结同步式 vs 异步式</h3>
-<p>同步式：<br>
-就像分布式爬虫一样， 同步式，相当于在 Server中 加了一个缓冲管道。<br>
-等所有GPU齐了，再全部聚合更新。<br>
-缺点：<br>
-有的机器计算快，有的机器计算慢，浪费时间  (短板效应，，拖后腿)<br>
-适用于：<br>
-一台机器，多个GPU， 避免过多网络IO通信<br>
-异步式：<br>
-缺点+ 也算是优点：<br>
-就像多线程对全局变量的不可控一样。可能参数错乱。<br>
-但是这样训练出的模型，更有泛化能力（更能容忍错误， 所以这也算是个小优点）</p>
-<pre><code>适用于：
+<p>同步式：</p>
+<pre><code>就像分布式爬虫一样， 同步式，相当于在 Server中 加了一个缓冲管道。
+等所有GPU齐了，再全部聚合更新。
+缺点：
+	有的机器计算快，有的机器计算慢，浪费时间  (短板效应，，拖后腿)
+适用于：
+	一台机器，多个GPU， 避免过多网络IO通信
+</code></pre>
+<p>异步式：</p>
+<pre><code>缺点+ 也算是优点：
+	就像多线程对全局变量的不可控一样。可能参数错乱。
+	但是这样训练出的模型，更有泛化能力（更能容忍错误， 所以这也算是个小优点）
+    
+适用于：
 	多机器，多GPU
 </code></pre>
 <h1 id="分布式实例以mirroredstrategy为例其他也一样">分布式实例（以MirroredStrategy为例，其他也一样）</h1>
@@ -222,11 +238,12 @@ with strategy.scope():               # 同样制造一个上下文
 	# 至此结束
 </code></pre>
 <h3 id="estimator使用分布式">estimator使用分布式</h3>
-<p>原始，没有添加分布式的 estimator 代码<br>
-model = keras.Sequential([])<br>
-estimator = keras.estimator.model_to_estimator(model)<br>
-# 偷个懒，直接用Keras转过来的， 其实estimator 有很多内置模型（比如线性回归，逻辑回归）。和SKlearn用法差不多</p>
-<pre><code># 所以在训练时，把 model.fit替换为 estimator.train
+<p>原始，没有添加分布式的 estimator 代码</p>
+<pre><code>model = keras.Sequential([])
+estimator = keras.estimator.model_to_estimator(model)
+# 偷个懒，直接用Keras转过来的， 其实estimator 有很多内置模型（比如线性回归，逻辑回归）。和SKlearn用法差不多
+
+# 所以在训练时，把 model.fit替换为 estimator.train
 from sklearn.linear_model.base import make_dataset
 estimator.train(
 	input_fn= lambda: 自己处理数据的函数(参数),  # 此函数返回结果通常是 tf.data.Dataset对象()
@@ -235,25 +252,30 @@ estimator.train(
 
 # 训练结果的精度值等指标，通常输出到一个文件中，  可通过 tensorflow_board 打开查看
 </code></pre>
-<p>使用 分布式的 estimator 代码： 只需按照上面便跟几行即可：<br>
-strategy = tf.distribute.MirroredStrategy()<br>
-config = tf.estimator.RunConfig(              # 主要加了这里<br>
-train_distribute=strategy<br>
-)<br>
-model = keras.Sequential([])<br>
-estimator = keras.estimator.model_to_estimator(model, config=config)<br>
-下面同上</p>
+<p>使用 分布式的 estimator 代码： 只需按照上面便跟几行即可：</p>
+<pre><code>strategy = tf.distribute.MirroredStrategy()         
+config = tf.estimator.RunConfig(              # 主要加了这里
+	train_distribute=strategy
+)
+model = keras.Sequential([])
+estimator = keras.estimator.model_to_estimator(model, config=config)
+下面同上
+</code></pre>
 <h3 id="自定义模型训练-的-分布式改造">自定义模型+训练 的 分布式改造</h3>
 <h1 id="分布式效果不好">分布式效果不好？？</h1>
 <ol>
-<li>可以考虑 把 batch _ size 增大</li>
-<li>可以尝试数据分布式<br>
-数据分布式代码：<br>
-strategy = tf.distribute.MirroredStrategy()<br>
+<li>
+<p>可以考虑 把 batch _ size 增大</p>
+</li>
+<li>
+<p>可以尝试数据分布式<br>
+数据分布式代码：</p>
+<p>strategy = tf.distribute.MirroredStrategy()<br>
 with strategy.scope():<br>
 ...<br>
 train_dataset = strategy.experimental_distribute_dataset(train_dataset)<br>
-test_dataset = strategy.experimental_distribute_dataset(test_dataset)</li>
+test_dataset = strategy.experimental_distribute_dataset(test_dataset)</p>
+</li>
 </ol>
 
                 </div>

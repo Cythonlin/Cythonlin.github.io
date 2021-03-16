@@ -74,7 +74,7 @@ from sklearn.model_selection import train..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615878742766" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -89,7 +89,7 @@ from sklearn.model_selection import train..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">6 个月前</span></time>
               
               <a href="https://cythonlin.github.io/post/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ai-greater-tensorflow20-yu-fa-dataset-shu-ju-feng-zhuang-xun-ce-yan-qie-ge-er/"> </span>
@@ -374,7 +374,10 @@ for data in dataset.repeat(2).batch(3):   # 重复2次。 3个一组  （这就�
     # 还要注意一下， 它们重复是顺序重复拼接。 分批时，可以首尾相连的 
     （eg:就像小时候吃的一连串棒棒糖， 拽不好，会把上一个的糖皮连着拽下来）
 </code></pre>
-<h1 id="未完待续">未完待续</h1>
+<h1 id="dataset转iter">dataset转iter</h1>
+<pre><code>iterator = tf.compat.v1.data.make_one_shot_iterator(dataset)
+dataset = iterator.get_next()
+return dataset</code></pre>
 
                 </div>
                 <div class="clear"></div>

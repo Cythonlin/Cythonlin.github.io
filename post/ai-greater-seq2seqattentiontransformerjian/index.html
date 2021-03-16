@@ -74,7 +74,7 @@ text：..." />
       <div class="hide-on-mobile hide-on-tablet hide-on-desktop">
         <div id="search-lightbox" class="grid-container grid-small grid-parent mfp-hide">
           <div class="search-wrapper section">
-            <form id="gridea-search-form" data-update="1615789667564" action="/search/index.html" class="search-form" _lpchecked="1">
+            <form id="gridea-search-form" data-update="1615878742766" action="/search/index.html" class="search-form" _lpchecked="1">
               <input type="text" name="q" id="s" value="" class="search-field" placeholder="搜点啥..." aria-label="搜点啥..." required="">
               <button type="submit" class="submit" aria-label="Submit">
                 <i class="fa fa-search-line"></i>
@@ -89,7 +89,7 @@ text：..." />
         <div class="center content">
           <div class="featured-image cover" style="background-image: url('/media/images/gridea.jpg');">
             <div class="meta top"> 
-              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">5 个月前</span></time>
+              <time class="meta-info" style="float:left;" datetime="2020-09-29"><i class="fa fa-calendar"></i><span class="lately">6 个月前</span></time>
               
               <a href="https://cythonlin.github.io/post/ai-greater-seq2seqattentiontransformerjian/#comments" class="comments meta-info" title="">
                 <i class="fa fa-comment remixicon"></i><span class="comment-count valine-comment-count" data-xid="/ai-greater-seq2seqattentiontransformerjian/"> </span>
@@ -117,10 +117,11 @@ text：..." />
 <h3 id="我们自己的普通数据集常用">我们自己的普通数据集（常用）</h3>
 <p>主要使用tensorflow.keras.preprocessing这个库中的（image, text，sequence）这三个模块。<br>
 text： 可以用来 （统计词频，分字，word_2_id, id_2_word等操作。）<br>
-sequence 可以（给句子做结构化操作（填充0，裁剪长度））<br>
-from tensorflow.keras.preprocessing.text import Tokenizer    # 主干，句子编码<br>
-from tensorflow.keras.preprocessing.sequence import pad_sequences # 辅助，填充，剪枝</p>
-<pre><code>q1 = '欢 迎 你 你 你'
+sequence 可以（给句子做结构化操作（填充0，裁剪长度））</p>
+<pre><code>from tensorflow.keras.preprocessing.text import Tokenizer    # 主干，句子编码
+from tensorflow.keras.preprocessing.sequence import pad_sequences # 辅助，填充，剪枝
+
+q1 = '欢 迎 你 你 你'
 q2 = '我 很 好'
 q_list = [q1,q2]    # 需要特别注意，因为此API对英文友好，所以，我们必须把句子用 空格 隔开输入
 
@@ -150,18 +151,19 @@ print(pad_seq)     # 打印一下我们填充后的句子形状。
 #   [0 0],      # 如你所愿，之前[] ，已经都填满了0
 # ]
 </code></pre>
-<p>虽然我们用不到 image这个模块数据增强模块，但是我把了解的API也写出来。<br>
-train_datagen = keras.preprocessing.image.ImageDataGenerator( # 数据增强生成器（定义）<br>
-rescale=1. / 255,         # 数据归一化<br>
-rotation_range = 40,      #  -40-40  随机角度 （数据增强）<br>
-width_shift_range = 0.2,  # 宽度位移（0-20%随机选个比例去平移） （数据增强）<br>
-height_shift_range = 0.2, # 高度位移（同上）   （数据增强）<br>
-shear_range=0.2,          # 图片剪切（0.2）    （数据增强）<br>
-zoom_range=0.2,           # 图片缩放（0.2）    （数据增强）<br>
-horizontal_flip=True,     # 图片随机水平反转    （数据增强）<br>
-fill_mode='nearest',      # 图片填充像素（放大后失帧）用附近像素值来填充 （数据增强）<br>
-)</p>
-<pre><code># train_generator = train_datagen.flow_from_dataframe()  # 如果你用Pandas，你可以选这个
+<p>虽然我们用不到 image这个模块数据增强模块，但是我把了解的API也写出来。</p>
+<pre><code>train_datagen = keras.preprocessing.image.ImageDataGenerator( # 数据增强生成器（定义）
+    rescale=1. / 255,         # 数据归一化
+    rotation_range = 40,      #  -40-40  随机角度 （数据增强）
+    width_shift_range = 0.2,  # 宽度位移（0-20%随机选个比例去平移） （数据增强）
+    height_shift_range = 0.2, # 高度位移（同上）   （数据增强）
+    shear_range=0.2,          # 图片剪切（0.2）    （数据增强）
+    zoom_range=0.2,           # 图片缩放（0.2）    （数据增强）
+    horizontal_flip=True,     # 图片随机水平反转    （数据增强）
+    fill_mode='nearest',      # 图片填充像素（放大后失帧）用附近像素值来填充 （数据增强）
+)
+
+# train_generator = train_datagen.flow_from_dataframe()  # 如果你用Pandas，你可以选这个
 train_generator = train_datagen.flow_from_directory(     # 从文件中读取（Kaggle）
     train_dir,                       # 图片目录
     target_size = (height, width),   # 图片读取进来后缩放大小
@@ -214,8 +216,7 @@ Top-N: 的 N 代表你保留几个概率   （举一反三理解: 贪心算法�
 那么你一个RNN节点的预测y将会保留3个概率值， 并将这3个概率值作为 下一个节点的输入。<br>
 具体流程看:下图 (可能有点丑)<br>
 然后，我们会选择出:        3 个 &quot;红线&quot; 最优路径。<br>
-最终: 我们通过单独的语言模型，来从这 3 个 &quot;红线&quot; 较优路径中，选出一个 最优路径。<br>
-<img src="/img/bVbyAZs" alt="clipboard.png" loading="lazy"></p>
+最终: 我们通过单独的语言模型，来从这 3 个 &quot;红线&quot; 较优路径中，选出一个 最优路径。</p>
 <h1 id="attention注意力机制">Attention(注意力机制)</h1>
 <h3 id="前情回顾">前情回顾</h3>
 <p>Seq2Seq 的 Encoder部分虽然用的是 高效的 LSTM，并且也很好的解决了，记忆的问题。<br>
@@ -243,8 +244,6 @@ Decoder的下一个输入 = concat( 注意力向量C, 上一个预测y4 )</p>
 于是有人想到了，既然Attention效果这么好，为什么不直接用Attention呢？<br>
 Attention效果虽好，关联性强，但是它不能保证时间序列模式。<br>
 于是后来出现了 Transformer。（既能保证记忆注意力，又能保证时间序列）。具体如下！</p>
-<h3 id="transformer整体结构组成">Transformer整体结构组成</h3>
-<figure data-type="image" tabindex="1"><img src="/img/bVbA3uH" alt="image.png" loading="lazy"></figure>
 <h3 id="self-attention">Self-Attention</h3>
 <p>self-attention原理就是各种链式矩阵乘法（并行计算，可用GPU加速）<br>
 self-attention计算过程如下：（假设输入句子切分单词为：矩阵X = [&quot;早&quot;,&quot;上&quot;,&quot;好&quot;]）<br>
